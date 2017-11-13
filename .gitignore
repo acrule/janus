@@ -1,0 +1,4 @@
+*.DS_Store
+janus.egg-info/
+*__pycache__/
+MANIFEST
