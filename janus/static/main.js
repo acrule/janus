@@ -20,17 +20,18 @@ define([
     TextCell
 ){
 
-    //TODO float Sidebar container to the right side of the interface
+
+    //TODO enable cells to be flagged for hiding (add button + )
     //TODO render basic cell in the notebook inside Sidebar container
-    //TODO enable cells to be flagged for hiding
     //TODO render hidden cells in sidebar when cell above them clicked
     // may have issues with accessing cells if cell above is deleted
     // or with moving cells in the main notebook around "hidden" ones
     //TODO render marker of how many hidden cells
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
-    // create 2nd notebook that is typeset version of the first
     var Sidebar = function(nb){
+        // A sidebar panel for 'hiding' implementation details
+
         var sidebar = this;
         this.notebook = nb;
         this.collapsed = true;
@@ -42,22 +43,24 @@ define([
         this.element.append(this.close_button);
         this.element.append(this.open_button);
 
-        // hook up events to buttons
+        // hook up button events
         this.open_button.click(function () {
             sidebar.expand();
             sidebar.typeset(this.notebook);
         });
         this.close_button.click(function () {
             sidebar.collapse();
-            $('#cell-wrapper').remove();
+            sidebar.erase()
         });
-
-        // render a copy of every cell
 
         // finally, add the Sidebar the page
         $("#notebook").append(this.element);
 
     };
+
+    Sidebar.prototype.erase = function(){
+        $('#cell-wrapper').remove();
+    }
 
     Sidebar.prototype.typeset = function(){
         // clear cell wrapper
@@ -88,16 +91,6 @@ define([
             }
         }
     }
-
-    Sidebar.prototype.toggle = function(){
-        if(this.collapsed){
-            this.expand();
-        }
-        else{
-            this.collapse();
-        }
-        return false;
-    };
 
     // TODO I think we may want this to come up from the bottom of the notebook
     Sidebar.prototype.expand = function(){
@@ -141,8 +134,6 @@ define([
             )
         })
 
-
-
         this.element.animate({
             right: '15px',
             width: 0
@@ -173,13 +164,87 @@ define([
 
     function createSidebar() {
         return new Sidebar(Jupyter.notebook);
-      }
+    }
+
+    function renderJanusMenu(){
+        /* add menu items to edit menu for hiding and showing cells */
+        var editMenu = $('#edit_menu');
+
+        editMenu.append($('<li>')
+            .addClass('divider')
+        );
+
+        editMenu.append($('<li>')
+            .attr('id', 'hide_cell')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Hide Cell')
+                .click(hideCell)
+            )
+        );
+
+        editMenu.append($('<li>')
+            .attr('id', 'show_cell')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Show Cell')
+                .click(showCell)
+            )
+        );
+    }
+
+    function renderJanusButtons() {
+
+        var hideAction = {
+            icon: 'fa-eye-slash', // a font-awesome class used on buttons, etc
+            help    : 'Hide select cells',
+            help_index : 'zz',
+            handler : hideCell
+        };
+
+        var showAction = {
+            icon: 'fa-eye', // a font-awesome class used on buttons, etc
+            help    : 'Show select cells',
+            help_index : 'zz',
+            handler : showCell
+        };
+
+        var prefix = 'janus';
+        var hide_action_name = 'hide-cell';
+        var show_action_name = 'show-cell';
+
+        var full_hide_action_name = Jupyter.actions.register(hideAction, hide_action_name, prefix); // returns 'my_extension:show-alert'
+        var full_show_action_name = Jupyter.actions.register(showAction, show_action_name, prefix); // returns 'my_extension:show-alert'
+        Jupyter.toolbar.add_buttons_group([full_hide_action_name, full_show_action_name]);
+    }
+
+    function hideCell(){
+        console.log("Hide Cell")
+        // clone div to the Sidebar
+        // hide the current div
+        // put placehoder div in its place
+        // render
+    }
+
+    function showCell(){
+        console.log("Show Cell")
+        // show the cell in the main notebook_width
+        // delete div
+    }
+
+    function executeSidebarCell(){
+        // copy text to the Notebook cell
+        // render the notebook cells
+        // copy the
+    }
 
     function load_extension(){
         /* Called as extension loads and notebook opens */
         console.log('[Janus] is working');
         load_css()
         setupSidebar()
+        renderJanusMenu()
+        renderJanusButtons()
     }
 
     return {
