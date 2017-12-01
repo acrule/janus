@@ -10,6 +10,16 @@
     -webkit-box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 }
 
+.placeholder{
+    margin-right: 5px;
+    margin-bottom: 5px;
+    margin-left: 94px;
+    height: 24px;
+    text-align: center;
+    background: #f5f5f5;
+    border: 1px solid #CCC;
+}
+
 #sidebar .cell-wrapper {
   height: 100%;
   overflow: auto;

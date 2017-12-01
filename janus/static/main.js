@@ -21,8 +21,6 @@ define([
 ){
 
 
-    //TODO enable cells to be flagged for hiding (add button + )
-    //TODO render basic cell in the notebook inside Sidebar container
     //TODO render hidden cells in sidebar when cell above them clicked
     // may have issues with accessing cells if cell above is deleted
     // or with moving cells in the main notebook around "hidden" ones
@@ -35,6 +33,7 @@ define([
         var sidebar = this;
         this.notebook = nb;
         this.collapsed = true;
+        Jupyter.sidebar = sidebar
 
         // create html elements for sidebar and buttons
         this.element = $('<div id=sidebar-container>');
@@ -46,11 +45,12 @@ define([
         // hook up button events
         this.open_button.click(function () {
             sidebar.expand();
-            sidebar.typeset(this.notebook);
+            //sidebar.typeset(this.notebook, cells = []);
         });
         this.close_button.click(function () {
             sidebar.collapse();
-            sidebar.erase()
+            $('#cell-wrapper').hide()
+            //sidebar.erase()
         });
 
         // finally, add the Sidebar the page
@@ -58,17 +58,10 @@ define([
 
     };
 
-    Sidebar.prototype.erase = function(){
-        $('#cell-wrapper').remove();
-    }
-
-    Sidebar.prototype.typeset = function(){
+    Sidebar.prototype.typeset = function(cells){
         // clear cell wrapper
         $('#cell-wrapper').remove();
         this.element.append($("<div/>").attr('id', 'cell-wrapper').addClass('cell-wrapper'));
-
-        // get all cells currently in the notebook
-        cells = Jupyter.notebook.get_cells()
 
         // create a new cell in the Sidebar with the same content
         for (i = 0; i < cells.length; i++){
@@ -89,30 +82,61 @@ define([
                 // add markdown cell to the Sidebar
                 $('#cell-wrapper').append(newCell.element);
             }
+            //TODO make sure to handle all needed steps as shown in
+            // https://github.com/minrk/nbextension-scratchpad/blob/master/main.js
+            else if(cells[i].cell_type == 'code'){
+                // create new markdown cells
+                newCell = new CodeCell.CodeCell(this.notebook.kernel, {
+                    events: this.notebook.events,
+                    config: this.notebook.config,
+                    keyboard_manager: this.notebook.keyboard_manager,
+                    notebook: this.notebook,
+                    tooltip: this.notebook.tooltip,
+                });
+
+                cell_data = cells[i].toJSON();
+
+                newCell.fromJSON(cell_data);
+
+                // add markdown cell to the Sidebar
+                $('#cell-wrapper').append(newCell.element);
+
+                newCell.render();
+                newCell.focus_editor();
+            }
         }
     }
 
-    // TODO I think we may want this to come up from the bottom of the notebook
-    Sidebar.prototype.expand = function(){
-        this.collapsed = false;
+    Sidebar.prototype.erase = function(){
+        $('#cell-wrapper').remove();
+    }
 
-        var site_height = $("#site").height();
-        var site_width = $("#site").width();
-        var notebook_width = $("#notebook-container").width();
-        var sidebar_width = (site_width - 45) / 2
+    Sidebar.prototype.expand = function(ids = []){
+        $('#cell-wrapper').show()
+        if(this.collapsed){
+            this.collapsed = false;
 
-        $("#notebook-container").animate({
-            marginLeft: '15px',
-            width: sidebar_width
-        }, 400)
+            var site_height = $("#site").height();
+            var site_width = $("#site").width();
+            var notebook_width = $("#notebook-container").width();
+            var sidebar_width = (site_width - 45) / 2
 
-        this.element.animate({
-            right: '15px',
-            width: sidebar_width
-        }, 400)
+            $("#notebook-container").animate({
+                marginLeft: '15px',
+                width: sidebar_width
+            }, 400)
 
-        this.open_button.hide();
-        this.close_button.show();
+            this.element.animate({
+                right: '15px',
+                width: sidebar_width
+            }, 400, function(){if(ids.length > 0){Jupyter.sidebar.typeset(ids)}})
+
+            this.open_button.hide();
+            this.close_button.show();
+        }
+        else if(ids.length>0){
+            Jupyter.sidebar.typeset(ids)
+        }
     };
 
     Sidebar.prototype.collapse = function(){
@@ -143,6 +167,10 @@ define([
         this.open_button.show();
     };
 
+    function createSidebar() {
+        return new Sidebar(Jupyter.notebook);
+    }
+
     function load_css() {
         // Load css for sidebar
         var link = document.createElement("link");
@@ -152,22 +180,8 @@ define([
         document.getElementsByTagName("head")[0].appendChild(link);
     };
 
-    function setupSidebar(){
-        // only create sidebar if kernel is running
-        if(Jupyter.notebook.kernel){
-            createSidebar();
-        }
-        else{
-            events.on('kernel_ready.Kernel', createSidebar);
-        }
-    }
-
-    function createSidebar() {
-        return new Sidebar(Jupyter.notebook);
-    }
-
     function renderJanusMenu(){
-        /* add menu items to edit menu for hiding and showing cells */
+        // add menu items to edit menu for hiding and showing cells
         var editMenu = $('#edit_menu');
 
         editMenu.append($('<li>')
@@ -194,16 +208,16 @@ define([
     }
 
     function renderJanusButtons() {
-
+        // add buttons to toolbar fo hiding and showing cells
         var hideAction = {
-            icon: 'fa-eye-slash', // a font-awesome class used on buttons, etc
+            icon: 'fa-eye-slash',
             help    : 'Hide select cells',
             help_index : 'zz',
             handler : hideCell
         };
 
         var showAction = {
-            icon: 'fa-eye', // a font-awesome class used on buttons, etc
+            icon: 'fa-eye',
             help    : 'Show select cells',
             help_index : 'zz',
             handler : showCell
@@ -213,23 +227,96 @@ define([
         var hide_action_name = 'hide-cell';
         var show_action_name = 'show-cell';
 
-        var full_hide_action_name = Jupyter.actions.register(hideAction, hide_action_name, prefix); // returns 'my_extension:show-alert'
-        var full_show_action_name = Jupyter.actions.register(showAction, show_action_name, prefix); // returns 'my_extension:show-alert'
+        var full_hide_action_name = Jupyter.actions.register(hideAction, hide_action_name, prefix);
+        var full_show_action_name = Jupyter.actions.register(showAction, show_action_name, prefix);
         Jupyter.toolbar.add_buttons_group([full_hide_action_name, full_show_action_name]);
     }
 
     function hideCell(){
-        console.log("Hide Cell")
-        // clone div to the Sidebar
-        // hide the current div
-        // put placehoder div in its place
-        // render
+        cells = Jupyter.notebook.get_selected_cells();
+
+        // find where the selected cells are in the notebook
+        all_cells = Jupyter.notebook.get_cells()
+        sel_start_id = all_cells.indexOf(cells[0])
+        sel_end_id = all_cells.indexOf(cells[cells.length - 1])
+        start_id = all_cells.indexOf(cells[0])
+        end_id = all_cells.indexOf(cells[cells.length - 1])
+
+        // check if the prior cell(s) is/are already hidden
+        while(start_id > 0){
+            if(all_cells[start_id - 1].metadata.cell_hidden == true){
+                start_id = start_id -1
+            }
+            else{
+                break
+            }
+        }
+
+        // check if the next cell(s) is/are already hidden
+        while(end_id < all_cells.length - 1){
+            if(all_cells[end_id + 1].metadata.cell_hidden == true){
+                end_id = end_id + 1
+            }
+            else{
+                break
+            }
+        }
+
+        // TODO fix not merging with elements below
+        // get rid of the existing placeholder divs in our selection
+        start_element = all_cells[start_id].element
+        end_element = $(all_cells[end_id].element).next()
+        console.log(end_element)
+        contained_placeholders = $(start_element).nextUntil(end_element).add(end_element).filter('div.placeholder')
+        $(contained_placeholders).remove()
+
+        // get the whole expanded selection of hidden cells_to_copy
+        hidden_cells = all_cells.slice(start_id, end_id+1)
+
+        cell_ids = []
+
+        // set the metadata and hide cells
+        for(i=0; i < hidden_cells.length; i++){
+            hidden_cells[i].metadata.cell_hidden = true;
+            hidden_cells[i].element.hide();
+            cell_ids.push(hidden_cells[i].metadata.comet_cell_id)
+        }
+
+
+        // put placehoder div immediatley after it
+        hidden_cells[hidden_cells.length - 1].element.after($('<div>')
+            .addClass('placeholder')
+            //.data('id', cells[cells.length - 1].metadata.comet_cell_id)
+            .click(function(){
+                showCell(cell_ids)
+            })
+            //TODO fix so "s" only appears with multiple cells
+            .text(`${cell_ids.length} Cell(s) Hidden`))
     }
 
-    function showCell(){
-        console.log("Show Cell")
-        // show the cell in the main notebook_width
-        // delete div
+    function showCell(ids){
+        // get the cells we should show
+        cells = Jupyter.notebook.get_cells()
+        cells_to_copy = []
+        for(i=0; i<cells.length; i++){
+            if ( $.inArray( cells[i].metadata.comet_cell_id, ids ) > -1 ){
+                cells_to_copy.push(cells[i])
+            }
+        }
+
+        Jupyter.sidebar.expand(cells_to_copy)
+
+
+
+        // expandAndTypeset(cells_to_copy, function(){
+        //     Jupyter.sidebar.typeset(cells_to_copy);
+        // })
+    }
+
+    function expandAndTypeset(cells_to_copy, callback){
+        Jupyter.sidebar.expand();
+        callback();
+
     }
 
     function executeSidebarCell(){
@@ -242,9 +329,9 @@ define([
         /* Called as extension loads and notebook opens */
         console.log('[Janus] is working');
         load_css()
-        setupSidebar()
         renderJanusMenu()
         renderJanusButtons()
+        createSidebar()
     }
 
     return {
