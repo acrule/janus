@@ -249,7 +249,7 @@ define([
 
         for(i = 0; i < cells.length; i++){
             // make sure all cells have the right metadata
-            if (cells[i].cell_hidden === undefined){
+            if (cells[i].metadata.cell_hidden === undefined){
                 cells[i].metadata.cell_hidden = false;
             }
             if (cells[i].metadata.janus_cell_id === undefined){
