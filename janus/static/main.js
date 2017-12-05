@@ -131,7 +131,7 @@ define([
             this.open_button.hide();
             this.close_button.show();
         }
-        else if(ids.length>0){
+        if(ids.length>0){
             Jupyter.sidebar.typeset(ids)
         }
     };
@@ -272,8 +272,9 @@ define([
                     // create placeholder that will render this group of hidden cells
                     serial_hidden_cells[serial_hidden_cells.length - 1].element.after($('<div>')
                         .addClass('placeholder')
+                        .data('ids', cell_ids.slice())
                         .click(function(){
-                            showCell(cell_ids)
+                            showCell($(this).data('ids'))
                         })
                         //TODO fix so "s" only appears with multiple cells
                         .text(`${cell_ids.length} Cell(s) Hidden`))
@@ -338,15 +339,16 @@ define([
         // put placehoder div immediatley after it
         hidden_cells[hidden_cells.length - 1].element.after($('<div>')
             .addClass('placeholder')
-            //.data('id', cells[cells.length - 1].metadata.comet_cell_id)
+            .data('ids', cell_ids.slice())
             .click(function(){
-                showCell(cell_ids)
+                showCell($(this).data('ids'))
             })
             //TODO fix so "s" only appears with multiple cells
             .text(`${cell_ids.length} Cell(s) Hidden`))
     }
 
     function showCell(ids){
+        console.log(ids)
         // get the cells we should show
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
