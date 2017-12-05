@@ -229,6 +229,17 @@ define([
         Jupyter.toolbar.add_buttons_group([full_hide_action_name, full_show_action_name]);
     }
 
+    function patchInsertCellAtIndex(){
+        console.log('Patching Insert Cell')
+        /* Get newly created cells to track unexecuted changes */
+        var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
+        Jupyter.notebook.__proto__.insert_cell_at_index = function(){
+            c = oldInsertCellAtIndex.apply(this, arguments);
+            c.metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            return c;
+        }
+    }
+
     function hideCellsAtStart(){
         // hide all hidden cells once the notebook is opened
         console.log('Hiding cells at Start')
@@ -256,7 +267,7 @@ define([
                     cell_ids = []
                     for(j = 0; j < serial_hidden_cells.length; j++){
                         serial_hidden_cells[j].element.hide();
-                        cell_ids.push(serial_hidden_cells[j].metadata.comet_cell_id);
+                        cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
                     serial_hidden_cells[serial_hidden_cells.length - 1].element.after($('<div>')
@@ -320,7 +331,7 @@ define([
         for(i=0; i < hidden_cells.length; i++){
             hidden_cells[i].metadata.cell_hidden = true;
             hidden_cells[i].element.hide();
-            cell_ids.push(hidden_cells[i].metadata.comet_cell_id)
+            cell_ids.push(hidden_cells[i].metadata.janus_cell_id)
         }
 
 
@@ -340,7 +351,7 @@ define([
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
         for(i=0; i<cells.length; i++){
-            if ( $.inArray( cells[i].metadata.comet_cell_id, ids ) > -1 ){
+            if ( $.inArray( cells[i].metadata.janus_cell_id, ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
         }
@@ -367,6 +378,7 @@ define([
         renderJanusMenu()
         renderJanusButtons()
         createSidebar()
+        patchInsertCellAtIndex();
         hideCellsAtStart()
     }
 
