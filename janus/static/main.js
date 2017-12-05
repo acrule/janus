@@ -21,9 +21,6 @@ define([
 ){
 
 
-    //TODO render hidden cells in sidebar when cell above them clicked
-    // may have issues with accessing cells if cell above is deleted
-    // or with moving cells in the main notebook around "hidden" ones
     //TODO render marker of how many hidden cells
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
@@ -232,6 +229,50 @@ define([
         Jupyter.toolbar.add_buttons_group([full_hide_action_name, full_show_action_name]);
     }
 
+    function hideCellsAtStart(){
+        // hide all hidden cells once the notebook is opened
+        console.log('Hiding cells at Start')
+
+        cells = Jupyter.notebook.get_cells();
+        serial_hidden_cells = []
+
+        for(i = 0; i < cells.length; i++){
+            // make sure all cells have the right metadata
+            if (cells[i].cell_hidden === undefined){
+                cells[i].metadata.cell_hidden = false;
+            }
+            if (cells[i].metadata.janus_cell_id === undefined){
+                cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
+
+            // keep track of groups of hidden cells
+            if(cells[i].metadata.cell_hidden){
+                serial_hidden_cells.push(cells[i])
+            }
+            else{
+                // if this cell is visible but preceeded by a hidden cell
+                if(serial_hidden_cells.length > 0){
+                    // hide the cells and get a list of their ids
+                    cell_ids = []
+                    for(j = 0; j < serial_hidden_cells.length; j++){
+                        serial_hidden_cells[j].element.hide();
+                        cell_ids.push(serial_hidden_cells[j].metadata.comet_cell_id);
+                    }
+                    // create placeholder that will render this group of hidden cells
+                    serial_hidden_cells[serial_hidden_cells.length - 1].element.after($('<div>')
+                        .addClass('placeholder')
+                        .click(function(){
+                            showCell(cell_ids)
+                        })
+                        //TODO fix so "s" only appears with multiple cells
+                        .text(`${cell_ids.length} Cell(s) Hidden`))
+
+                    serial_hidden_cells = []
+                }
+            }
+        }
+    }
+
     function hideCell(){
         cells = Jupyter.notebook.get_selected_cells();
 
@@ -305,12 +346,6 @@ define([
         }
 
         Jupyter.sidebar.expand(cells_to_copy)
-
-
-
-        // expandAndTypeset(cells_to_copy, function(){
-        //     Jupyter.sidebar.typeset(cells_to_copy);
-        // })
     }
 
     function expandAndTypeset(cells_to_copy, callback){
@@ -332,6 +367,7 @@ define([
         renderJanusMenu()
         renderJanusButtons()
         createSidebar()
+        hideCellsAtStart()
     }
 
     return {
