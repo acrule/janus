@@ -20,8 +20,7 @@ define([
     TextCell
 ){
 
-
-    //TODO render marker of how many hidden cells
+    //TODO highlight marker when shown in sidebar
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
     var Sidebar = function(nb){
@@ -276,7 +275,6 @@ define([
                         .click(function(){
                             showCell($(this).data('ids'))
                         })
-                        //TODO fix so "s" only appears with multiple cells
                         .text(`${cell_ids.length} Hidden`))
 
                     serial_hidden_cells = []
@@ -315,7 +313,6 @@ define([
             }
         }
 
-        // TODO fix not merging with elements below
         // get rid of the existing placeholder divs in our selection
         start_element = all_cells[start_id].element
         end_element = $(all_cells[end_id].element).next()
@@ -343,7 +340,6 @@ define([
             .click(function(){
                 showCell($(this).data('ids'))
             })
-            //TODO fix so "s" only appears with multiple cells
             .text(`${cell_ids.length} Hidden`))
     }
 
