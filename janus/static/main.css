@@ -11,10 +11,9 @@
 }
 
 .placeholder{
-    margin-right: 5px;
-    margin-bottom: 5px;
-    margin-left: 94px;
-    height: 24px;
+    float: right;
+    width: 80px;
+    margin-right: 6px;
     text-align: center;
     background: #f5f5f5;
     border: 1px solid #CCC;

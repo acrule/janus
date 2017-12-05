@@ -277,7 +277,7 @@ define([
                             showCell($(this).data('ids'))
                         })
                         //TODO fix so "s" only appears with multiple cells
-                        .text(`${cell_ids.length} Cell(s) Hidden`))
+                        .text(`${cell_ids.length} Hidden`))
 
                     serial_hidden_cells = []
                 }
@@ -344,7 +344,7 @@ define([
                 showCell($(this).data('ids'))
             })
             //TODO fix so "s" only appears with multiple cells
-            .text(`${cell_ids.length} Cell(s) Hidden`))
+            .text(`${cell_ids.length} Hidden`))
     }
 
     function showCell(ids){
