@@ -235,7 +235,7 @@ define([
             .attr('id', 'hide_cell')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Hide Cell')
+                .text('Indent Cell')
                 .click(hideCell)
             )
         );
@@ -244,7 +244,7 @@ define([
             .attr('id', 'show_cell')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Show Cell')
+                .text('Unindent Cell')
                 .click(unindentCell)
             )
         );
@@ -429,12 +429,6 @@ define([
         Jupyter.sidebar.expand();
         callback();
 
-    }
-
-    function executeSidebarCell(){
-        // copy text to the Notebook cell
-        // render the notebook cells
-        // copy the
     }
 
     function load_extension(){
