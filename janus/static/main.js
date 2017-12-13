@@ -76,10 +76,9 @@ define([
                 });
 
                 cell_data = cells[i].toJSON();
-
                 newCell.fromJSON(cell_data);
-
                 newCell.original = cells[i]
+                cells[i].duplicate = newCell
 
                 newCell._on_click = function(event){
                     // unselect all cells in sidebar
@@ -115,10 +114,9 @@ define([
                 });
 
                 cell_data = cells[i].toJSON();
-
                 newCell.fromJSON(cell_data);
-
                 newCell.original = cells[i]
+                cells[i].duplicate = newCell
 
                 // intercept on click events
                 // later may want to subclass CodeCells for cleaner code
@@ -269,6 +267,40 @@ define([
         var full_hide_action_name = Jupyter.actions.register(hideAction, hide_action_name, prefix);
         var full_show_action_name = Jupyter.actions.register(showAction, show_action_name, prefix);
         Jupyter.toolbar.add_buttons_group([full_hide_action_name, full_show_action_name]);
+    }
+
+
+
+    function patchCodeExecute(){
+        console.log('Patching Code Execute')
+        var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
+        CodeCell.CodeCell.prototype.execute = function(){
+            console.log('Running new Execution Code')
+
+            that = this;
+            function updateCellOnExecution(evt){
+                that.duplicate.fromJSON(that.toJSON())
+                events.off('kernel_idle.Kernel', updateCellOnExecution)
+            }
+
+            if(this.metadata.cell_hidden){
+                console.log(this.duplicate.get_text())
+                this.set_text(this.duplicate.get_text())
+                oldCodeCellExecute.apply(this, arguments);
+                //TODO may need to wait till execute finishes to update
+                events.on('kernel_idle.Kernel', updateCellOnExecution);
+            }
+            else{
+                oldCodeCellExecute.apply(this, arguments);
+            }
+
+        }
+
+    }
+
+    //TODO implement handling of text cell rendering
+    function patchTextExecute(){
+
     }
 
     function patchInsertCellAtIndex(){
@@ -433,6 +465,7 @@ define([
         renderJanusMenu()
         renderJanusButtons()
         createSidebar()
+        patchCodeExecute()
         patchInsertCellAtIndex();
         hideCellsAtStart()
     }
