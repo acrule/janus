@@ -85,11 +85,13 @@ define([
                 newCell._on_click = function(event){
                     // unselect all cells in sidebar
                     for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].selected = false
                         Jupyter.sidebar.cells[j].element.removeClass('selected')
                         Jupyter.sidebar.cells[j].element.addClass('unselected')
                     }
 
                     // change this one to being selected
+                    this.selected = true
                     this.element.removeClass('unselected')
                     this.element.addClass('selected')
 
@@ -124,11 +126,13 @@ define([
                 newCell._on_click = function(event){
                     // unselect all cells in sidebar
                     for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].selected = false
                         Jupyter.sidebar.cells[j].element.removeClass('selected')
                         Jupyter.sidebar.cells[j].element.addClass('unselected')
                     }
 
                     // change this one to being selected
+                    this.selected = true
                     this.element.removeClass('unselected')
                     this.element.addClass('selected')
 
@@ -241,7 +245,7 @@ define([
             .append($('<a>')
                 .attr('href', '#')
                 .text('Show Cell')
-                .click(showCell)
+                .click(unindentCell)
             )
         );
     }
@@ -259,7 +263,7 @@ define([
             icon: 'fa-outdent',
             help    : 'Unindent cells',
             help_index : 'zz',
-            handler : showCell
+            handler : unindentCell
         };
 
         var prefix = 'janus';
@@ -284,7 +288,9 @@ define([
 
     function hideCellsAtStart(){
         // hide all hidden cells once the notebook is opened
-        console.log('Hiding cells at Start')
+        // console.log('Hiding cells at Start')
+
+        $(".placeholder").remove()
 
         cells = Jupyter.notebook.get_cells();
         serial_hidden_cells = []
@@ -308,7 +314,7 @@ define([
                     // hide the cells and get a list of their ids
                     cell_ids = []
                     for(j = 0; j < serial_hidden_cells.length; j++){
-                        serial_hidden_cells[j].element.hide();
+                        serial_hidden_cells[j].element.addClass('hidden');
                         cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
@@ -318,7 +324,7 @@ define([
                         .click(function(){
                             showCell($(this).data('ids'))
                         })
-                        .text(`${cell_ids.length} Hidden`))
+                        .text(`${cell_ids.length}`))
 
                     serial_hidden_cells = []
                 }
@@ -371,7 +377,7 @@ define([
         // set the metadata and hide cells
         for(i=0; i < hidden_cells.length; i++){
             hidden_cells[i].metadata.cell_hidden = true;
-            hidden_cells[i].element.hide();
+            hidden_cells[i].element.addClass('hidden');
             cell_ids.push(hidden_cells[i].metadata.janus_cell_id)
         }
 
@@ -383,7 +389,7 @@ define([
             .click(function(){
                 showCell($(this).data('ids'))
             })
-            .text(`${cell_ids.length} Hidden`))
+            .text(`${cell_ids.length}`))
     }
 
     function showCell(ids){
@@ -400,7 +406,24 @@ define([
         Jupyter.sidebar.expand(cells_to_copy)
     }
 
-    function
+    function unindentCell(){
+        cells = Jupyter.notebook.get_selected_cells();
+
+        // make hidden cells visible
+        for(i=0; i<cells.length; i++){
+            cells[i].element.removeClass('hidden')
+            cells[i].metadata.cell_hidden = false
+        }
+
+        // remove any hidden cells from the sidebar
+        for(j=0; j<Jupyter.sidebar.cells.length; j++){
+            if(Jupyter.sidebar.cells[j].selected){
+                Jupyter.sidebar.cells[j].element.addClass('hidden')
+            }
+        }
+
+        hideCellsAtStart()
+    }
 
     function expandAndTypeset(cells_to_copy, callback){
         Jupyter.sidebar.expand();
