@@ -50,7 +50,6 @@ define([
         this.close_button.click(function () {
             sidebar.collapse();
             $('#cell-wrapper').hide()
-            //sidebar.erase()
         });
 
         // finally, add the Sidebar the page
@@ -150,9 +149,6 @@ define([
         }
     }
 
-    Sidebar.prototype.erase = function(){
-        $('#cell-wrapper').remove();
-    }
 
     Sidebar.prototype.expand = function(ids = []){
         $('#cell-wrapper').show()
@@ -371,7 +367,6 @@ define([
 
         // get the whole expanded selection of hidden cells_to_copy
         hidden_cells = all_cells.slice(start_id, end_id+1)
-
         cell_ids = []
 
         // set the metadata and hide cells
