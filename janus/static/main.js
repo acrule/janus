@@ -20,6 +20,9 @@ define([
     TextCell
 ){
 
+    //TODO on sidebar cell being focused, focus the hidden cell, show indication
+    // sidebar cell being selected
+    //TODO patch cell selection in regular notebook to handle selecting sidebar cells
     //TODO highlight marker when shown in sidebar
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
@@ -29,6 +32,7 @@ define([
         var sidebar = this;
         this.notebook = nb;
         this.collapsed = true;
+        this.cells = []
         Jupyter.sidebar = sidebar
 
         // create html elements for sidebar and buttons
@@ -58,6 +62,7 @@ define([
         // clear cell wrapper
         $('#cell-wrapper').remove();
         this.element.append($("<div/>").attr('id', 'cell-wrapper').addClass('cell-wrapper'));
+        Jupyter.sidebar.cells = []
 
         // create a new cell in the Sidebar with the same content
         for (i = 0; i < cells.length; i++){
@@ -75,8 +80,26 @@ define([
 
                 newCell.fromJSON(cell_data);
 
+                newCell.original = cells[i]
+
+                newCell._on_click = function(event){
+                    // unselect all cells in sidebar
+                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].element.removeClass('selected')
+                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    }
+
+                    // change this one to being selected
+                    this.element.removeClass('unselected')
+                    this.element.addClass('selected')
+
+                    // select the cell in the origional notebook
+                    this.events.trigger('select.Cell', {'cell':this.original, 'extendSelection':event.shiftKey});
+                }
+
                 // add markdown cell to the Sidebar
                 $('#cell-wrapper').append(newCell.element);
+                Jupyter.sidebar.cells.push(newCell);
             }
             //TODO make sure to handle all needed steps as shown in
             // https://github.com/minrk/nbextension-scratchpad/blob/master/main.js
@@ -94,8 +117,28 @@ define([
 
                 newCell.fromJSON(cell_data);
 
+                newCell.original = cells[i]
+
+                // intercept on click events
+                // later may want to subclass CodeCells for cleaner code
+                newCell._on_click = function(event){
+                    // unselect all cells in sidebar
+                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].element.removeClass('selected')
+                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    }
+
+                    // change this one to being selected
+                    this.element.removeClass('unselected')
+                    this.element.addClass('selected')
+
+                    // select the cell in the origional notebook
+                    this.events.trigger('select.Cell', {'cell':this.original, 'extendSelection':event.shiftKey});
+                }
+
                 // add markdown cell to the Sidebar
                 $('#cell-wrapper').append(newCell.element);
+                Jupyter.sidebar.cells.push(newCell);
 
                 newCell.render();
                 newCell.focus_editor();
@@ -206,15 +249,15 @@ define([
     function renderJanusButtons() {
         // add buttons to toolbar fo hiding and showing cells
         var hideAction = {
-            icon: 'fa-eye-slash',
-            help    : 'Hide select cells',
+            icon: 'fa-indent',
+            help    : 'Indent cells',
             help_index : 'zz',
             handler : hideCell
         };
 
         var showAction = {
-            icon: 'fa-eye',
-            help    : 'Show select cells',
+            icon: 'fa-outdent',
+            help    : 'Unindent cells',
             help_index : 'zz',
             handler : showCell
         };
@@ -356,6 +399,8 @@ define([
 
         Jupyter.sidebar.expand(cells_to_copy)
     }
+
+    function
 
     function expandAndTypeset(cells_to_copy, callback){
         Jupyter.sidebar.expand();
