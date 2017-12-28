@@ -20,15 +20,13 @@ define([
     TextCell
 ){
 
-    //TODO highlight placeholder marker when cells shown in sidebar
-    //TODO make function for rendering placeholder
     //TODO implement handling of text cell rendering
     //TODO patch cell selection in regular notebook to handle selecting sidebar
     // cells, including highlighting placeholder
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
     var Sidebar = function(nb){
-        // A sidebar panel for 'indenting' cells
+        // A sidebar panel for showing 'indented' cells
 
         var sidebar = this;
         Jupyter.sidebar = sidebar;
@@ -37,6 +35,7 @@ define([
         sidebar.collapsed = true;
         sidebar.cell_ids = [];      // may be redundant
         sidebar.cells = [];
+        sidebar.placeholder = null
 
         // create html elements for sidebar
         sidebar.element = $('<div id=sidebar-container>');
@@ -134,14 +133,27 @@ define([
         // expand sidebar if collapsed
         if(this.collapsed){
             this.expand(cells)
+            $('.placeholder').removeClass('showing')
+            $(this.placeholder).addClass('showing')
         }
         // update sidebar with new cells if needed (using hacky array comparison)
         else if(JSON.stringify(this.cell_ids) != JSON.stringify(cell_ids)){
-            this.renderWithCells(cells)
+            var placeholder_height = $(this.placeholder).position().top
+
+            this.element.animate({
+                top: placeholder_height - 15,
+            }, 400, function(){
+                if(cells.length > 0){
+                    Jupyter.sidebar.renderWithCells(cells)
+                }
+            })
+            $('.placeholder').removeClass('showing')
+            $(this.placeholder).addClass('showing')
         }
         // collapse sidebar if expanded and rendering same cells
         else{
             this.collapse()
+            $('.placeholder').removeClass('showing')
         }
     }
 
@@ -154,6 +166,7 @@ define([
             var site_width = $("#site").width();
             var notebook_width = $("#notebook-container").width();
             var sidebar_width = (site_width - 45) / 2
+            var placeholder_height = $(this.placeholder).position().top
 
             $("#notebook-container").animate({
                 marginLeft: '15px',
@@ -163,6 +176,7 @@ define([
             this.element.animate({
                 right: '15px',
                 width: sidebar_width,
+                top: placeholder_height - 15,
                 padding: '0px'
             }, 400, function(){
                 if(cells.length > 0){
@@ -413,6 +427,7 @@ define([
             .addClass('placeholder')
             .data('ids', cell_ids.slice())
             .click(function(){
+                Jupyter.sidebar.placeholder = this;
                 showSidebarWithCells($(this).data('ids'))
             })
             .text(`${cell_ids.length}`))
