@@ -32,6 +32,7 @@ define([
         var sidebar = this;
         this.notebook = nb;
         this.collapsed = true;
+        this.cell_ids = []
         this.cells = []
         Jupyter.sidebar = sidebar
 
@@ -62,6 +63,12 @@ define([
         $('#cell-wrapper').remove();
         this.element.append($("<div/>").attr('id', 'cell-wrapper').addClass('cell-wrapper'));
         Jupyter.sidebar.cells = []
+
+        cell_ids = []
+        for(i=0; i<cells.length; i++){
+            cell_ids.push(cells[i].metadata.janus_cell_id)
+        }
+        this.cell_ids = cell_ids
 
         // create a new cell in the Sidebar with the same content
         for (i = 0; i < cells.length; i++){
@@ -147,6 +154,23 @@ define([
         }
     }
 
+    Sidebar.prototype.toggle = function(ids = []){
+        cell_ids = []
+        for(i=0; i<ids.length; i++){
+            cell_ids.push(ids[i].metadata.janus_cell_id)
+        }
+
+        if(this.collapsed){
+            this.expand(ids)
+        }
+        // hacky array comparison
+        else if(JSON.stringify(this.cell_ids) != JSON.stringify(cell_ids)){
+            this.typeset(ids)
+        }
+        else{
+            this.collapse()
+        }
+    }
 
     Sidebar.prototype.expand = function(ids = []){
         $('#cell-wrapper').show()
@@ -420,7 +444,6 @@ define([
     }
 
     function showCell(ids){
-        console.log(ids)
         // get the cells we should show
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
@@ -430,7 +453,7 @@ define([
             }
         }
 
-        Jupyter.sidebar.expand(cells_to_copy)
+        Jupyter.sidebar.toggle(cells_to_copy)
     }
 
     function unindentCell(){
