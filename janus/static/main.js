@@ -8,6 +8,7 @@ define([
     'base/js/namespace',
     'base/js/events',
     'base/js/utils',
+    'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell'
 ], function(
@@ -16,12 +17,12 @@ define([
     Jupyter,
     events,
     utils,
+    Cell,
     CodeCell,
     TextCell
 ){
 
-    //TODO patch cell selection in regular notebook to handle selecting sidebar
-    // cells, including highlighting placeholder
+    //TODO enable sidebar cells to be unselected and lose focus
     //TODO render more informative marker of hidden cells (e.g., minimap)
     //TODO update code and text cells when input is edited but not rendered/executed
 
@@ -287,6 +288,54 @@ define([
         Jupyter.toolbar.add_buttons_group([full_indent_action_name, full_unindent_action_name]);
     }
 
+    function patchCellSelect(){
+        // patch cell selection to handle highlighting
+
+        console.log('[Janus] Patching Cell Selection')
+        var oldCellSelect = Cell.Cell.prototype.select;
+        Cell.Cell.prototype.select = function(){
+            // if selecting a hidden cell in the main notebook
+            if(this.metadata.cell_hidden ){
+                // highlight the placeholder and cell in sidebar
+                $(this.element).nextAll('.placeholder').first().addClass('showing')
+                if(!Jupyter.sidebar.collapsed){
+                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].selected = false
+                        Jupyter.sidebar.cells[j].element.removeClass('selected')
+                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    }
+                    if(this.duplicate != undefined){
+                        this.duplicate.selected = true
+                        this.duplicate.element.removeClass('unselected')
+                        this.duplicate.element.addClass('selected')
+                    }
+                }
+
+                oldCellSelect.apply(this, arguments);
+            }
+            // if selecting a cell that is not hidden
+            else{
+                // make sure all placeholders are not highlighted (if sidebar is collapsed)
+                if(Jupyter.sidebar.collapsed){
+                    $('.placeholder').removeClass('showing')
+                }
+                // make sure all cells in the sidebar are unselected if the sidebar is visible
+                else{
+                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
+                        Jupyter.sidebar.cells[j].selected = false
+                        Jupyter.sidebar.cells[j].element.removeClass('selected')
+                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    }
+                    $('.placeholder').removeClass('showing')
+                    $(Jupyter.sidebar.placeholder).addClass('showing')
+                }
+
+                oldCellSelect.apply(this, arguments);
+            }
+
+        }
+    }
+
     function patchCodeExecute(){
         // patch code cell execution to account for edits made in sidebar
 
@@ -432,7 +481,7 @@ define([
             cell_ids.push(hidden_cells[i].metadata.janus_cell_id)
         }
 
-        // put placehoder div immediatley after it
+        // put placeholder div immediatley after it
         addPlaceholderAfterElementWithIds(hidden_cells[hidden_cells.length - 1].element, cell_ids)
     }
 
@@ -490,14 +539,15 @@ define([
     function load_extension(){
         /* Called as extension loads and notebook opens */
         console.log('[Janus] is working');
-        load_css()
-        renderJanusMenu()
-        renderJanusButtons()
-        createSidebar()
-        patchCodeExecute()
+        load_css();
+        renderJanusMenu();
+        renderJanusButtons();
+        createSidebar();
+        patchCellSelect();
+        patchCodeExecute();
         patchInsertCellAtIndex();
         patchTextRender();
-        hideIndentedCells()
+        hideIndentedCells();
     }
 
     return {
