@@ -39,15 +39,9 @@ define([
         // create html elements for sidebar and buttons
         this.element = $('<div id=sidebar-container>');
         this.close_button = $("<i>").addClass("fa fa-caret-square-o-right sidebar-btn sidebar-close");
-        this.open_button = $("<i>").addClass("fa fa-caret-square-o-left sidebar-btn sidebar-open");
         this.element.append(this.close_button);
-        this.element.append(this.open_button);
 
-        // hook up button events
-        this.open_button.click(function () {
-            sidebar.expand();
-            //sidebar.typeset(this.notebook, cells = []);
-        });
+        // // hook up button events
         this.close_button.click(function () {
             sidebar.collapse();
             $('#cell-wrapper').hide()
@@ -189,10 +183,10 @@ define([
 
             this.element.animate({
                 right: '15px',
-                width: sidebar_width
+                width: sidebar_width,
+                padding: '0px'
             }, 400, function(){if(ids.length > 0){Jupyter.sidebar.typeset(ids)}})
 
-            this.open_button.hide();
             this.close_button.show();
         }
         if(ids.length>0){
@@ -221,11 +215,11 @@ define([
 
         this.element.animate({
             right: '15px',
-            width: 0
+            width: 0,
+            padding: '0px'
         }, 250);
 
         this.close_button.hide();
-        this.open_button.show();
     };
 
     function createSidebar() {
