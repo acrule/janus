@@ -27,29 +27,26 @@ define([
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
     var Sidebar = function(nb){
-        // A sidebar panel for 'hiding' implementation details
+        // A sidebar panel for 'indenting' cells
 
         var sidebar = this;
+        Jupyter.sidebar = sidebar;
+
         this.notebook = nb;
         this.collapsed = true;
-        this.cell_ids = []
-        this.cells = []
-        Jupyter.sidebar = sidebar
+        this.cell_ids = [];      // may be redundant
+        this.cells = [];
 
-        // create html elements for sidebar and buttons
+        // create html elements for sidebar
         this.element = $('<div id=sidebar-container>');
-        this.close_button = $("<i>").addClass("fa fa-caret-square-o-right sidebar-btn sidebar-close");
-        this.element.append(this.close_button);
-
-        // // hook up button events
-        this.close_button.click(function () {
-            sidebar.collapse();
-            $('#cell-wrapper').hide()
+        this.close_button = $("<i>").addClass("fa fa-caret-square-o-right sidebar-btn");
+        // hook up button click event
+        this.close_button.click(function(){
+            this.collapse();
         });
-
-        // finally, add the Sidebar the page
+        // add the Sidebar the page
+        this.element.append(this.close_button);
         $("#notebook").append(this.element);
-
     };
 
     Sidebar.prototype.typeset = function(cells){
@@ -220,6 +217,7 @@ define([
         }, 250);
 
         this.close_button.hide();
+        $('#cell-wrapper').hide()
     };
 
     function createSidebar() {

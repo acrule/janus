@@ -31,6 +31,7 @@
 
 .sidebar-btn {
   position: absolute;
+  display: none;
   top: 4px;
   right: 4px;
   opacity: 0.2;
@@ -42,21 +43,6 @@
   opacity: 1;
 }
 
-.sidebar-close {
-  display: none;
-}
-
-.sidebar-open {
-}
-
 .cell-wrapper{
     height: auto;
-}
-
-.sidebar-right{
-
-}
-
-.sidebar-left{
-
 }
