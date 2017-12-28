@@ -20,10 +20,10 @@ define([
     TextCell
 ){
 
-    //TODO implement handling of text cell rendering
     //TODO patch cell selection in regular notebook to handle selecting sidebar
     // cells, including highlighting placeholder
     //TODO render more informative marker of hidden cells (e.g., minimap)
+    //TODO update code and text cells when input is edited but not rendered/executed
 
     var Sidebar = function(nb){
         // A sidebar panel for showing 'indented' cells
@@ -293,8 +293,6 @@ define([
         console.log('[Janus] Patching Code Cell Execute')
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function(){
-            console.log('Running new Execution Code')
-
             that = this;
 
             function updateCellOnExecution(evt){
@@ -315,8 +313,24 @@ define([
 
     }
 
-    function patchTextExecute(){
+    function patchTextRender(){
+        // patch text cell redering to account for edits made in sidebar
 
+        console.log('[Janus] Patching Text Cell Render')
+        var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
+        TextCell.MarkdownCell.prototype.render = function(){
+            console.log('executing new code')
+            that = this;
+
+            if(this.metadata.cell_hidden && this.duplicate != undefined){
+                this.set_text(this.duplicate.get_text())
+                oldTextCellRender.apply(this, arguments)
+                this.duplicate.fromJSON(that.toJSON())
+            }
+            else{
+                oldTextCellRender.apply(this, arguments)
+            }
+        }
     }
 
     function patchInsertCellAtIndex(){
@@ -482,6 +496,7 @@ define([
         createSidebar()
         patchCodeExecute()
         patchInsertCellAtIndex();
+        patchTextRender();
         hideIndentedCells()
     }
 
