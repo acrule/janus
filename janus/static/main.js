@@ -32,21 +32,21 @@ define([
         var sidebar = this;
         Jupyter.sidebar = sidebar;
 
-        this.notebook = nb;
-        this.collapsed = true;
-        this.cell_ids = [];      // may be redundant
-        this.cells = [];
+        sidebar.notebook = nb;
+        sidebar.collapsed = true;
+        sidebar.cell_ids = [];      // may be redundant
+        sidebar.cells = [];
 
         // create html elements for sidebar
-        this.element = $('<div id=sidebar-container>');
-        this.close_button = $("<i>").addClass("fa fa-caret-square-o-right sidebar-btn");
+        sidebar.element = $('<div id=sidebar-container>');
+        sidebar.close_button = $("<i>").addClass("fa fa-caret-right sidebar-btn");
         // hook up button click event
-        this.close_button.click(function(){
+        sidebar.close_button.click(function(){
             sidebar.collapse();
         });
         // add the Sidebar the page
-        this.element.append(this.close_button);
-        $("#notebook").append(this.element);
+        sidebar.element.append(sidebar.close_button);
+        $("#notebook").append(sidebar.element);
     };
 
     Sidebar.prototype.typeset = function(cells){
