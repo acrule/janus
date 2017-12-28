@@ -10,6 +10,12 @@
     -webkit-box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
 }
 
+#sidebar-container .cell-wrapper {
+  overflow: auto;
+  height: auto;
+  padding: 24px 15px 15px
+}
+
 .placeholder{
     color: #666;
     float: right;
@@ -24,11 +30,6 @@
     border-radius: 15px;
 }
 
-#sidebar .cell-wrapper {
-  height: 100%;
-  overflow: auto;
-}
-
 .sidebar-btn {
   position: absolute;
   display: none;
@@ -41,8 +42,4 @@
 
 .sidebar-btn:hover {
   opacity: 1;
-}
-
-.cell-wrapper{
-    height: auto;
 }

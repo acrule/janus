@@ -42,7 +42,7 @@ define([
         this.close_button = $("<i>").addClass("fa fa-caret-square-o-right sidebar-btn");
         // hook up button click event
         this.close_button.click(function(){
-            this.collapse();
+            sidebar.collapse();
         });
         // add the Sidebar the page
         this.element.append(this.close_button);
