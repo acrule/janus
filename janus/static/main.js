@@ -22,7 +22,7 @@ define([
     TextCell
 ){
 
-    //TODO enable sidebar cells to be unselected and lose focus
+    //TODO enable sidebar cells to be unselected and lose focus (go to command mode)
     //TODO render more informative marker of hidden cells (e.g., minimap)
     //TODO update code and text cells when input is edited but not rendered/executed
 
