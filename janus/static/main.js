@@ -22,7 +22,8 @@ define([
     TextCell
 ){
 
-    //TODO enable sidebar cells to be unselected and lose focus (go to command mode)
+    //TODO if ESC key pressed when sidebar cell in edit mode, put notebook into
+    // command mode
     //TODO update code and text cells when input is edited but not rendered/executed
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
@@ -40,10 +41,12 @@ define([
         // create html elements for sidebar
         sidebar.element = $('<div id=sidebar-container>');
         sidebar.close_button = $("<i>").addClass("fa fa-caret-right sidebar-btn");
+
         // hook up button click event
         sidebar.close_button.click(function(){
             sidebar.collapse();
         });
+
         // add the Sidebar the page
         sidebar.element.append(sidebar.close_button);
         $("#notebook").append(sidebar.element);
@@ -52,16 +55,15 @@ define([
     Sidebar.prototype.renderWithCells = function(cells){
         // render select cells in the sidebar
 
-        // update sidebar cell metadata
+        // create new cell wrapper for containing new cells
         this.cells = []
-
-        // create new cell wrapper for containing cells
         $('#cell-wrapper').remove();
         this.element.append($("<div/>").attr('id', 'cell-wrapper').addClass('cell-wrapper'));
 
         // for each cell, create a new cell in the Sidebar with the same content
         for (i = 0; i < cells.length; i++){
             newCell = null
+            // markdown cells
             if(cells[i].cell_type == 'markdown'){
                 // create new markdown cells
                 newCell = new TextCell.MarkdownCell({
@@ -72,6 +74,7 @@ define([
                     tooltip: this.notebook.tooltip,
                 });
             }
+            // code cells
             else if(cells[i].cell_type == 'code'){
                 // create new code cells
                 newCell = new CodeCell.CodeCell(this.notebook.kernel, {
@@ -83,13 +86,13 @@ define([
                 });
             }
 
-            // populate the sidebar cell's content based on the original cell
+            // populate the new cell's content based on the original cell
             cell_data = cells[i].toJSON();
             newCell.fromJSON(cell_data);
             newCell.original = cells[i]
             cells[i].duplicate = newCell
 
-            // add cell clone to the Sidebar
+            // add cell clone to the Sidebar and list of sidebar cells
             $('#cell-wrapper').append(newCell.element);
             Jupyter.sidebar.cells.push(newCell);
 
