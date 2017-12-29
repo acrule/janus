@@ -23,8 +23,8 @@ define([
 ){
 
     //TODO enable sidebar cells to be unselected and lose focus (go to command mode)
-    //TODO render more informative marker of hidden cells (e.g., minimap)
     //TODO update code and text cells when input is edited but not rendered/executed
+    //TODO render more informative marker of hidden cells (e.g., minimap)
 
     var Sidebar = function(nb){
         // A sidebar panel for showing 'indented' cells
@@ -34,7 +34,6 @@ define([
 
         sidebar.notebook = nb;
         sidebar.collapsed = true;
-        sidebar.cell_ids = [];      // may be redundant
         sidebar.cells = [];
         sidebar.placeholder = null
 
@@ -55,10 +54,6 @@ define([
 
         // update sidebar cell metadata
         this.cells = []
-        this.cell_ids = []
-        for(i=0; i<cells.length; i++){
-            this.cell_ids.push(cells[i].metadata.janus_cell_id)
-        }
 
         // create new cell wrapper for containing cells
         $('#cell-wrapper').remove();
@@ -125,10 +120,14 @@ define([
     Sidebar.prototype.toggle = function(cells = []){
         // expand or collapse sidebar
 
-        // get cell ids
-        cell_ids = []
+        // get ids for cells to render, and cells already in sidebar
+        new_cell_ids = []
+        old_cell_ids = []
         for(i=0; i<cells.length; i++){
-            cell_ids.push(cells[i].metadata.janus_cell_id)
+            new_cell_ids.push(cells[i].metadata.janus_cell_id)
+        }
+        for(j=0; j<this.cells.length; j++){
+            old_cell_ids.push(this.cells[j].metadata.janus_cell_id)
         }
 
         // expand sidebar if collapsed
@@ -138,7 +137,7 @@ define([
             $(this.placeholder).addClass('showing')
         }
         // update sidebar with new cells if needed (using hacky array comparison)
-        else if(JSON.stringify(this.cell_ids) != JSON.stringify(cell_ids)){
+        else if(JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)){
             var placeholder_height = $(this.placeholder).position().top
 
             this.element.animate({
@@ -528,12 +527,6 @@ define([
         }
 
         hideIndentedCells()
-    }
-
-    function expandAndTypeset(cells_to_copy, callback){
-        Jupyter.sidebar.expand();
-        callback();
-
     }
 
     function load_extension(){
