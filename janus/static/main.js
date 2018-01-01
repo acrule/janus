@@ -621,8 +621,17 @@ define([
         patchCodeExecute();
         patchInsertCellAtIndex();
         patchTextRender();
-        hideIndentedCells();
-        updateInputVisibility();
+
+        if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
+            // notebook already loaded. Update directly
+            hideIndentedCells();
+            updateInputVisibility();
+        }
+        else{
+            events.on("notebook_loaded.Notebook", hideIndentedCells);
+            events.on("notebook_loaded.Notebook", updateInputVisibility);
+        }
+
     }
 
     return {
