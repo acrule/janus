@@ -119,6 +119,14 @@ define([
                 this.events.trigger('select.Cell', {'cell':this.original, 'extendSelection':event.shiftKey});
             }
         }
+
+        if(cells.length > 0){
+            cells[0].duplicate.element.focus();
+            if(cells[0].cell_type == 'code'){
+                cells[0].duplicate.focus_editor();
+            }
+        }
+
     }
 
     Sidebar.prototype.toggle = function(cells = []){
@@ -164,31 +172,33 @@ define([
     Sidebar.prototype.expand = function(cells = []){
         $('#cell-wrapper').show()
         if(this.collapsed){
+            that = this
             this.collapsed = false;
 
             var site_height = $("#site").height();
             var site_width = $("#site").width();
             var notebook_width = $("#notebook-container").width();
             var sidebar_width = (site_width - 45) / 2
-            var placeholder_height = $(this.placeholder).position().top
 
             $("#notebook-container").animate({
                 marginLeft: '15px',
                 width: sidebar_width
-            }, 400)
-
-            this.element.animate({
-                right: '15px',
-                width: sidebar_width,
-                top: placeholder_height - 15,
-                padding: '0px'
             }, 400, function(){
-                if(cells.length > 0){
-                    Jupyter.sidebar.renderWithCells(cells)
-                }
-            })
+                var placeholder_height = $(Jupyter.sidebar.placeholder).position().top
 
-            this.close_button.show();
+                Jupyter.sidebar.element.animate({
+                    right: '15px',
+                    width: sidebar_width,
+                    top: placeholder_height - 15,
+                    padding: '0px'
+                }, 400, function(){
+                    if(cells.length > 0){
+                        Jupyter.sidebar.renderWithCells(cells)
+                    }
+                })
+
+                Jupyter.sidebar.close_button.show();
+            })
         }
     };
 
@@ -407,7 +417,6 @@ define([
         console.log('[Janus] Patching Text Cell Render')
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
-            console.log('executing new code')
             that = this;
 
             if(this.metadata.cell_hidden && this.duplicate != undefined){
