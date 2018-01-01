@@ -25,6 +25,7 @@ define([
     //TODO if ESC key pressed when sidebar cell in edit mode, put notebook into
     // command mode
     //TODO update code and text cells when input is edited but not rendered/executed
+    //TODO enable adding, moving cells in and arround hidden cells
     //TODO render more informative marker of hidden cells (e.g., minimap)
 
     var Sidebar = function(nb){
@@ -243,6 +244,19 @@ define([
         );
 
         editMenu.append($('<li>')
+            .attr('id', 'toggle_cell_input')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Toggle Cell Input')
+                .click(toggleInput)
+            )
+        );
+
+        editMenu.append($('<li>')
+            .addClass('divider')
+        );
+
+        editMenu.append($('<li>')
             .attr('id', 'indent_cell')
             .append($('<a>')
                 .attr('href', '#')
@@ -263,6 +277,13 @@ define([
 
     function renderJanusButtons() {
         // add buttons to toolbar fo hiding and showing cells
+        var toggleInputAction = {
+            icon: 'fa-code',
+            help    : 'Toggle Input',
+            help_index : 'zz',
+            handler : toggleInput
+        };
+
         var indentAction = {
             icon: 'fa-indent',
             help    : 'Indent cells',
@@ -278,8 +299,13 @@ define([
         };
 
         var prefix = 'janus';
+        var toggle_input_name = 'toggle-cell-input'
         var indent_action_name = 'indent-cell';
         var unindent_action_name = 'unindent-cell';
+
+        var full_toggle_action_name = Jupyter.actions.register(toggleInputAction,
+                                                            toggle_input_name,
+                                                            prefix);
 
         var full_indent_action_name = Jupyter.actions.register(indentAction,
                                                             indent_action_name,
@@ -287,6 +313,7 @@ define([
         var full_unindent_action_name = Jupyter.actions.register(unindentAction,
                                                             unindent_action_name,
                                                             prefix);
+        Jupyter.toolbar.add_buttons_group([full_toggle_action_name]).find('.btn').attr('id', 'btn-hide-input');;
         Jupyter.toolbar.add_buttons_group([full_indent_action_name, full_unindent_action_name]);
     }
 
@@ -335,6 +362,16 @@ define([
                 oldCellSelect.apply(this, arguments);
             }
 
+            if(this.metadata.hide_input){
+                $('#btn-hide-input').css(
+                    'background-color', '#eee'
+                )
+            }
+            else{
+                $('#btn-hide-input').css(
+                    'background-color', '#fff'
+                )
+            }
         }
     }
 
@@ -392,6 +429,7 @@ define([
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
             c.metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            c.metadata.hide_input = false;
             return c;
         }
     }
@@ -435,6 +473,37 @@ define([
             }
         }
     }
+
+    function toggleInput(){
+        var cell = Jupyter.notebook.get_selected_cell();
+        // Toggle visibility of the input div
+        cell.element.find("div.input").toggle('slow');
+        cell.metadata.hide_input =! cell.metadata.hide_input;
+
+        if(cell.metadata.hide_input){
+            $('#btn-hide-input').css(
+                'background-color', '#eee'
+            )
+        }
+        else{
+            $('#btn-hide-input').css(
+                'background-color', '#fff'
+            )
+        }
+    }
+
+    function updateInputVisibility() {
+        Jupyter.notebook.get_cells().forEach(function(cell) {
+            // ensure each cell has this metadata
+            if(cell.metadata.hide_input == undefined){
+                cell.metadata.hide_input = false;
+            }
+            // hide cells if needed
+            if (cell.metadata.hide_input) {
+                cell.element.find("div.input").hide();
+            }
+        })
+    };
 
     function indentCell(){
         cells = Jupyter.notebook.get_selected_cells();
@@ -544,6 +613,7 @@ define([
         patchInsertCellAtIndex();
         patchTextRender();
         hideIndentedCells();
+        updateInputVisibility();
     }
 
     return {
