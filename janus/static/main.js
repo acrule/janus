@@ -22,13 +22,9 @@ define([
     TextCell
 ){
 
-    //TODO enusre cells have unique janus id after copy, split, merge commands
     //TODO enable cell-level histories
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
-    //TODO if unindenting last cell, collapse sidebar
-    //TODO if unindenting middle sidebar cell, re-render sidebar
-    //TODO update original cell input when sidebar input is edited but not run
     //TODO render more informative marker of hidden cells (e.g., minimap)
     //TODO separate code into multiple files for future maintenance
 
@@ -122,8 +118,16 @@ define([
                 // select the appropriate cell in the original notebook
                 this.events.trigger('select.Cell', {'cell':this.original, 'extendSelection':event.shiftKey});
             }
+
+            // propigate edits back to main cell
+            newCell.code_mirror.on('change', function(){
+                //TODO find better way to identify cell code mirror is associated with
+                selected_cell = Jupyter.notebook.get_selected_cell()
+                selected_cell.set_text(selected_cell.duplicate.get_text())
+            });
         }
 
+        // focus the first cell in the sidebar
         if(cells.length > 0){
             cells[0].duplicate.element.focus();
             if(cells[0].cell_type == 'code'){
@@ -780,6 +784,8 @@ define([
         for(i=0; i<cells.length; i++){
             cells[i].element.removeClass('hidden')
             cells[i].metadata.cell_hidden = false
+            cells[i].set_text(cells[i].duplicate.get_text())
+            cells[i].render()
         }
 
         // remove any hidden cells from the sidebar
