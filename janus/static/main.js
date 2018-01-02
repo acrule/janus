@@ -22,11 +22,15 @@ define([
     TextCell
 ){
 
-    //TODO if ESC key pressed when sidebar cell in edit mode, put notebook into
-    // command mode
-    //TODO update code and text cells when input is edited but not rendered/executed
-    //TODO enable adding, moving cells in and arround hidden cells
+    //TODO enable adding, moving cells in and around hidden cells
+    //TODO enable cell-level histories
+    //TODO enable meta-data only notebook history tracking (stretch)
+    //TODO put notebook into command mode if ESC key pressed in sidebar cell
+    //TODO if unindenting last cell, collapse sidebar
+    //TODO if unindenting middle sidebar cell, re-render sidebar
+    //TODO update original cell input when sidebar input is edited but not run
     //TODO render more informative marker of hidden cells (e.g., minimap)
+    //TODO separate code into multiple files for future maintenance
 
     var Sidebar = function(nb){
         // A sidebar panel for showing 'indented' cells
@@ -464,6 +468,17 @@ define([
             // keep track of groups of hidden cells
             if(cells[i].metadata.cell_hidden){
                 serial_hidden_cells.push(cells[i])
+                if(i == cells.length - 1){
+                    cell_ids = []
+                    for(j = 0; j < serial_hidden_cells.length; j++){
+                        serial_hidden_cells[j].element.addClass('hidden');
+                        cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
+                    }
+                    // create placeholder that will render this group of hidden cells
+                    addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+
+                    serial_hidden_cells = []
+                }
             }
             else{
                 // if this cell is visible but preceeded by a hidden cell
@@ -627,10 +642,9 @@ define([
             hideIndentedCells();
             updateInputVisibility();
         }
-        else{
-            events.on("notebook_loaded.Notebook", hideIndentedCells);
-            events.on("notebook_loaded.Notebook", updateInputVisibility);
-        }
+
+        events.on("notebook_loaded.Notebook", hideIndentedCells);
+        events.on("notebook_loaded.Notebook", updateInputVisibility);
 
     }
 
