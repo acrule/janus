@@ -512,9 +512,12 @@ define([
         console.log('[Janus] Patching Paste Cell Above')
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function(){
+            //ensure newly created cells have a unique janus id
+            for(i=0; i<Jupyter.notebook.clipboard.length; i++){
+                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
             oldPasteCellAbove.apply(this, arguments);
             hideIndentedCells();
-            //TODO ensure newly created cells have a unique janus id
             Jupyter.sidebar.update();
         }
     }
@@ -523,9 +526,12 @@ define([
         console.log('[Janus] Patching Paste Cell Below')
         var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
         Jupyter.notebook.__proto__.paste_cell_below = function(){
+            //ensure newly created cells have a unique janus id
+            for(i=0; i<Jupyter.notebook.clipboard.length; i++){
+                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
             oldPasteCellBelow.apply(this, arguments);
             hideIndentedCells();
-            //TODO ensure newly created cells have a unique janus id
             Jupyter.sidebar.update();
         }
     }
@@ -534,9 +540,12 @@ define([
         console.log('[Janus] Patching Paste Cell Replace')
         var oldPasteCellReplace = Jupyter.notebook.__proto__.paste_cell_replace;
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
+            //ensure newly created cells have a unique janus id
+            for(i=0; i<Jupyter.notebook.clipboard.length; i++){
+                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
             oldPasteCellReplace.apply(this, arguments);
             hideIndentedCells();
-            //TODO ensure newly created cells have a unique janus id
             Jupyter.sidebar.update();
         }
     }
