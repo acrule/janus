@@ -22,7 +22,8 @@ define([
     TextCell
 ){
 
-    //TODO enable adding, moving cells in and around hidden cells
+    //TODO get sidebar to update on move, copy, split, merge commands
+    //TODO enusre cells have unique janus id after move, copy, split, merge commands (look at nbcomet)
     //TODO enable cell-level histories
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
@@ -434,6 +435,121 @@ define([
         }
     }
 
+    function patchMoveSelectionUp(){
+        console.log('[Janus] Patching Move Selection Up')
+        var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
+        Jupyter.notebook.__proto__.move_selection_up = function(){
+            oldMoveSelectionUp.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+        }
+        // We may want more complex movement behavior such as...
+        // if this hidden and one above hidden
+            // move up and then re-render
+        // if this visible and one above visible
+            // do what you normally would
+        // if this hidden and one above visible
+            // do nothing
+        // if this visible and one above hidden
+            // get whole collection of contiguous hidden cells
+            // move whole collection down
+    }
+
+    function patchMoveSelectionDown(){
+        console.log('[Janus] Patching Move Selection Down')
+        var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
+        Jupyter.notebook.__proto__.move_selection_down = function(){
+            oldMoveSelectionDown.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+        }
+    }
+
+    function patchPasteCellAbove(){
+        console.log('[Janus] Patching Paste Cell Above')
+        var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
+        Jupyter.notebook.__proto__.paste_cell_above = function(){
+            oldPasteCellAbove.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+            //TODO ensure newly created cells have a unique janus id
+        }
+    }
+
+    function patchPasteCellBelow(){
+        console.log('[Janus] Patching Paste Cell Below')
+        var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
+        Jupyter.notebook.__proto__.paste_cell_below = function(){
+            oldPasteCellBelow.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+            //TODO ensure newly created cells have a unique janus id
+        }
+    }
+
+    function patchPasteCellReplace(){
+        console.log('[Janus] Patching Paste Cell Replace')
+        var oldPasteCellReplace = Jupyter.notebook.__proto__.paste_cell_replace;
+        Jupyter.notebook.__proto__.paste_cell_replace = function(){
+            oldPasteCellReplace.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+            //TODO ensure newly created cells have a unique janus id
+        }
+    }
+
+    function patchMergeCellAbove(){
+        console.log('[Janus] Patching Merge Cell Above')
+        var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
+        Jupyter.notebook.__proto__.merge_cell_above = function(){
+            oldMergeCellAbove.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+            //TODO ensure newly created cells have a unique janus id
+        }
+    }
+
+    function patchMergeCellBelow(){
+        console.log('[Janus] Patching Paste Cell Replace')
+        var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_above;
+        Jupyter.notebook.__proto__.merge_cell_above = function(){
+            oldMergeCellBelow.apply(this, arguments);
+            hideIndentedCells();
+            //TODO re-render the sidebar if needed
+            //TODO ensure newly created cells have a unique janus id
+        }
+    }
+
+    function patchSplitCell(){
+        console.log('[Janus] Patching Split Cell')
+        var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
+        Jupyter.notebook.__proto__.split_cell = function(){
+            var cell = Jupyter.notebook.get_selected_cell();
+            if(cell.metadata.cell_hidden){
+                if (cell.duplicate.is_splittable()) {
+                    var texta = cell.duplicate.get_pre_cursor();
+                    var textb = cell.duplicate.get_post_cursor();
+                    // current cell becomes the second one
+                    // so we don't need to worry about selection
+                    cell.set_text(textb);
+                    // create new cell with same type
+                    var new_cell = Jupyter.notebook.insert_cell_above(cell.cell_type);
+                    // Unrender the new cell so we can call set_text.
+                    new_cell.unrender();
+                    new_cell.set_text(texta);
+                    // duplicate metadata
+                    new_cell.metadata = JSON.parse(JSON.stringify(cell.metadata));
+                    new_cell.metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                }
+                hideIndentedCells();
+            }
+            else{
+                oldSplitCell.apply(this, arguments);
+            }
+            //TODO re-render the sidebar if needed
+        }
+    }
+
     function patchInsertCellAtIndex(){
         // Make sure newly created cells have a unique Janus id
 
@@ -636,6 +752,14 @@ define([
         patchCodeExecute();
         patchInsertCellAtIndex();
         patchTextRender();
+        patchMoveSelectionUp();
+        patchMoveSelectionDown();
+        patchPasteCellAbove();
+        patchPasteCellBelow();
+        patchPasteCellReplace();
+        patchMergeCellAbove();
+        patchMergeCellBelow();
+        patchSplitCell();
 
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
