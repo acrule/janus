@@ -22,8 +22,7 @@ define([
     TextCell
 ){
 
-    //TODO get sidebar to update on move, copy, split, merge commands
-    //TODO enusre cells have unique janus id after move, copy, split, merge commands (look at nbcomet)
+    //TODO enusre cells have unique janus id after copy, split, merge commands
     //TODO enable cell-level histories
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
@@ -236,6 +235,50 @@ define([
         $('#cell-wrapper').hide()
     };
 
+    Sidebar.prototype.update = function(){
+        if(!this.collapsed){
+            // get list of previous cells in sidebar and currently hidden cells
+            nb_cells = Jupyter.notebook.get_cells()
+            old_cell_ids = []
+            hidden_cell_ids = []
+
+            for(j=0; j<this.cells.length; j++){
+                old_cell_ids.push(this.cells[j].metadata.janus_cell_id)
+            }
+            for(i=0; i<nb_cells.length; i++){
+                if(nb_cells[i].metadata.cell_hidden){
+                    hidden_cell_ids.push(nb_cells[i].metadata.janus_cell_id)
+                }
+            }
+
+            // find the first hidden cell that was in our previous sidebar
+            var first_hidden = null
+            for(k=0; k<hidden_cell_ids.length; k++){
+                if(old_cell_ids.indexOf(hidden_cell_ids[k] >= 0)){
+                    first_hidden = hidden_cell_ids[k]
+                    break
+                }
+            }
+
+            // if none found, then collapse the sidebar
+            if(first_hidden == null){
+                this.collapse()
+            }
+            // else update the sidebar
+            else{
+                // get placeholder with
+                placeholders = $('.placeholder').toArray()
+                for(i=0; i<placeholders.length; i++){
+                    if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0){
+                        Jupyter.sidebar.placeholder = placeholders[i];
+                        showSidebarWithCells($(placeholders[i]).data('ids'))
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     function createSidebar() {
         // create a new sidebar element
         return new Sidebar(Jupyter.notebook);
@@ -441,7 +484,7 @@ define([
         Jupyter.notebook.__proto__.move_selection_up = function(){
             oldMoveSelectionUp.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
+            Jupyter.sidebar.update();
         }
         // We may want more complex movement behavior such as...
         // if this hidden and one above hidden
@@ -461,7 +504,7 @@ define([
         Jupyter.notebook.__proto__.move_selection_down = function(){
             oldMoveSelectionDown.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
+            Jupyter.sidebar.update();
         }
     }
 
@@ -471,8 +514,8 @@ define([
         Jupyter.notebook.__proto__.paste_cell_above = function(){
             oldPasteCellAbove.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
             //TODO ensure newly created cells have a unique janus id
+            Jupyter.sidebar.update();
         }
     }
 
@@ -482,8 +525,8 @@ define([
         Jupyter.notebook.__proto__.paste_cell_below = function(){
             oldPasteCellBelow.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
             //TODO ensure newly created cells have a unique janus id
+            Jupyter.sidebar.update();
         }
     }
 
@@ -493,8 +536,8 @@ define([
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
             oldPasteCellReplace.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
             //TODO ensure newly created cells have a unique janus id
+            Jupyter.sidebar.update();
         }
     }
 
@@ -504,8 +547,7 @@ define([
         Jupyter.notebook.__proto__.merge_cell_above = function(){
             oldMergeCellAbove.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
-            //TODO ensure newly created cells have a unique janus id
+            Jupyter.sidebar.update();
         }
     }
 
@@ -515,8 +557,7 @@ define([
         Jupyter.notebook.__proto__.merge_cell_above = function(){
             oldMergeCellBelow.apply(this, arguments);
             hideIndentedCells();
-            //TODO re-render the sidebar if needed
-            //TODO ensure newly created cells have a unique janus id
+            Jupyter.sidebar.update();
         }
     }
 
@@ -546,7 +587,7 @@ define([
             else{
                 oldSplitCell.apply(this, arguments);
             }
-            //TODO re-render the sidebar if needed
+            Jupyter.sidebar.update();
         }
     }
 
@@ -694,6 +735,7 @@ define([
 
         // put placeholder div immediatley after it
         addPlaceholderAfterElementWithIds(hidden_cells[hidden_cells.length - 1].element, cell_ids)
+        Jupyter.sidebar.update()
     }
 
     function addPlaceholderAfterElementWithIds(elem, cell_ids){
@@ -735,10 +777,13 @@ define([
         for(j=0; j<Jupyter.sidebar.cells.length; j++){
             if(Jupyter.sidebar.cells[j].selected){
                 Jupyter.sidebar.cells[j].element.addClass('hidden')
+                Jupyter.sidebar.cells[j].element.remove()
+                Jupyter.sidebar.cells.splice(i, 1)
             }
         }
 
         hideIndentedCells()
+        Jupyter.sidebar.update()
     }
 
     function load_extension(){
