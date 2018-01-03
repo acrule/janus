@@ -22,8 +22,6 @@ define([
     TextCell
 ){
 
-    //TODO debug handling of markdown cells in sidebar
-    //TODO enable creation of hidden cell if current selected cell is hidden
     //TODO show cell input to the side
     //TODO enable cell-level histories
     //TODO enable meta-data only notebook history tracking (stretch)
@@ -612,6 +610,38 @@ define([
         }
     }
 
+    function patchToMarkdown(){
+        var oldToMarkdown = Jupyter.notebook.__proto__.to_markdown;
+        Jupyter.notebook.__proto__.to_markdown = function(){
+            oldToMarkdown.apply(this, arguments);
+            selected_cells = Jupyter.notebook.get_selected_cells();
+            for(i=0; i<selected_cells.length; i++){
+                selected_cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
+            hideIndentedCells();
+            Jupyter.sidebar.update();
+            if(!Jupyter.sidebar.collapsed){
+                selected_cells = Jupyter.notebook.get_selected_cells();
+                for(i=0; i<selected_cells.length; i++){
+                    selected_cells[i].duplicate.unrender()
+                }
+            }
+        }
+    }
+
+    function patchToCode(){
+        var oldToCode = Jupyter.notebook.__proto__.to_code;
+        Jupyter.notebook.__proto__.to_code = function(){
+            oldToCode.apply(this, arguments);
+            selected_cells = Jupyter.notebook.get_selected_cells();
+            for(i=0; i<selected_cells.length; i++){
+                selected_cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            }
+            hideIndentedCells();
+            Jupyter.sidebar.update();
+        }
+    }
+
     function hideIndentedCells(){
         // hide all indented cells and render placeholders in their place
 
@@ -815,6 +845,8 @@ define([
         patchMergeCellAbove();
         patchMergeCellBelow();
         patchSplitCell();
+        patchToMarkdown();
+        patchToCode();
 
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
