@@ -23,6 +23,7 @@ define([
 ){
 
     //TODO enable cell-level histories
+    //TODO show cell input to the side
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
     //TODO render more informative marker of hidden cells (e.g., minimap)
@@ -39,17 +40,8 @@ define([
         sidebar.cells = [];
         sidebar.placeholder = null
 
-        // create html elements for sidebar
+        // create html elements for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
-        sidebar.close_button = $("<i>").addClass("fa fa-caret-right sidebar-btn");
-
-        // hook up button click event
-        sidebar.close_button.click(function(){
-            sidebar.collapse();
-        });
-
-        // add the Sidebar the page
-        sidebar.element.append(sidebar.close_button);
         $("#notebook").append(sidebar.element);
     };
 
@@ -161,7 +153,7 @@ define([
             var placeholder_height = $(this.placeholder).position().top
 
             this.element.animate({
-                top: placeholder_height - 15,
+                top: placeholder_height - 12,
             }, 400, function(){
                 if(cells.length > 0){
                     Jupyter.sidebar.renderWithCells(cells)
@@ -197,15 +189,13 @@ define([
                 Jupyter.sidebar.element.animate({
                     right: '15px',
                     width: sidebar_width,
-                    top: placeholder_height - 15,
+                    top: placeholder_height - 12,
                     padding: '0px'
                 }, 400, function(){
                     if(cells.length > 0){
                         Jupyter.sidebar.renderWithCells(cells)
                     }
                 })
-
-                Jupyter.sidebar.close_button.show();
             })
         }
     };
@@ -235,7 +225,6 @@ define([
             padding: '0px'
         }, 250);
 
-        this.close_button.hide();
         $('#cell-wrapper').hide()
     };
 
@@ -388,7 +377,8 @@ define([
             // if selecting a hidden cell in the main notebook
             if(this.metadata.cell_hidden ){
                 // highlight the placeholder and cell in sidebar
-                $(this.element).nextAll('.placeholder').first().addClass('showing')
+                $('.placeholder').removeClass('active')
+                $(this.element).nextAll('.placeholder').first().addClass('active')
                 if(!Jupyter.sidebar.collapsed){
                     for(j=0; j < Jupyter.sidebar.cells.length; j++){
                         Jupyter.sidebar.cells[j].selected = false
@@ -406,19 +396,15 @@ define([
             }
             // if selecting a cell that is not hidden
             else{
+                $('.placeholder').removeClass('active')
                 // make sure all placeholders are not highlighted (if sidebar is collapsed)
-                if(Jupyter.sidebar.collapsed){
-                    $('.placeholder').removeClass('showing')
-                }
+                if(!Jupyter.sidebar.collapsed){
                 // make sure all cells in the sidebar are unselected if the sidebar is visible
-                else{
                     for(j=0; j < Jupyter.sidebar.cells.length; j++){
                         Jupyter.sidebar.cells[j].selected = false
                         Jupyter.sidebar.cells[j].element.removeClass('selected')
                         Jupyter.sidebar.cells[j].element.addClass('unselected')
                     }
-                    $('.placeholder').removeClass('showing')
-                    $(Jupyter.sidebar.placeholder).addClass('showing')
                 }
 
                 oldCellSelect.apply(this, arguments);
@@ -829,7 +815,6 @@ define([
 
         events.on("notebook_loaded.Notebook", hideIndentedCells);
         events.on("notebook_loaded.Notebook", updateInputVisibility);
-
     }
 
     return {
