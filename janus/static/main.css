@@ -16,6 +16,28 @@
   padding: 15px;
 }
 
+.hidden-code-marker{
+    height: 24px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 10;
+    min-width: 24px;
+    height: 24px;
+    padding: 3px 6px 0px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    float: left;
+    margin-left: 2px;
+    background: #fff;
+    color: #555;
+    text-align: center;
+}
+
+.hidden-code-marker:hover{
+    background: #eee;
+}
+
 .placeholder{
     color: #666;
     float: right;

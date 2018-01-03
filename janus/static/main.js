@@ -24,6 +24,7 @@ define([
 
     //TODO show cell input to the side
     //TODO enable cell-level histories
+    //TODO patch delete in sidebar to update
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
     //TODO render more informative marker of hidden cells (e.g., minimap)
@@ -146,6 +147,7 @@ define([
         if(this.collapsed){
             this.expand(cells)
             $('.placeholder').removeClass('showing')
+            $('.hidden-code-marker').removeClass('showing')
             $(this.placeholder).addClass('showing')
         }
         // update sidebar with new cells if needed (using hacky array comparison)
@@ -160,12 +162,14 @@ define([
                 }
             })
             $('.placeholder').removeClass('showing')
+            $('.hidden-code-marker').removeClass('showing')
             $(this.placeholder).addClass('showing')
         }
         // collapse sidebar if expanded and rendering same cells
         else{
             this.collapse()
             $('.placeholder').removeClass('showing')
+            $('.hidden-code-marker').removeClass('showing')
         }
     }
 
@@ -693,22 +697,120 @@ define([
         }
     }
 
+    function renderCodeMarker(cell){
+        if(cell.metadata.hide_input){
+            // clear any current code hidden markers
+            var output_area = cell.element.find('div.output_wrapper')[0]
+            var markers = output_area.getElementsByClassName('hidden-code-marker')
+            while(markers[0]){
+                markers[0].parentNode.removeChild(markers[0]);
+            }
+
+            // add the new marker
+            var newElement = document.createElement('div');
+            newElement.className = "hidden-code-marker fa fa-code"
+            newElement.onclick = function(){showCodeInSidebar(cell, newElement)};
+            output_area.appendChild(newElement)
+        }
+        else if (cell.cell_type == 'code'){
+            // clear any current code hidden markers
+            var output_area = cell.element.find('div.output_wrapper')[0]
+            if(output_area){
+                var markers = output_area.getElementsByClassName('hidden-code-marker')
+                while(markers[0]){
+                    markers[0].parentNode.removeChild(markers[0]);
+                }
+            }
+        }
+    }
+
+    function renderAllCodeMarkers(){
+        all_cells = Jupyter.notebook.get_cells()
+        for(i=0; i < all_cells.length; i++){
+            renderCodeMarker(all_cells[i]);
+        }
+    }
+
     function toggleInput(){
         var cell = Jupyter.notebook.get_selected_cell();
         // Toggle visibility of the input div
         cell.element.find("div.input").toggle('slow');
         cell.metadata.hide_input =! cell.metadata.hide_input;
+        renderCodeMarker(cell);
+    }
 
-        if(cell.metadata.hide_input){
-            $('#btn-hide-input').css(
-                'background-color', '#eee'
-            )
+    function showCodeInSidebar(cell, marker){
+        Jupyter.sidebar.placeholder = null
+
+        // get ids for cells to render, and cells already in sidebar
+        new_cell_ids = [cell.metadata.janus_cell_id]
+        old_cell_ids = []
+        for(j=0; j<Jupyter.sidebar.cells.length; j++){
+            old_cell_ids.push(Jupyter.sidebar.cells[j].metadata.janus_cell_id)
         }
+
+        console.log(new_cell_ids)
+        console.log(old_cell_ids)
+
+        // expand sidebar if collapsed
+        if(Jupyter.sidebar.collapsed){
+
+            $('#cell-wrapper').show()
+            if(Jupyter.sidebar.collapsed){
+                that = Jupyter.sidebar
+                Jupyter.sidebar.collapsed = false;
+
+                var site_height = $("#site").height();
+                var site_width = $("#site").width();
+                var notebook_width = $("#notebook-container").width();
+                var sidebar_width = (site_width - 45) / 2
+
+                $("#notebook-container").animate({
+                    marginLeft: '15px',
+                    width: sidebar_width
+                }, 400, function(){
+                    var placeholder_height = $(cell.element).position().top
+
+                    Jupyter.sidebar.element.animate({
+                        right: '15px',
+                        width: sidebar_width - 24,
+                        top: placeholder_height,
+                        padding: '0px'
+                    }, 400, function(){
+                        if(cells.length > 0){
+                            Jupyter.sidebar.renderWithCells([cell])
+                            cell.duplicate.element.find("div.output_wrapper").hide();
+                        }
+                    })
+                })
+            }
+
+            $('.placeholder').removeClass('showing')
+            $(marker).addClass('showing')
+
+        }
+        // update sidebar with new cells if needed (using hacky array comparison)
+        else if(JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)){
+            var placeholder_height = $(cell.element).position().top
+
+            Jupyter.sidebar.element.animate({
+                top: placeholder_height - 12,
+            }, 400, function(){
+                if(cells.length > 0){
+                    Jupyter.sidebar.renderWithCells([cell])
+                    cell.duplicate.element.find("div.output_wrapper").hide();
+                }
+            })
+            $('.placeholder').removeClass('showing')
+            $(marker).addClass('showing')
+        }
+        // collapse sidebar if expanded and rendering same cells
         else{
-            $('#btn-hide-input').css(
-                'background-color', '#fff'
-            )
+            Jupyter.sidebar.collapse()
+            $('.placeholder').removeClass('showing')
+            $(marker).removeClass('showing')
         }
+
     }
 
     function updateInputVisibility() {
@@ -852,10 +954,12 @@ define([
             // notebook already loaded. Update directly
             hideIndentedCells();
             updateInputVisibility();
+            renderAllCodeMarkers();
         }
 
         events.on("notebook_loaded.Notebook", hideIndentedCells);
         events.on("notebook_loaded.Notebook", updateInputVisibility);
+        events.on("notebook_loaded.Notebook", renderAllCodeMarkers);
     }
 
     return {
