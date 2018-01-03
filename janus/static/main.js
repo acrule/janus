@@ -22,8 +22,10 @@ define([
     TextCell
 ){
 
-    //TODO enable cell-level histories
+    //TODO debug handling of markdown cells in sidebar
+    //TODO enable creation of hidden cell if current selected cell is hidden
     //TODO show cell input to the side
+    //TODO enable cell-level histories
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
     //TODO render more informative marker of hidden cells (e.g., minimap)
@@ -188,7 +190,7 @@ define([
 
                 Jupyter.sidebar.element.animate({
                     right: '15px',
-                    width: sidebar_width,
+                    width: sidebar_width - 24,
                     top: placeholder_height - 12,
                     padding: '0px'
                 }, 400, function(){
@@ -599,6 +601,13 @@ define([
             c = oldInsertCellAtIndex.apply(this, arguments);
             c.metadata.janus_cell_id = Math.random().toString(16).substring(2);
             c.metadata.hide_input = false;
+
+            if(Jupyter.notebook.get_selected_cell().metadata.cell_hidden){
+                c.metadata.cell_hidden = true
+                hideIndentedCells();
+                Jupyter.sidebar.update();
+            }
+
             return c;
         }
     }
