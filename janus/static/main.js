@@ -23,7 +23,6 @@ define([
 ){
 
     //TODO separate code into multiple files for future maintenance
-    //TODO put notebook into command mode if ESC key pressed in sidebar cell
     //TODO enable cell-level histories
     //TODO show full history of all cell executions
     //TODO enable meta-data only notebook history tracking (stretch)
@@ -709,6 +708,34 @@ define([
         }
     }
 
+    function patchEditMode(){
+            var oldEditMode = Jupyter.notebook.__proto__.edit_mode;
+            Jupyter.notebook.__proto__.edit_mode = function(){
+                cell = Jupyter.notebook.get_selected_cell()
+                if(cell.metadata.cell_hidden){
+                    cell.sb_cell.unrender()
+                    cell.sb_cell.focus_editor()
+                }
+                else{
+                    oldEditMode.apply(this, arguments);
+                }
+            }
+    }
+
+    function patchCommandMode(){
+            var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
+            Jupyter.notebook.__proto__.command_mode = function(){
+                cell = Jupyter.notebook.get_selected_cell()
+                if(cell.metadata.cell_hidden){
+                    cell.sb_cell.code_mirror.getInputField().blur()
+                }
+                else{
+                    oldCommandMode.apply(this, arguments);
+                }
+            }
+    }
+
+
     function hideIndentedCells(){
         // hide all indented cells and render placeholders in their place
 
@@ -946,6 +973,8 @@ define([
         patchToMarkdown();
         patchToCode();
         patchDeleteCells();
+        patchEditMode();
+        patchCommandMode();
 
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
