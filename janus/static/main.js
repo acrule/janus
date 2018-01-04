@@ -29,7 +29,7 @@ define([
     //TODO render more informative marker of hidden cells (stretch)
 
     var Sidebar = function(nb){
-        // A sidebar panel for showing 'indented' cells
+        /* A sidebar panel for indenting cells */
 
         var sidebar = this;
         Jupyter.sidebar = sidebar;
@@ -121,7 +121,6 @@ define([
     Sidebar.prototype.createSidebarCell = function(cell){
         /* Returns a sidebar cell that duplicates and is linked to a cell in the
         main notebook
-
         cell: a single cell object from the main notebook*/
 
         newCell = null
@@ -275,6 +274,8 @@ define([
     };
 
     Sidebar.prototype.update = function(){
+        /* update the cells rendered in the sidebar, such as after deletion */
+
         if(!this.collapsed){
             // get list of previous cells in sidebar and currently hidden cells
             nb_cells = Jupyter.notebook.get_cells()
@@ -320,6 +321,9 @@ define([
     }
 
     function highlightMarker(marker){
+        /*  highlight the marker clicked to show the sidebar
+        marker: dom element, or null */
+
         $('.placeholder').removeClass('showing')
         $('.hidden-code-marker').removeClass('showing')
         if(marker != null){
@@ -328,12 +332,13 @@ define([
     }
 
     function createSidebar() {
-        // create a new sidebar element
+        /* create a new sidebar element */
+
         return new Sidebar(Jupyter.notebook);
     }
 
     function load_css() {
-        // Load css for sidebar
+        /* Load css for sidebar */
         var link = document.createElement("link");
         link.type = "text/css";
         link.rel = "stylesheet";
@@ -344,19 +349,6 @@ define([
     function renderJanusMenu(){
         // add menu items for indenting and unindenting cells
         var editMenu = $('#edit_menu');
-
-        editMenu.append($('<li>')
-            .addClass('divider')
-        );
-
-        editMenu.append($('<li>')
-            .attr('id', 'toggle_cell_input')
-            .append($('<a>')
-                .attr('href', '#')
-                .text('Toggle Cell Input')
-                .click(toggleInput)
-            )
-        );
 
         editMenu.append($('<li>')
             .addClass('divider')
@@ -379,10 +371,20 @@ define([
                 .click(unindentCell)
             )
         );
+
+        editMenu.append($('<li>')
+            .attr('id', 'toggle_cell_input')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Toggle Cell Input')
+                .click(toggleInput)
+            )
+        );
     }
 
     function renderJanusButtons() {
-        // add buttons to toolbar fo hiding and showing cells
+        /* add buttons to toolbar fo hiding and showing cells*/
+
         var toggleInputAction = {
             icon: 'fa-code',
             help    : 'Toggle Input',
@@ -405,28 +407,54 @@ define([
         };
 
         var prefix = 'janus';
-        var toggle_input_name = 'toggle-cell-input'
-        var indent_action_name = 'indent-cell';
-        var unindent_action_name = 'unindent-cell';
 
         var full_toggle_action_name = Jupyter.actions.register(toggleInputAction,
-                                                            toggle_input_name,
+                                                            'toggle-cell-input',
                                                             prefix);
-
         var full_indent_action_name = Jupyter.actions.register(indentAction,
-                                                            indent_action_name,
+                                                            'indent-cell',
                                                             prefix);
         var full_unindent_action_name = Jupyter.actions.register(unindentAction,
-                                                            unindent_action_name,
+                                                            'unindent-cell',
                                                             prefix);
-        Jupyter.toolbar.add_buttons_group([full_toggle_action_name]).find('.btn').attr('id', 'btn-hide-input');;
-        Jupyter.toolbar.add_buttons_group([full_indent_action_name, full_unindent_action_name]);
+
+        Jupyter.toolbar.add_buttons_group([full_indent_action_name,
+                                        full_unindent_action_name,
+                                        full_toggle_action_name]);
+    }
+
+    function applyJanusPatches(){
+        console.log('[Janus] Patching Cell.cell_select, Cell.to_markdown,' +
+        'Cell.to_code, CodeCell.execute, MarkdownCell.render, ' +
+        'Notebook.move_selection_up, Notebook.move_selection_down, ' +
+        'Notebook.paste_cell_above, Notebook.paste_cell_below, ' +
+        'Notebook.paste_cell_replace, Notebook.split_cell, ' +
+        'Notebook.merge_cell_above, Notebook.merge_cell_below, ' +
+        'Notebook.edit_mode, Notebook.command_mode, Notebook.delete_cells')
+
+        patchCellSelect();
+        patchToMarkdown();
+        patchToCode();
+        patchCodeExecute();
+        patchTextRender();
+
+        patchInsertCellAtIndex();
+        patchMoveSelectionUp();
+        patchMoveSelectionDown();
+        patchPasteCellAbove();
+        patchPasteCellBelow();
+        patchPasteCellReplace();
+        patchMergeCellAbove();
+        patchMergeCellBelow();
+        patchSplitCell();
+        patchDeleteCells();
+        patchEditMode();
+        patchCommandMode();
     }
 
     function patchCellSelect(){
-        // patch cell selection to handle highlighting
+        /* patch cell selection to handle highlighting */
 
-        console.log('[Janus] Patching Cell Selection')
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function(){
             // if selecting a hidden cell in the main notebook
@@ -464,24 +492,12 @@ define([
 
                 oldCellSelect.apply(this, arguments);
             }
-
-            if(this.metadata.hide_input){
-                $('#btn-hide-input').css(
-                    'background-color', '#eee'
-                )
-            }
-            else{
-                $('#btn-hide-input').css(
-                    'background-color', '#fff'
-                )
-            }
         }
     }
 
     function patchCodeExecute(){
         // patch code cell execution to account for edits made in sidebar
 
-        console.log('[Janus] Patching Code Cell Execute')
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function(){
             that = this;
@@ -507,7 +523,6 @@ define([
     function patchTextRender(){
         // patch text cell redering to account for edits made in sidebar
 
-        console.log('[Janus] Patching Text Cell Render')
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
             that = this;
@@ -524,7 +539,6 @@ define([
     }
 
     function patchMoveSelectionUp(){
-        console.log('[Janus] Patching Move Selection Up')
         var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
         Jupyter.notebook.__proto__.move_selection_up = function(){
             oldMoveSelectionUp.apply(this, arguments);
@@ -544,7 +558,6 @@ define([
     }
 
     function patchMoveSelectionDown(){
-        console.log('[Janus] Patching Move Selection Down')
         var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
         Jupyter.notebook.__proto__.move_selection_down = function(){
             oldMoveSelectionDown.apply(this, arguments);
@@ -554,7 +567,6 @@ define([
     }
 
     function patchPasteCellAbove(){
-        console.log('[Janus] Patching Paste Cell Above')
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function(){
             //ensure newly created cells have a unique janus id
@@ -568,7 +580,6 @@ define([
     }
 
     function patchPasteCellBelow(){
-        console.log('[Janus] Patching Paste Cell Below')
         var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
         Jupyter.notebook.__proto__.paste_cell_below = function(){
             //ensure newly created cells have a unique janus id
@@ -582,7 +593,6 @@ define([
     }
 
     function patchPasteCellReplace(){
-        console.log('[Janus] Patching Paste Cell Replace')
         var oldPasteCellReplace = Jupyter.notebook.__proto__.paste_cell_replace;
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
             //ensure newly created cells have a unique janus id
@@ -596,7 +606,6 @@ define([
     }
 
     function patchMergeCellAbove(){
-        console.log('[Janus] Patching Merge Cell Above')
         var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
         Jupyter.notebook.__proto__.merge_cell_above = function(){
             oldMergeCellAbove.apply(this, arguments);
@@ -606,9 +615,8 @@ define([
     }
 
     function patchMergeCellBelow(){
-        console.log('[Janus] Patching Paste Cell Replace')
-        var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_above;
-        Jupyter.notebook.__proto__.merge_cell_above = function(){
+        var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
+        Jupyter.notebook.__proto__.merge_cell_below = function(){
             oldMergeCellBelow.apply(this, arguments);
             hideIndentedCells();
             Jupyter.sidebar.update();
@@ -616,7 +624,6 @@ define([
     }
 
     function patchSplitCell(){
-        console.log('[Janus] Patching Split Cell')
         var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
         Jupyter.notebook.__proto__.split_cell = function(){
             var cell = Jupyter.notebook.get_selected_cell();
@@ -647,8 +654,6 @@ define([
 
     function patchInsertCellAtIndex(){
         // Make sure newly created cells have a unique Janus id
-
-        console.log('[Janus] Patching Insert Cell')
         var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
@@ -734,7 +739,6 @@ define([
                 }
             }
     }
-
 
     function hideIndentedCells(){
         // hide all indented cells and render placeholders in their place
@@ -946,7 +950,6 @@ define([
                 Jupyter.sidebar.cells.splice(i, 1)
             }
         }
-
         hideIndentedCells()
         Jupyter.sidebar.update()
     }
@@ -958,23 +961,7 @@ define([
         renderJanusMenu();
         renderJanusButtons();
         createSidebar();
-        patchCellSelect();
-        patchCodeExecute();
-        patchInsertCellAtIndex();
-        patchTextRender();
-        patchMoveSelectionUp();
-        patchMoveSelectionDown();
-        patchPasteCellAbove();
-        patchPasteCellBelow();
-        patchPasteCellReplace();
-        patchMergeCellAbove();
-        patchMergeCellBelow();
-        patchSplitCell();
-        patchToMarkdown();
-        patchToCode();
-        patchDeleteCells();
-        patchEditMode();
-        patchCommandMode();
+        applyJanusPatches();
 
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
