@@ -23,7 +23,6 @@ define([
 ){
 
     //TODO separate code into multiple files for future maintenance
-    //TODO patch delete in sidebar to update placeholders
     //TODO put notebook into command mode if ESC key pressed in sidebar cell
     //TODO enable cell-level histories
     //TODO show full history of all cell executions
@@ -701,6 +700,15 @@ define([
         }
     }
 
+    function patchDeleteCells(){
+        var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
+        Jupyter.notebook.__proto__.delete_cells = function(){
+            oldDeleteCells.apply(this, arguments);
+            hideIndentedCells();
+            Jupyter.sidebar.update();
+        }
+    }
+
     function hideIndentedCells(){
         // hide all indented cells and render placeholders in their place
 
@@ -937,6 +945,7 @@ define([
         patchSplitCell();
         patchToMarkdown();
         patchToCode();
+        patchDeleteCells();
 
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
