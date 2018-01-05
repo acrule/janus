@@ -90,12 +90,7 @@ define([
 
             // propigate edits in sidebar cell to main notebook cell
             newCell.code_mirror.on('change', function(){
-                // based on the assumption that the changing code mirror is then
-                // currently selected cell
-                // could also use this.getWrapperElement() to get the codemirror
-                // div and the cell's parent div, but this depends on stable DOM
-                nb_cell = Jupyter.notebook.get_selected_cell()
-                nb_cell.set_text(nb_cell.sb_cell.get_text())
+                newCell.nb_cell.set_text(newCell.get_text())
             });
         }
 
