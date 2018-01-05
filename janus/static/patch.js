@@ -98,6 +98,7 @@ define([
             that = this;
 
             function updateCellOnExecution(evt){
+                console.log(that)
                 that.sb_cell.fromJSON(that.toJSON())
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
