@@ -81,3 +81,33 @@
 .sidebar-btn:hover {
   opacity: 1;
 }
+
+/* Yarn css */
+.marker {
+    min-width: 24px;
+    height: 24px;
+    padding: 3px 6px 0px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    float: left;
+    margin-left: 2px;
+    background: #fff;
+    color: #555;
+    text-align: center;
+}
+
+.marker-container{
+    height: 24px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 10;
+}
+
+.marker.summary{
+    padding: 5px 0px 0px;
+}
+
+.selected-version{
+    background: #b0c4de;
+}

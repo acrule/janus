@@ -10,7 +10,8 @@ define([
     'base/js/utils',
     'notebook/js/cell',
     'notebook/js/codecell',
-    'notebook/js/textcell'
+    'notebook/js/textcell',
+    '../janus/cell_history'
 ], function(
     require,
     $,
@@ -19,7 +20,8 @@ define([
     utils,
     Cell,
     CodeCell,
-    TextCell
+    TextCell,
+    CellHistory
 ){
 
 
@@ -96,6 +98,9 @@ define([
             newCell.code_mirror.on('change', function(){
                 newCell.nb_cell.set_text(newCell.get_text())
             });
+
+            // render any history markers
+            CellHistory.render_markers(newCell);
         }
 
         // focus the first cell in the sidebar

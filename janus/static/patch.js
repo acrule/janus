@@ -8,14 +8,16 @@ define([
     'base/js/events',
     'notebook/js/cell',
     'notebook/js/codecell',
-    'notebook/js/textcell'
+    'notebook/js/textcell',
+    '../janus/cell_history'
 ], function(
     $,
     Jupyter,
     events,
     Cell,
     CodeCell,
-    TextCell
+    TextCell,
+    CellHistory
 ){
 
     function applyJanusPatches(){
@@ -121,10 +123,11 @@ define([
 
             function updateCellOnExecution(evt){
                 that.sb_cell.fromJSON(that.toJSON())
+                CellHistory.render_markers(that.sb_cell)
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
 
-            if(this.metadata.cell_hidden){
+            if(this.metadata.cell_hidden || this.metadata.hide_input){
                 this.set_text(this.sb_cell.get_text())
                 oldCodeCellExecute.apply(this, arguments);
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
@@ -205,7 +208,6 @@ define([
             Jupyter.sidebar.update();
         }
     }
-
 
     function patchPasteCellAbove(){
         /* ensure pasted cells have a unique janus id and sidebar updates */

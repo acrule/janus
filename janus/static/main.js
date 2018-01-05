@@ -12,7 +12,8 @@ define([
     'notebook/js/codecell',
     'notebook/js/textcell',
     '../janus/patch',
-    '../janus/sidebar'
+    '../janus/sidebar',
+    '../janus/cell_history'
 ], function(
     require,
     $,
@@ -23,7 +24,8 @@ define([
     CodeCell,
     TextCell,
     JanusPatch,
-    Sidebar
+    Sidebar,
+    CellHistory
 ){
 
     //TODO refactor
@@ -275,11 +277,13 @@ define([
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             // notebook already loaded. Update directly
             Jupyter.sidebar.hideIndentedCells();
+            CellHistory.load_cell_history();
             updateInputVisibility();
             renderAllCodeMarkers();
         }
 
         events.on("notebook_loaded.Notebook", Jupyter.sidebar.hideIndentedCells);
+        events.on("notebook_loaded.Notebook", CellHistory.load_cell_history);
         events.on("notebook_loaded.Notebook", updateInputVisibility);
         events.on("notebook_loaded.Notebook", renderAllCodeMarkers);
     }
