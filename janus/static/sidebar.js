@@ -168,6 +168,13 @@ define([
         // expand sidebar if collapsed
         if(this.collapsed){
             this.expand()
+            nb_cells = Jupyter.notebook.get_cells()
+            for(i=0; i < nb_cells.length; i++){
+                if(cells[0].metadata.janus_cell_id == nb_cells[i].metadata.janus_cell_id){
+                    Jupyter.notebook.select(i);
+                    Jupyter.notebook.scroll_to_cell(i, 500)
+                }
+            }
             if(cells.length > 0){
                 this.renderCells(cells)
             }
@@ -176,19 +183,21 @@ define([
         // update sidebar if new cells, or new cell border
         // this comparison method seems hacky
         else if(JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)){
-            this.element.animate({
-                top: this.markerPosition - 12,
-            }, 400)
-            if(cells.length > 0){
-                Jupyter.sidebar.renderCells(cells)
-            }
             highlightMarker(this.marker)
-            cells[0].focus_editor();
             nb_cells = Jupyter.notebook.get_cells()
             for(i=0; i < nb_cells.length; i++){
                 if(cells[0].metadata.janus_cell_id == nb_cells[i].metadata.janus_cell_id){
-                    Jupyter.notebook.scroll_to_cell(i, 500)
+                    Jupyter.notebook.select(i);
+                    //Jupyter.notebook.scroll_to_cell(i, 500)
                 }
+            }
+            // may want to created a "thinking" animation for when loading large numbers of cells
+            this.element.animate({
+                top: this.markerPosition - 12,
+            }, 0)
+            if(cells.length > 0){
+                Jupyter.sidebar.renderCells(cells);
+                Jupyter.sidebar.cells[0].focus_editor();
             }
 
         }
@@ -221,7 +230,7 @@ define([
             Jupyter.sidebar.element.animate({
                 right: '15px',
                 width: sidebar_width,
-                top: $(Jupyter.sidebar.marker).position().top - 12,
+                top: Jupyter.sidebar.markerPosition,
                 padding: '0px'
             }, 400, function(){ // ensure code cells are fully rendered
                 sb_cells = Jupyter.sidebar.cells
@@ -348,7 +357,7 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    this.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
 
                     serial_hidden_cells = []
                 }
@@ -363,7 +372,7 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    this.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
 
                     serial_hidden_cells = []
                 }

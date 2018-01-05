@@ -239,19 +239,6 @@ define([
         Jupyter.sidebar.update()
     }
 
-    // function addPlaceholderAfterElementWithIds(elem, cell_ids){
-    //     elem.after($('<div>')
-    //         .addClass('placeholder')
-    //         .data('ids', cell_ids.slice())
-    //         .click(function(){
-    //             that = this;
-    //             Jupyter.sidebar.marker = that;
-    //             Jupyter.sidebar.markerPosition = $(that).position().top;
-    //             Jupyter.sidebar.showWithCells($(this).data('ids'))
-    //         })
-    //         .text(`${cell_ids.length}`))
-    // }
-
     function unindentCell(){
         // move selected cells back to main notebook
 
