@@ -1,3 +1,7 @@
+/*
+Janus: Jupyter Notebook Extension that assists with notebook cleaning
+*/
+
 define([
     'require',
     'jquery',

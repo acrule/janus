@@ -1,18 +1,18 @@
+/*
+Janus: Jupyter Notebook Extension that assists with notebook cleaning
+*/
+
 define([
-    'require',
     'jquery',
     'base/js/namespace',
     'base/js/events',
-    'base/js/utils',
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell'
 ], function(
-    require,
     $,
     Jupyter,
     events,
-    utils,
     Cell,
     CodeCell,
     TextCell
@@ -27,78 +27,99 @@ define([
         'Notebook.merge_cell_above, Notebook.merge_cell_below, ' +
         'Notebook.edit_mode, Notebook.command_mode, Notebook.delete_cells')
 
+        // patch cell functions
         patchCellSelect();
         patchToMarkdown();
         patchToCode();
         patchCodeExecute();
         patchTextRender();
 
+        //patch notebook functions
         patchInsertCellAtIndex();
         patchMoveSelectionUp();
         patchMoveSelectionDown();
+        patchMergeCellAbove();
+        patchMergeCellBelow();
+        patchDeleteCells();
+        patchSplitCell();
         patchPasteCellAbove();
         patchPasteCellBelow();
         patchPasteCellReplace();
-        patchMergeCellAbove();
-        patchMergeCellBelow();
-        patchSplitCell();
-        patchDeleteCells();
         patchEditMode();
         patchCommandMode();
     }
 
     function patchCellSelect(){
-        /* patch cell selection to handle highlighting */
+        /* patch cell selection to handle sidebar highlighting */
 
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function(){
-            // if selecting a hidden cell in the main notebook
-            if(this.metadata.cell_hidden ){
-                // highlight the placeholder and cell in sidebar
+            // if selecting a hidden cell
+            if(this.metadata.cell_hidden){
+                // highlight the associated placeholder
                 $('.placeholder').removeClass('active')
                 $(this.element).nextAll('.placeholder').first().addClass('active')
+
+                // attempted more robust selection of associate placeholder, but
+                // led to notebook freezing (unbounded for loop?)
+                // placeholders = $('.placeholder').toArray()
+                // janus_id = this.metadata.janus_cell_id
+                // for(i=0; i<placeholders.length; i++){
+                //     if($(placeholders[i]).data('ids').indexOf(janus_id) >= 0){
+                //         $(placeholders[i]).addClass('active')
+                //     }
+                // }
+
+                // select the corresponding cell in the sidebar, if visible
                 if(!Jupyter.sidebar.collapsed){
-                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
-                        Jupyter.sidebar.cells[j].selected = false
-                        Jupyter.sidebar.cells[j].element.removeClass('selected')
-                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    sb_cells = Jupyter.sidebar.cells
+                    for(j=0; j < sb_cells.length; j++){
+                        unselectSidebarCell(sb_cells[j])
                     }
                     if(this.sb_cell != undefined){
-                        this.sb_cell.selected = true
-                        this.sb_cell.element.removeClass('unselected')
-                        this.sb_cell.element.addClass('selected')
+                        selectSidebarCell(this.sb_cell)
                     }
                 }
-
-                oldCellSelect.apply(this, arguments);
             }
-            // if selecting a cell that is not hidden
+            // if selecting a cell visible in the notebook
             else{
+                // make sure all placeholders are not highlighted
                 $('.placeholder').removeClass('active')
-                // make sure all placeholders are not highlighted (if sidebar is collapsed)
+
+                // unselect the corresponding cell in the sidebar, if visible
                 if(!Jupyter.sidebar.collapsed){
-                // make sure all cells in the sidebar are unselected if the sidebar is visible
-                    for(j=0; j < Jupyter.sidebar.cells.length; j++){
-                        Jupyter.sidebar.cells[j].selected = false
-                        Jupyter.sidebar.cells[j].element.removeClass('selected')
-                        Jupyter.sidebar.cells[j].element.addClass('unselected')
+                    sb_cells = Jupyter.sidebar.cells
+                    for(j=0; j < sb_cells.length; j++){
+                        unselectSidebarCell(sb_cells[j])
                     }
                 }
-
-                oldCellSelect.apply(this, arguments);
             }
+
+            // either way, do the normal cell selection
+            oldCellSelect.apply(this, arguments);
         }
     }
 
+    function unselectSidebarCell(cell){
+        cell.selected = false
+        cell.element.removeClass('selected')
+        cell.element.addClass('unselected')
+    }
+
+    function selectSidebarCell(cell){
+        cell.selected = true
+        cell.element.removeClass('unselected')
+        cell.element.addClass('selected')
+    }
+
     function patchCodeExecute(){
-        // patch code cell execution to account for edits made in sidebar
+        /* execute main cell using sidebar text, then update sidebar cell */
 
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function(){
             that = this;
 
             function updateCellOnExecution(evt){
-                console.log(that)
                 that.sb_cell.fromJSON(that.toJSON())
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
@@ -111,22 +132,18 @@ define([
             else{
                 oldCodeCellExecute.apply(this, arguments);
             }
-
         }
-
     }
 
     function patchTextRender(){
-        // patch text cell redering to account for edits made in sidebar
+        /* render main cell using sidebar text, then update sidebar cell */
 
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
-            that = this;
-
             if(this.metadata.cell_hidden && this.sb_cell != undefined){
                 this.set_text(this.sb_cell.get_text())
                 oldTextCellRender.apply(this, arguments)
-                this.sb_cell.fromJSON(that.toJSON())
+                this.sb_cell.fromJSON(this.toJSON())
             }
             else{
                 oldTextCellRender.apply(this, arguments)
@@ -135,25 +152,19 @@ define([
     }
 
     function patchMoveSelectionUp(){
+        /* Update sidebar after the move */
+
         var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
         Jupyter.notebook.__proto__.move_selection_up = function(){
             oldMoveSelectionUp.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
             Jupyter.sidebar.update();
         }
-        // We may want more complex movement behavior such as...
-        // if this hidden and one above hidden
-            // move up and then re-render
-        // if this visible and one above visible
-            // do what you normally would
-        // if this hidden and one above visible
-            // do nothing
-        // if this visible and one above hidden
-            // get whole collection of contiguous hidden cells
-            // move whole collection down
     }
 
     function patchMoveSelectionDown(){
+        /* Update sidebar after the move */
+
         var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
         Jupyter.notebook.__proto__.move_selection_down = function(){
             oldMoveSelectionDown.apply(this, arguments);
@@ -162,10 +173,45 @@ define([
         }
     }
 
+    function patchMergeCellAbove(){
+        /* Update sidebar after the merge */
+
+        var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
+        Jupyter.notebook.__proto__.merge_cell_above = function(){
+            oldMergeCellAbove.apply(this, arguments);
+            Jupyter.sidebar.hideIndentedCells();
+            Jupyter.sidebar.update();
+        }
+    }
+
+    function patchMergeCellBelow(){
+        /* Update sidebar after the merge */
+
+        var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
+        Jupyter.notebook.__proto__.merge_cell_below = function(){
+            oldMergeCellBelow.apply(this, arguments);
+            Jupyter.sidebar.hideIndentedCells();
+            Jupyter.sidebar.update();
+        }
+    }
+
+    function patchDeleteCells(){
+        /* Update sidebar after the deletion */
+
+        var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
+        Jupyter.notebook.__proto__.delete_cells = function(){
+            oldDeleteCells.apply(this, arguments);
+            Jupyter.sidebar.hideIndentedCells();
+            Jupyter.sidebar.update();
+        }
+    }
+
+
     function patchPasteCellAbove(){
+        /* ensure pasted cells have a unique janus id and sidebar updates */
+
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function(){
-            //ensure newly created cells have a unique janus id
             for(i=0; i<Jupyter.notebook.clipboard.length; i++){
                 Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
             }
@@ -176,6 +222,8 @@ define([
     }
 
     function patchPasteCellBelow(){
+        /* ensure pasted cells have a unique janus id and sidebar updates */
+
         var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
         Jupyter.notebook.__proto__.paste_cell_below = function(){
             //ensure newly created cells have a unique janus id
@@ -189,6 +237,8 @@ define([
     }
 
     function patchPasteCellReplace(){
+        /* ensure pasted cells have a unique janus id and sidebar updates */
+
         var oldPasteCellReplace = Jupyter.notebook.__proto__.paste_cell_replace;
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
             //ensure newly created cells have a unique janus id
@@ -201,25 +251,9 @@ define([
         }
     }
 
-    function patchMergeCellAbove(){
-        var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
-        Jupyter.notebook.__proto__.merge_cell_above = function(){
-            oldMergeCellAbove.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
-        }
-    }
-
-    function patchMergeCellBelow(){
-        var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
-        Jupyter.notebook.__proto__.merge_cell_below = function(){
-            oldMergeCellBelow.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
-        }
-    }
-
     function patchSplitCell(){
+        /* ensure split cells have a unique janus id and sidebar updates */
+
         var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
         Jupyter.notebook.__proto__.split_cell = function(){
             var cell = Jupyter.notebook.get_selected_cell();
@@ -240,33 +274,35 @@ define([
                     new_cell.metadata.janus_cell_id = Math.random().toString(16).substring(2);
                 }
                 Jupyter.sidebar.hideIndentedCells();
+                Jupyter.sidebar.update();
             }
             else{
                 oldSplitCell.apply(this, arguments);
             }
-            Jupyter.sidebar.update();
         }
     }
 
     function patchInsertCellAtIndex(){
-        // Make sure newly created cells have a unique Janus id
+        /* ensure new cells have a unique janus id and sidebar updates */
+
         var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
             c.metadata.janus_cell_id = Math.random().toString(16).substring(2);
             c.metadata.hide_input = false;
-
+            // if creating a new cell after a hidden one, make new cell hidden
             if(Jupyter.notebook.get_selected_cell().metadata.cell_hidden){
                 c.metadata.cell_hidden = true
                 Jupyter.sidebar.hideIndentedCells();
                 Jupyter.sidebar.update();
             }
-
             return c;
         }
     }
 
     function patchToMarkdown(){
+        /* ensure new cells have a unique janus id and sidebar updates */
+
         var oldToMarkdown = Jupyter.notebook.__proto__.to_markdown;
         Jupyter.notebook.__proto__.to_markdown = function(){
             oldToMarkdown.apply(this, arguments);
@@ -287,6 +323,8 @@ define([
     }
 
     function patchToCode(){
+        /* ensure new cells have a unique janus id and sidebar updates */
+
         var oldToCode = Jupyter.notebook.__proto__.to_code;
         Jupyter.notebook.__proto__.to_code = function(){
             oldToCode.apply(this, arguments);
@@ -300,40 +338,35 @@ define([
         }
     }
 
-    function patchDeleteCells(){
-        var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
-        Jupyter.notebook.__proto__.delete_cells = function(){
-            oldDeleteCells.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+    function patchEditMode(){
+        /* handle going to edit mode when sidebar cell is selected */
+
+        var oldEditMode = Jupyter.notebook.__proto__.edit_mode;
+        Jupyter.notebook.__proto__.edit_mode = function(){
+            cell = Jupyter.notebook.get_selected_cell()
+            if(cell.metadata.cell_hidden){
+                cell.sb_cell.unrender()
+                cell.sb_cell.focus_editor()
+            }
+            else{
+                oldEditMode.apply(this, arguments);
+            }
         }
     }
 
-    function patchEditMode(){
-            var oldEditMode = Jupyter.notebook.__proto__.edit_mode;
-            Jupyter.notebook.__proto__.edit_mode = function(){
-                cell = Jupyter.notebook.get_selected_cell()
-                if(cell.metadata.cell_hidden){
-                    cell.sb_cell.unrender()
-                    cell.sb_cell.focus_editor()
-                }
-                else{
-                    oldEditMode.apply(this, arguments);
-                }
-            }
-    }
-
     function patchCommandMode(){
-            var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
-            Jupyter.notebook.__proto__.command_mode = function(){
-                cell = Jupyter.notebook.get_selected_cell()
-                if(cell.metadata.cell_hidden){
-                    cell.sb_cell.code_mirror.getInputField().blur()
-                }
-                else{
-                    oldCommandMode.apply(this, arguments);
-                }
+        /* handle going to command mode when sidebar cell is selected */
+
+        var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
+        Jupyter.notebook.__proto__.command_mode = function(){
+            cell = Jupyter.notebook.get_selected_cell()
+            if(cell.metadata.cell_hidden){
+                cell.sb_cell.code_mirror.getInputField().blur()
             }
+            else{
+                oldCommandMode.apply(this, arguments);
+            }
+        }
     }
 
     return{

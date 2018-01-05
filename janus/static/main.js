@@ -1,5 +1,5 @@
 /*
-Janus: Jupyter Notebook Extension that assist with notebook cleaning
+Janus: Jupyter Notebook Extension that assists with notebook cleaning
 */
 
 define([
@@ -26,9 +26,7 @@ define([
     Sidebar
 ){
 
-    //TODO fix bug with page scrolling to last selected cell, even when sidebar opened
-    // ideally, find what causes it to jump to the selected cell...
-    //TODO separate code into multiple files for future maintenance
+    //TODO refactor
     //TODO enable cell-level histories
     //TODO show full history of all cell executions
     //TODO enable meta-data only notebook history tracking (stretch)
@@ -150,6 +148,7 @@ define([
                     markers[0].parentNode.removeChild(markers[0]);
                 }
             }
+            Jupyter.sidebar.collapse();
         }
     }
 
