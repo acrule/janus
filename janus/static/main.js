@@ -28,9 +28,9 @@ define([
     CellHistory
 ){
 
-    //TODO refactor
-    //TODO enable cell-level histories
+    //TODO clean up styling
     //TODO show full history of all cell executions
+    //TODO enable incrimental loading of previous results
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO render more informative marker of hidden cells (stretch)
 
@@ -130,14 +130,14 @@ define([
         if(cell.metadata.hide_input){
             // clear any current code hidden markers
             var output_area = cell.element.find('div.output_wrapper')[0]
-            var markers = output_area.getElementsByClassName('hidden-code-marker')
+            var markers = output_area.getElementsByClassName('hidden-code')
             while(markers[0]){
                 markers[0].parentNode.removeChild(markers[0]);
             }
 
             // add the new marker
             var newElement = document.createElement('div');
-            newElement.className = "hidden-code-marker fa fa-code"
+            newElement.className = "marker hidden-code fa fa-code"
             newElement.onclick = function(){showCodeInSidebar(cell, newElement)};
             output_area.appendChild(newElement)
         }
@@ -145,7 +145,7 @@ define([
             // clear any current code hidden markers
             var output_area = cell.element.find('div.output_wrapper')[0]
             if(output_area){
-                var markers = output_area.getElementsByClassName('hidden-code-marker')
+                var markers = output_area.getElementsByClassName('hidden-code')
                 while(markers[0]){
                     markers[0].parentNode.removeChild(markers[0]);
                 }
@@ -158,6 +158,10 @@ define([
         all_cells = Jupyter.notebook.get_cells()
         for(i=0; i < all_cells.length; i++){
             renderCodeMarker(all_cells[i]);
+            // if not selected, hide the markers
+            if(!all_cells[i].selected){
+                CellHistory.hide_markers(all_cells[i]);
+            }
         }
     }
 

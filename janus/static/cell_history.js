@@ -219,7 +219,8 @@ define([
     }
 
     function hide_markers(cell){
-        $(cell.element[0]).find(".marker").hide()
+        $(cell.element[0]).find(".marker").hide();
+        $(cell.element[0]).find(".marker.active").show();
     }
 
     function show_markers(cell){
@@ -357,6 +358,7 @@ define([
     return {
         load_cell_history: load_cell_history,
         render_markers: render_markers,
-        show_markers: show_markers
+        show_markers: show_markers,
+        hide_markers: hide_markers
     };
 });

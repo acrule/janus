@@ -405,15 +405,16 @@ define([
         /*  highlight the marker clicked to show the sidebar
         marker: dom element, or null */
 
-        $('.placeholder').removeClass('showing')
-        $('.hidden-code-marker').removeClass('showing')
+        $('.placeholder').removeClass('active')
+        $('.hidden-code').removeClass('active')
         if(marker != null){
-            $(marker).addClass('showing')
+            $(marker).addClass('active')
         }
     }
 
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids){
         elem.after($('<div>')
+            .addClass('marker')
             .addClass('placeholder')
             .data('ids', cell_ids.slice())
             .click(function(){

@@ -59,7 +59,7 @@ define([
             // if selecting a hidden cell
             if(this.metadata.cell_hidden){
                 // highlight the associated placeholder
-                $('.placeholder').removeClass('active')
+                //$('.placeholder').removeClass('active')
                 $(this.element).nextAll('.placeholder').first().addClass('active')
 
                 // attempted more robust selection of associate placeholder, but
@@ -86,7 +86,7 @@ define([
             // if selecting a cell visible in the notebook
             else{
                 // make sure all placeholders are not highlighted
-                $('.placeholder').removeClass('active')
+                //$('.placeholder').removeClass('active')
 
                 // unselect the corresponding cell in the sidebar, if visible
                 if(!Jupyter.sidebar.collapsed){
