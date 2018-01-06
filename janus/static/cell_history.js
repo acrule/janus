@@ -45,6 +45,9 @@ define([
         return function() {
             //listenForDoubleClick(element);
             change_version(cell, v);
+            if((cell.metadata.cell_hidden || cell.metadata.hide_input) && ! Jupyter.sidebar.collapsed && cell.nb_cell){
+                change_version(cell.nb_cell, cell.metadata.current_version)
+            }
         }
     }
 

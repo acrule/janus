@@ -28,9 +28,9 @@ define([
     CellHistory
 ){
 
-    //TODO clean up styling
+    //TODO add a clutch for the cell history tracking (off by default)
     //TODO show full history of all cell executions
-    //TODO enable incrimental loading of previous results
+    //TODO enable incrimental loading of previous results (incpy)
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO render more informative marker of hidden cells (stretch)
 
