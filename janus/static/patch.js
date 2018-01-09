@@ -57,7 +57,7 @@ define([
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function(){
             // if selecting a hidden cell
-            if(this.metadata.cell_hidden){
+            if(this.metadata.janus.cell_hidden){
                 // highlight the associated placeholder
                 //$('.placeholder').removeClass('active')
                 $(this.element).nextAll('.placeholder').first().addClass('active')
@@ -65,7 +65,7 @@ define([
                 // attempted more robust selection of associate placeholder, but
                 // led to notebook freezing (unbounded for loop?)
                 // placeholders = $('.placeholder').toArray()
-                // janus_id = this.metadata.janus_cell_id
+                // janus_id = this.metadata.cell_id
                 // for(i=0; i<placeholders.length; i++){
                 //     if($(placeholders[i]).data('ids').indexOf(janus_id) >= 0){
                 //         $(placeholders[i]).addClass('active')
@@ -127,7 +127,7 @@ define([
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
 
-            if(this.metadata.cell_hidden || this.metadata.hide_input){
+            if(this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden){
                 this.set_text(this.sb_cell.get_text())
                 oldCodeCellExecute.apply(this, arguments);
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
@@ -143,7 +143,11 @@ define([
 
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
-            if(this.metadata.cell_hidden && this.sb_cell != undefined){
+            if(this.metadata.janus == undefined){
+                generateDefaultJanusMetadata(this)
+            }
+
+            if(this.metadata.janus.cell_hidden && this.sb_cell != undefined){
                 this.set_text(this.sb_cell.get_text())
                 oldTextCellRender.apply(this, arguments)
                 this.sb_cell.fromJSON(this.toJSON())
@@ -215,7 +219,7 @@ define([
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function(){
             for(i=0; i<Jupyter.notebook.clipboard.length; i++){
-                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellAbove.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -230,7 +234,7 @@ define([
         Jupyter.notebook.__proto__.paste_cell_below = function(){
             //ensure newly created cells have a unique janus id
             for(i=0; i<Jupyter.notebook.clipboard.length; i++){
-                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellBelow.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -245,7 +249,7 @@ define([
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
             //ensure newly created cells have a unique janus id
             for(i=0; i<Jupyter.notebook.clipboard.length; i++){
-                Jupyter.notebook.clipboard[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellReplace.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -259,7 +263,7 @@ define([
         var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
         Jupyter.notebook.__proto__.split_cell = function(){
             var cell = Jupyter.notebook.get_selected_cell();
-            if(cell.metadata.cell_hidden){
+            if(cell.metadata.janus.cell_hidden){
                 if (cell.sb_cell.is_splittable()) {
                     var texta = cell.sb_cell.get_pre_cursor();
                     var textb = cell.sb_cell.get_post_cursor();
@@ -272,8 +276,8 @@ define([
                     new_cell.unrender();
                     new_cell.set_text(texta);
                     // sidebar cell metadata
-                    new_cell.metadata = JSON.parse(JSON.stringify(cell.metadata));
-                    new_cell.metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                    new_cell.metadata.janus = JSON.parse(JSON.stringify(cell.metadata.janus));
+                    new_cell.metadata.janus.cell_id = Math.random().toString(16).substring(2);
                 }
                 Jupyter.sidebar.hideIndentedCells();
                 Jupyter.sidebar.update();
@@ -290,11 +294,11 @@ define([
         var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
-            c.metadata.janus_cell_id = Math.random().toString(16).substring(2);
-            c.metadata.hide_input = false;
+            generateDefaultJanusMetadata(c);
+            currentCellMetadata = Jupyter.notebook.get_selected_cell().metadata
             // if creating a new cell after a hidden one, make new cell hidden
-            if(Jupyter.notebook.get_selected_cell().metadata.cell_hidden){
-                c.metadata.cell_hidden = true
+            if(currentCellMetadata.janus.cell_hidden){
+                c.metadata.janus.cell_hidden = true
                 Jupyter.sidebar.hideIndentedCells();
                 Jupyter.sidebar.update();
             }
@@ -310,7 +314,7 @@ define([
             oldToMarkdown.apply(this, arguments);
             selected_cells = Jupyter.notebook.get_selected_cells();
             for(i=0; i<selected_cells.length; i++){
-                selected_cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                selected_cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             Jupyter.sidebar.hideIndentedCells();
             Jupyter.sidebar.update();
@@ -332,7 +336,7 @@ define([
             oldToCode.apply(this, arguments);
             selected_cells = Jupyter.notebook.get_selected_cells();
             for(i=0; i<selected_cells.length; i++){
-                selected_cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+                selected_cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             Jupyter.sidebar.hideIndentedCells();
             Jupyter.sidebar.update();
@@ -346,7 +350,7 @@ define([
         var oldEditMode = Jupyter.notebook.__proto__.edit_mode;
         Jupyter.notebook.__proto__.edit_mode = function(){
             cell = Jupyter.notebook.get_selected_cell()
-            if(cell.metadata.cell_hidden){
+            if(cell.metadata.janus.cell_hidden){
                 cell.sb_cell.unrender()
                 cell.sb_cell.focus_editor()
             }
@@ -362,7 +366,7 @@ define([
         var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
         Jupyter.notebook.__proto__.command_mode = function(){
             cell = Jupyter.notebook.get_selected_cell()
-            if(cell.metadata.cell_hidden){
+            if(cell.metadata.janus.cell_hidden){
                 cell.sb_cell.code_mirror.getInputField().blur()
             }
             else{
@@ -371,7 +375,30 @@ define([
         }
     }
 
+    function generateDefaultJanusMetadata(cell){
+        if(cell.metadata.janus == undefined){
+            id = Math.random().toString(16).substring(2);
+            cell_hidden = false;
+            source_hidden = false;
+            outputs_hidden = false;
+            track_versions = false;
+            versions = [];
+            current_version = 0;
+            cell.metadata.janus = {
+                'id': id,
+                'cell_hidden': cell_hidden,
+                'source_hidden': source_hidden,
+                'ouputs_hidden': outputs_hidden,
+                'track_versions': track_versions,
+                'versions_showing': false,
+                'versions': versions,
+                'current_version': current_version
+            }
+        }
+    }
+
     return{
-        applyJanusPatches: applyJanusPatches
+        applyJanusPatches: applyJanusPatches,
+        generateDefaultJanusMetadata: generateDefaultJanusMetadata
     };
 });

@@ -22,10 +22,10 @@ define([
     function change_version(cell, v){
         var input_area = cell.element.find('div.input_area')[0];
         var markers = input_area.getElementsByClassName('version')
-        var versions = cell.metadata.versions
+        var versions = cell.metadata.janus.versions
 
         // update cell metadata
-        cell.metadata.current_version = v;
+        cell.metadata.janus.current_version = v;
 
         // update cell input and output
         cell.set_text(versions[v]['in']);
@@ -45,14 +45,14 @@ define([
         return function() {
             //listenForDoubleClick(element);
             change_version(cell, v);
-            if((cell.metadata.cell_hidden || cell.metadata.hide_input) && ! Jupyter.sidebar.collapsed && cell.nb_cell){
-                change_version(cell.nb_cell, cell.metadata.current_version)
+            if((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden) && ! Jupyter.sidebar.collapsed && cell.nb_cell){
+                change_version(cell.nb_cell, cell.metadata.janus.current_version)
             }
         }
     }
 
     function toggle_version_markers(marker, cell){
-        cell.metadata.versions_showing = !cell.metadata.versions_showing;
+        cell.metadata.janus.versions_showing = !cell.metadata.janus.versions_showing;
         render_markers(cell);
     }
 
@@ -64,10 +64,10 @@ define([
 
 // RENDERING Functions
     function render_summary_marker(cell){
-        if(cell.metadata.versions){
+        if(cell.metadata.janus.versions.length > 0){
             var input_area = cell.element.find('div.input_area')[0];
-            var num_versions = cell.metadata.versions.length
-            var showing = cell.metadata.versions_showing
+            var num_versions = cell.metadata.janus.versions.length
+            var showing = cell.metadata.janus.versions_showing
 
             // clear current summary marker
             var markers = input_area.getElementsByClassName('summary')
@@ -105,9 +105,9 @@ define([
     }
 
     function render_version_markers(cell){
-        if(cell.metadata.versions){
-            var num_versions = cell.metadata.versions.length;
-            var showing = cell.metadata.versions_showing;
+        if(cell.metadata.janus.versions.length > 0){
+            var num_versions = cell.metadata.janus.versions.length;
+            var showing = cell.metadata.janus.versions_showing;
             var input_area = cell.element.find('div.input_area')[0]; // get the first input area
 
             // clear current markers
@@ -127,15 +127,15 @@ define([
                     newElement.className = "marker version";
 
                     // assign colors
-                    if (v == cell.metadata.current_version){
+                    if (v == cell.metadata.janus.current_version){
                         newElement.classList.add('selected-version')
                     } else {
                         newElement.classList.remove('selected-version')
                     }
 
                     // render version name
-                    if(cell.metadata.versions[v].name){
-                        newElement.innerHTML = cell.metadata.versions[v].name
+                    if(cell.metadata.janus.versions[v].name){
+                        newElement.innerHTML = cell.metadata.janus.versions[v].name
                     }
 
                     // events
@@ -185,17 +185,17 @@ define([
         Jupyter.notebook.keyboard_manager.command_mode();
 
         // get the cell
-        this_version = cell.metadata.current_version
-        cell.metadata.versions[this_version].name = element.innerHTML
+        this_version = cell.metadata.janus.current_version
+        cell.metadata.janus.versions[this_version].name = element.innerHTML
         if(cell.nb_cell != undefined){
-            cell.nb_cell.metadata.versions[this_version].name = element.innerHTML
+            cell.nb_cell.metadata.janus.versions[this_version].name = element.innerHTML
         }
     }
 
     function render_markers(cell){
         // make sure the showing variable has a value before we call renderers
-        if (cell.metadata.versions_showing === undefined){
-            cell.metadata.versions_showing = false;
+        if (cell.metadata.janus.versions_showing === undefined){
+            cell.metadata.janus.versions_showing = false;
         }
         render_version_markers(cell);
         render_summary_marker(cell);
@@ -234,21 +234,21 @@ define([
     function check_version(cell){
         var version = {'in': cell.get_text(), 'out': cell.output_area.outputs}
         // version control
-        if (cell.metadata.versions === undefined){
-            cell.metadata.versions = [version];
-            cell.metadata.current_version = 0;
+        if (cell.metadata.janus.versions === undefined){
+            cell.metadata.janus.versions = [version];
+            cell.metadata.janus.current_version = 0;
         } else {
-            cell.metadata.versions.push(version);
-            cell.metadata.current_version = cell.metadata.versions.length-1;
+            cell.metadata.janus.versions.push(version);
+            cell.metadata.janus.current_version = cell.metadata.janus.versions.length-1;
 
             // check if version is distinct from already saved versions
-            // var current_version = cell.metadata.versions.indexOf(version);
+            // var current_version = cell.metadata.janus.versions.indexOf(version);
             // if (current_version == -1){
-            //     cell.metadata.versions.push(version);
-            //     cell.metadata.current_version = cell.metadata.versions.length-1;
+            //     cell.metadata.janus.versions.push(version);
+            //     cell.metadata.janus.current_version = cell.metadata.janus.versions.length-1;
             // }
             // else {
-            //     cell.metadata.current_version = current_version;
+            //     cell.metadata.janus.current_version = current_version;
             // }
 
         }
@@ -270,7 +270,7 @@ define([
         CodeCell.prototype.select = function () {
             old_select.apply(this, arguments);
             show_markers(this);
-            if((this.metadata.cell_hidden || this.metadata.hide_input) && ! Jupyter.sidebar.collapsed && this.sb_cell){
+            if((this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden) && ! Jupyter.sidebar.collapsed && this.sb_cell){
                 show_markers(this.sb_cell)
                 this.sb_cell.select()
             }
@@ -283,7 +283,7 @@ define([
         CodeCell.prototype.unselect = function () {
             old_unselect.apply(this, arguments);
             hide_markers(this);
-            if((this.metadata.cell_hidden || this.metadata.hide_input) && ! Jupyter.sidebar.collapsed && this.sb_cell){
+            if((this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden) && ! Jupyter.sidebar.collapsed && this.sb_cell){
                 hide_markers(this.sb_cell)
             }
 		}
@@ -294,49 +294,49 @@ define([
         document.onkeydown = function(e){
             var cell = Jupyter.notebook.get_selected_cell();
             hidden_cell = false;
-            if((cell.metadata.cell_hidden || cell.metadata.hide_input) && ! Jupyter.sidebar.collapsed && cell.sb_cell){
+            if((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden) && ! Jupyter.sidebar.collapsed && cell.sb_cell){
                 hidden_cell = true;
                 cell = cell.sb_cell
 
             }
 
-            var expanded = cell.metadata.versions_showing
-            var versions = cell.metadata.versions
+            var expanded = cell.metadata.janus.versions_showing
+            var versions = cell.metadata.janus.versions
 
             if (Jupyter.notebook.keyboard_manager.mode == "command" && expanded){ // if not editing cell and versions are showing
                 if (e.keyCode == 37){ // left
-                    if (cell.metadata.current_version > 0){
-                        cell.metadata.current_version--;
-                        change_version(cell, cell.metadata.current_version)
+                    if (cell.metadata.janus.current_version > 0){
+                        cell.metadata.janus.current_version--;
+                        change_version(cell, cell.metadata.janus.current_version)
                         if(hidden_cell){
-                            change_version(cell.nb_cell, cell.metadata.current_version)
+                            change_version(cell.nb_cell, cell.metadata.janus.current_version)
                         }
                     }
                 }
                 else if(e.keyCode == 39){ // right
-                    if (cell.metadata.current_version < versions.length - 1){
-                        cell.metadata.current_version++;
-                        change_version(cell, cell.metadata.current_version)
+                    if (cell.metadata.janus.current_version < versions.length - 1){
+                        cell.metadata.janus.current_version++;
+                        change_version(cell, cell.metadata.janus.current_version)
                         if(hidden_cell){
-                            change_version(cell.nb_cell, cell.metadata.current_version)
+                            change_version(cell.nb_cell, cell.metadata.janus.current_version)
                         }
                     }
                 }
                 else if(e.keyCode == 8 && versions.length > 1){ // delete, and check there are at least two versions
-                    versions.splice(cell.metadata.current_version, 1);
+                    versions.splice(cell.metadata.janus.current_version, 1);
                     if(hidden_cell){
-                        cell.nb_cell.metadata.versions.splice(cell.metadata.current_version, 1);
+                        cell.nb_cell.metadata.janus.versions.splice(cell.metadata.janus.current_version, 1);
                     }
-                    if (versions.length == cell.metadata.current_version){
-                        cell.metadata.current_version--;
+                    if (versions.length == cell.metadata.janus.current_version){
+                        cell.metadata.janus.current_version--;
                         if(hidden_cell){
-                            cell.nb_cell.metadata.current_version--;
+                            cell.nb_cell.metadata.janus.current_version--;
                         }
                     }
                     render_markers(cell);
-                    change_version(cell, cell.metadata.current_version);
+                    change_version(cell, cell.metadata.janus.current_version);
                     if(hidden_cell){
-                        change_version(cell.nb_cell, cell.metadata.current_version)
+                        change_version(cell.nb_cell, cell.metadata.janus.current_version)
                     }
                 }
             }

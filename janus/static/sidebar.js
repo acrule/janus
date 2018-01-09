@@ -68,7 +68,7 @@ define([
             }
 
             // hide output if needed
-            if(newCell.metadata.hide_input){
+            if(newCell.metadata.janus.source_hidden){
                 newCell.element.find("div.output_wrapper").hide();
             }
 
@@ -168,10 +168,10 @@ define([
         new_cell_ids = []
         old_cell_ids = []
         for(i=0; i<cells.length; i++){
-            new_cell_ids.push(cells[i].metadata.janus_cell_id)
+            new_cell_ids.push(cells[i].metadata.janus.cell_id)
         }
         for(j=0; j<this.cells.length; j++){
-            old_cell_ids.push(this.cells[j].metadata.janus_cell_id)
+            old_cell_ids.push(this.cells[j].metadata.janus.cell_id)
         }
 
         // expand sidebar if collapsed
@@ -179,7 +179,7 @@ define([
             this.expand()
             nb_cells = Jupyter.notebook.get_cells()
             for(i=0; i < nb_cells.length; i++){
-                if(cells[0].metadata.janus_cell_id == nb_cells[i].metadata.janus_cell_id){
+                if(cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
                     Jupyter.notebook.select(i);
                     Jupyter.notebook.scroll_to_cell(i, 500)
                 }
@@ -195,7 +195,7 @@ define([
             highlightMarker(this.marker)
             nb_cells = Jupyter.notebook.get_cells()
             for(i=0; i < nb_cells.length; i++){
-                if(cells[0].metadata.janus_cell_id == nb_cells[i].metadata.janus_cell_id){
+                if(cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
                     Jupyter.notebook.select(i);
                     //Jupyter.notebook.scroll_to_cell(i, 500)
                 }
@@ -252,7 +252,7 @@ define([
                 sb_cells[0].focus_editor();
                 nb_cells = Jupyter.notebook.get_cells()
                 for(i=0; i < nb_cells.length; i++){
-                    if(sb_cells[0].metadata.janus_cell_id == nb_cells[i].metadata.janus_cell_id){
+                    if(sb_cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
                         Jupyter.notebook.scroll_to_cell(i, 500)
                     }
                 }
@@ -301,11 +301,11 @@ define([
             hidden_cell_ids = []
 
             for(j=0; j<this.cells.length; j++){
-                old_cell_ids.push(this.cells[j].metadata.janus_cell_id)
+                old_cell_ids.push(this.cells[j].metadata.janus.cell_id)
             }
             for(i=0; i<nb_cells.length; i++){
-                if(nb_cells[i].metadata.cell_hidden){
-                    hidden_cell_ids.push(nb_cells[i].metadata.janus_cell_id)
+                if(nb_cells[i].metadata.janus.cell_hidden){
+                    hidden_cell_ids.push(nb_cells[i].metadata.janus.cell_id)
                 }
             }
 
@@ -348,22 +348,22 @@ define([
 
         for(i = 0; i < cells.length; i++){
             // make sure all cells have the right metadata
-            if (cells[i].metadata.cell_hidden === undefined){
-                cells[i].metadata.cell_hidden = false;
+            if (cells[i].metadata.janus.cell_hidden === undefined){
+                cells[i].metadata.janus.cell_hidden = false;
             }
             // make sure all cells have a unique Janus id
-            if (cells[i].metadata.janus_cell_id === undefined){
-                cells[i].metadata.janus_cell_id = Math.random().toString(16).substring(2);
+            if (cells[i].metadata.janus.cell_id === undefined){
+                cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
 
             // keep track of groups of hidden cells
-            if(cells[i].metadata.cell_hidden){
+            if(cells[i].metadata.janus.cell_hidden){
                 serial_hidden_cells.push(cells[i])
                 if(i == cells.length - 1){
                     cell_ids = []
                     for(j = 0; j < serial_hidden_cells.length; j++){
                         serial_hidden_cells[j].element.addClass('hidden');
-                        cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
+                        cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
                     Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
@@ -378,7 +378,7 @@ define([
                     cell_ids = []
                     for(j = 0; j < serial_hidden_cells.length; j++){
                         serial_hidden_cells[j].element.addClass('hidden');
-                        cell_ids.push(serial_hidden_cells[j].metadata.janus_cell_id);
+                        cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
                     Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
@@ -394,7 +394,7 @@ define([
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
         for(i=0; i<cells.length; i++){
-            if ( $.inArray( cells[i].metadata.janus_cell_id, cell_ids ) > -1 ){
+            if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
         }
@@ -426,7 +426,13 @@ define([
             .text(`${cell_ids.length}`))
     }
 
+    function createSidebar() {
+        /* create a new sidebar element */
+
+        return new Sidebar(Jupyter.notebook);
+    }
+
     return{
-        Sidebar: Sidebar
+        createSidebar: createSidebar
     };
 });
