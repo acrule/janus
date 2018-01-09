@@ -1,34 +1,18 @@
 /*
 Janus: Jupyter Notebook Extension that assists with notebook cleaning
+Handle hiding and showing of individual code cell sources
 */
 
 define([
-    'require',
     'jquery',
     'base/js/namespace',
-    'base/js/events',
-    'base/js/utils',
-    'notebook/js/cell',
-    'notebook/js/codecell',
-    'notebook/js/textcell',
-    '../janus/patch',
-    '../janus/sidebar',
-    '../janus/cell_history'
+    '../janus/janus_history'
 ], function(
-    require,
     $,
     Jupyter,
-    events,
-    utils,
-    Cell,
-    CodeCell,
-    TextCell,
-    JanusPatch,
-    Sidebar,
-    CellHistory
+    JanusHistory
 ){
 
-// Input functions
     function renderSourceMarker(cell){
         /* Show marker on cell with hidden source */
         if(cell.metadata.janus.source_hidden){
@@ -67,7 +51,7 @@ define([
 
             // only show marker when cell is selected
             if(!all_cells[i].selected){
-                CellHistory.hide_markers(all_cells[i]);
+                JanusHistory.hide_markers(all_cells[i]);
             }
         }
     }

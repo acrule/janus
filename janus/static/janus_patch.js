@@ -9,7 +9,7 @@ define([
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
-    '../janus/cell_history'
+    '../janus/janus_history'
 ], function(
     $,
     Jupyter,
@@ -17,10 +17,11 @@ define([
     Cell,
     CodeCell,
     TextCell,
-    CellHistory
+    JanusHistory
 ){
 
     function applyJanusPatches(){
+        /* Patch all functions needed to run Janus extension */
         console.log('[Janus] Patching Cell.cell_select, Cell.to_markdown,' +
         'Cell.to_code, CodeCell.execute, MarkdownCell.render, ' +
         'Notebook.move_selection_up, Notebook.move_selection_down, ' +
@@ -53,7 +54,6 @@ define([
 
     function patchCellSelect(){
         /* patch cell selection to handle sidebar highlighting */
-
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function(){
             // if selecting a hidden cell
@@ -102,28 +102,29 @@ define([
         }
     }
 
-    function unselectSidebarCell(cell){
-        cell.selected = false
-        cell.element.removeClass('selected')
-        cell.element.addClass('unselected')
-    }
-
     function selectSidebarCell(cell){
+        /* manage classes and variable to select sidebar cell */
         cell.selected = true
         cell.element.removeClass('unselected')
         cell.element.addClass('selected')
     }
 
+    function unselectSidebarCell(cell){
+        /* manage classes and variable to unselect sidebar cell */
+        cell.selected = false
+        cell.element.removeClass('selected')
+        cell.element.addClass('unselected')
+    }
+
     function patchCodeExecute(){
         /* execute main cell using sidebar text, then update sidebar cell */
-
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function(){
             that = this;
 
             function updateCellOnExecution(evt){
                 that.sb_cell.fromJSON(that.toJSON())
-                CellHistory.render_markers(that.sb_cell)
+                JanusHistory.render_markers(that.sb_cell)
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
 
@@ -140,7 +141,6 @@ define([
 
     function patchTextRender(){
         /* render main cell using sidebar text, then update sidebar cell */
-
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
             if(this.metadata.janus == undefined){
@@ -160,7 +160,6 @@ define([
 
     function patchMoveSelectionUp(){
         /* Update sidebar after the move */
-
         var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
         Jupyter.notebook.__proto__.move_selection_up = function(){
             oldMoveSelectionUp.apply(this, arguments);
@@ -171,7 +170,6 @@ define([
 
     function patchMoveSelectionDown(){
         /* Update sidebar after the move */
-
         var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
         Jupyter.notebook.__proto__.move_selection_down = function(){
             oldMoveSelectionDown.apply(this, arguments);
@@ -182,7 +180,6 @@ define([
 
     function patchMergeCellAbove(){
         /* Update sidebar after the merge */
-
         var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
         Jupyter.notebook.__proto__.merge_cell_above = function(){
             oldMergeCellAbove.apply(this, arguments);
@@ -193,7 +190,6 @@ define([
 
     function patchMergeCellBelow(){
         /* Update sidebar after the merge */
-
         var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
         Jupyter.notebook.__proto__.merge_cell_below = function(){
             oldMergeCellBelow.apply(this, arguments);
@@ -204,7 +200,6 @@ define([
 
     function patchDeleteCells(){
         /* Update sidebar after the deletion */
-
         var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
         Jupyter.notebook.__proto__.delete_cells = function(){
             oldDeleteCells.apply(this, arguments);
@@ -215,7 +210,6 @@ define([
 
     function patchPasteCellAbove(){
         /* ensure pasted cells have a unique janus id and sidebar updates */
-
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function(){
             for(i=0; i<Jupyter.notebook.clipboard.length; i++){
@@ -229,7 +223,6 @@ define([
 
     function patchPasteCellBelow(){
         /* ensure pasted cells have a unique janus id and sidebar updates */
-
         var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
         Jupyter.notebook.__proto__.paste_cell_below = function(){
             //ensure newly created cells have a unique janus id
@@ -244,7 +237,6 @@ define([
 
     function patchPasteCellReplace(){
         /* ensure pasted cells have a unique janus id and sidebar updates */
-
         var oldPasteCellReplace = Jupyter.notebook.__proto__.paste_cell_replace;
         Jupyter.notebook.__proto__.paste_cell_replace = function(){
             //ensure newly created cells have a unique janus id
@@ -259,7 +251,6 @@ define([
 
     function patchSplitCell(){
         /* ensure split cells have a unique janus id and sidebar updates */
-
         var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
         Jupyter.notebook.__proto__.split_cell = function(){
             var cell = Jupyter.notebook.get_selected_cell();
@@ -290,7 +281,6 @@ define([
 
     function patchInsertCellAtIndex(){
         /* ensure new cells have a unique janus id and sidebar updates */
-
         var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
@@ -308,7 +298,6 @@ define([
 
     function patchToMarkdown(){
         /* ensure new cells have a unique janus id and sidebar updates */
-
         var oldToMarkdown = Jupyter.notebook.__proto__.to_markdown;
         Jupyter.notebook.__proto__.to_markdown = function(){
             oldToMarkdown.apply(this, arguments);
@@ -330,7 +319,6 @@ define([
 
     function patchToCode(){
         /* ensure new cells have a unique janus id and sidebar updates */
-
         var oldToCode = Jupyter.notebook.__proto__.to_code;
         Jupyter.notebook.__proto__.to_code = function(){
             oldToCode.apply(this, arguments);
@@ -346,7 +334,6 @@ define([
 
     function patchEditMode(){
         /* handle going to edit mode when sidebar cell is selected */
-
         var oldEditMode = Jupyter.notebook.__proto__.edit_mode;
         Jupyter.notebook.__proto__.edit_mode = function(){
             cell = Jupyter.notebook.get_selected_cell()
@@ -362,7 +349,6 @@ define([
 
     function patchCommandMode(){
         /* handle going to command mode when sidebar cell is selected */
-
         var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
         Jupyter.notebook.__proto__.command_mode = function(){
             cell = Jupyter.notebook.get_selected_cell()
@@ -376,6 +362,7 @@ define([
     }
 
     function generateDefaultJanusMetadata(cell){
+        /* generate default Janus metadata for a cell */
         if(cell.metadata.janus == undefined){
             id = Math.random().toString(16).substring(2);
             cell_hidden = false;

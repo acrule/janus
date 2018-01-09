@@ -6,28 +6,23 @@ define([
     'require',
     'jquery',
     'base/js/namespace',
-    'base/js/events',
-    'base/js/utils',
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
-    '../janus/cell_history'
+    '../janus/janus_history'
 ], function(
     require,
     $,
     Jupyter,
-    events,
-    utils,
     Cell,
     CodeCell,
     TextCell,
-    CellHistory
+    JanusHistory
 ){
 
 
     var Sidebar = function(nb){
-        /* A sidebar panel for indenting cells */
-
+        /* A sidebar panel for showing indented cells */
         var sidebar = this;
         Jupyter.sidebar = sidebar;
 
@@ -100,7 +95,7 @@ define([
             });
 
             // render any history markers
-            CellHistory.render_markers(newCell);
+            JanusHistory.render_markers(newCell);
         }
 
         // focus the first cell in the sidebar
@@ -113,9 +108,8 @@ define([
     }
 
     Sidebar.prototype.createSidebarCell = function(cell){
-        /* Returns a sidebar cell that duplicates and is linked to a cell in the
-        main notebook
-        cell: a single cell object from the main notebook*/
+        /* Create sidebar cell duplicating a cell in the main notebook
+        cell: a single cell object from the main notebook */
 
         newCell = null
 
@@ -339,7 +333,7 @@ define([
     }
 
     Sidebar.prototype.hideIndentedCells = function(){
-        // hide all indented cells and render placeholders in their place
+        /* hide all indented cells and render placeholders in their place */
 
         $(".placeholder").remove()
 
@@ -390,7 +384,7 @@ define([
     }
 
     Sidebar.prototype.showWithCells = function (cell_ids){
-        // get the cells we should show
+        /* get cells to show in sidebar if given their Janus ids */
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
         for(i=0; i<cells.length; i++){
@@ -413,6 +407,7 @@ define([
     }
 
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids){
+        /* Add the placeholder used to open a group of indented cells */
         elem.after($('<div>')
             .addClass('marker')
             .addClass('placeholder')
@@ -428,7 +423,6 @@ define([
 
     function createSidebar() {
         /* create a new sidebar element */
-
         return new Sidebar(Jupyter.notebook);
     }
 
