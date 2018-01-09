@@ -78,7 +78,14 @@ define([
             )
         );
 
-        //TODO add toggle cellhistory
+        editMenu.append($('<li>')
+            .attr('id', 'toggle_cell_history')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Toggle Cell History')
+                .click(JanusHistory.toggleCellHistoryTracking)
+            )
+        );
     }
 
     function renderJanusButtons() {
@@ -88,6 +95,13 @@ define([
             help    : 'Toggle Input',
             help_index : 'zz',
             handler : JanusSource.toggleSource
+        };
+
+        var toggleHistoryAction = {
+            icon: 'fa-history',
+            help    : 'Toggle Cell History',
+            help_index : 'zz',
+            handler : JanusHistory.toggleCellHistoryTracking
         };
 
         var indentAction = {
@@ -114,10 +128,18 @@ define([
         var full_unindent_action_name = Jupyter.actions.register(unindentAction,
                                                             'unindent-cell',
                                                             prefix);
+        var full_toggle_hist_action_name = Jupyter.actions.register(toggleHistoryAction,
+                                                            'toggle-cell-history',
+                                                            prefix);
 
         Jupyter.toolbar.add_buttons_group([full_indent_action_name,
                                         full_unindent_action_name,
-                                        full_toggle_action_name]);
+                                        full_toggle_action_name,
+                                        full_toggle_hist_action_name]);
+    }
+
+    function clickedHistory(){
+        console.log("History toggled")
     }
 
     function initializeJanusMetadata(){

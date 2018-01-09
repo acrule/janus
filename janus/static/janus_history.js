@@ -67,6 +67,18 @@ define([
         }
     }
 
+    function toggleCellHistoryTracking(){
+        cell = Jupyter.notebook.get_selected_cell();
+        cell.metadata.janus.track_versions = ! cell.metadata.janus.track_versions;
+
+        /* Set message and update menu-items when tracking turned on / off */
+       var message = 'Cell history tracking off';
+       if(cell.metadata.janus.track_versions){
+           message = 'Cell history tracking on';
+       }
+       Jupyter.notification_area.widget('notebook').set_message(message, 2000)
+    }
+
 // RENDERING Functions
     function render_summary_marker(cell){
         /* create a summary marker for cell history versions */
@@ -245,6 +257,10 @@ define([
 
 // VERSION CONTROL
     function check_version(cell){
+        // only track the version if metadata flagged to do so
+        if (! cell.metadata.janus.track_versions){
+            return;
+        }
         /* check if this version of the cell has been saved before */
         var version = {'in': cell.get_text(), 'out': cell.output_area.outputs}
 
@@ -382,6 +398,7 @@ define([
         load_cell_history: load_cell_history,
         render_markers: render_markers,
         show_markers: show_markers,
-        hide_markers: hide_markers
+        hide_markers: hide_markers,
+        toggleCellHistoryTracking: toggleCellHistoryTracking
     };
 });
