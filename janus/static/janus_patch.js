@@ -73,8 +73,8 @@ define([
                 // }
 
                 // select the corresponding cell in the sidebar, if visible
-                if(!Jupyter.sidebar.collapsed){
-                    sb_cells = Jupyter.sidebar.cells
+                if(!Jupyter.notebook.session.sidebar.collapsed){
+                    sb_cells = Jupyter.notebook.session.sidebar.cells
                     for(j=0; j < sb_cells.length; j++){
                         unselectSidebarCell(sb_cells[j])
                     }
@@ -89,8 +89,8 @@ define([
                 //$('.placeholder').removeClass('active')
 
                 // unselect the corresponding cell in the sidebar, if visible
-                if(!Jupyter.sidebar.collapsed){
-                    sb_cells = Jupyter.sidebar.cells
+                if(!Jupyter.notebook.session.sidebar.collapsed){
+                    sb_cells = Jupyter.notebook.session.sidebar.cells
                     for(j=0; j < sb_cells.length; j++){
                         unselectSidebarCell(sb_cells[j])
                     }
@@ -163,8 +163,8 @@ define([
         var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
         Jupyter.notebook.__proto__.move_selection_up = function(){
             oldMoveSelectionUp.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -173,8 +173,8 @@ define([
         var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
         Jupyter.notebook.__proto__.move_selection_down = function(){
             oldMoveSelectionDown.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -183,8 +183,8 @@ define([
         var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
         Jupyter.notebook.__proto__.merge_cell_above = function(){
             oldMergeCellAbove.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -193,8 +193,8 @@ define([
         var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
         Jupyter.notebook.__proto__.merge_cell_below = function(){
             oldMergeCellBelow.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -203,8 +203,8 @@ define([
         var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
         Jupyter.notebook.__proto__.delete_cells = function(){
             oldDeleteCells.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -216,8 +216,8 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellAbove.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -230,8 +230,8 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellBelow.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -244,8 +244,8 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
             oldPasteCellReplace.apply(this, arguments);
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
         }
     }
 
@@ -270,8 +270,8 @@ define([
                     new_cell.metadata.janus = JSON.parse(JSON.stringify(cell.metadata.janus));
                     new_cell.metadata.janus.cell_id = Math.random().toString(16).substring(2);
                 }
-                Jupyter.sidebar.hideIndentedCells();
-                Jupyter.sidebar.update();
+                Jupyter.notebook.session.sidebar.hideIndentedCells();
+                Jupyter.notebook.session.sidebar.update();
             }
             else{
                 oldSplitCell.apply(this, arguments);
@@ -289,8 +289,8 @@ define([
             // if creating a new cell after a hidden one, make new cell hidden
             if(currentCellMetadata.janus.cell_hidden){
                 c.metadata.janus.cell_hidden = true
-                Jupyter.sidebar.hideIndentedCells();
-                Jupyter.sidebar.update();
+                Jupyter.notebook.session.sidebar.hideIndentedCells();
+                Jupyter.notebook.session.sidebar.update();
             }
             return c;
         }
@@ -305,9 +305,9 @@ define([
             for(i=0; i<selected_cells.length; i++){
                 selected_cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
-            if(!Jupyter.sidebar.collapsed){
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
+            if(!Jupyter.notebook.session.sidebar.collapsed){
                 selected_cells = Jupyter.notebook.get_selected_cells();
                 for(i=0; i<selected_cells.length; i++){
                     selected_cells[i].sb_cell.unrender()
@@ -326,8 +326,8 @@ define([
             for(i=0; i<selected_cells.length; i++){
                 selected_cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
             }
-            Jupyter.sidebar.hideIndentedCells();
-            Jupyter.sidebar.update();
+            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.notebook.session.sidebar.update();
             selected_cells[0].sb_cell.focus_editor()
         }
     }

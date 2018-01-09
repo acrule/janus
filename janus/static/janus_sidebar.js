@@ -24,7 +24,7 @@ define([
     var Sidebar = function(nb){
         /* A sidebar panel for showing indented cells */
         var sidebar = this;
-        Jupyter.sidebar = sidebar;
+        nb.session.sidebar = sidebar;
 
         sidebar.notebook = nb;
         sidebar.collapsed = true;
@@ -35,6 +35,8 @@ define([
         // create html element for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
         $("#notebook").append(sidebar.element);
+
+        return this;
     };
 
     Sidebar.prototype.renderCells = function(cells){
@@ -70,7 +72,7 @@ define([
             // intercept sidebar click events and apply them to original cell
             newCell._on_click = function(event){
                 // unselect all cells in sidebar
-                sb_cells = Jupyter.sidebar.cells
+                sb_cells = Jupyter.notebook.session.sidebar.cells
                 for(j=0; j < sb_cells.length; j++){
                     sb_cells[j].selected = false;
                     sb_cells[j].element.removeClass('selected');
@@ -199,8 +201,8 @@ define([
                 top: this.markerPosition - 12,
             }, 0)
             if(cells.length > 0){
-                Jupyter.sidebar.renderCells(cells);
-                Jupyter.sidebar.cells[0].focus_editor();
+                Jupyter.notebook.session.sidebar.renderCells(cells);
+                Jupyter.notebook.session.sidebar.cells[0].focus_editor();
             }
 
         }
@@ -230,13 +232,13 @@ define([
             marginLeft: '15px',
             width: sidebar_width
         }, 400, function(){
-            Jupyter.sidebar.element.animate({
+            Jupyter.notebook.session.sidebar.element.animate({
                 right: '15px',
                 width: sidebar_width,
-                top: Jupyter.sidebar.markerPosition,
+                top: Jupyter.notebook.session.sidebar.markerPosition,
                 padding: '0px'
             }, 400, function(){ // ensure code cells are fully rendered
-                sb_cells = Jupyter.sidebar.cells
+                sb_cells = Jupyter.notebook.session.sidebar.cells
                 for(i = 0; i < sb_cells.length; i++){
                     if(sb_cells[i].cell_type == 'code'){
                         sb_cells[i].render();
@@ -322,9 +324,9 @@ define([
                 placeholders = $('.placeholder').toArray()
                 for(i=0; i<placeholders.length; i++){
                     if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0){
-                        Jupyter.sidebar.marker = placeholders[i];
-                        Jupyter.sidebar.markerPosition = $(placeholders[i]).position().top
-                        Jupyter.sidebar.showWithCells($(placeholders[i]).data('ids'))
+                        Jupyter.notebook.session.sidebar.marker = placeholders[i];
+                        Jupyter.notebook.session.sidebar.markerPosition = $(placeholders[i]).position().top
+                        Jupyter.notebook.session.sidebar.showWithCells($(placeholders[i]).data('ids'))
                         break
                     }
                 }
@@ -360,7 +362,7 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.notebook.session.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
 
                     serial_hidden_cells = []
                 }
@@ -375,7 +377,7 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.notebook.session.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
 
                     serial_hidden_cells = []
                 }
@@ -392,7 +394,7 @@ define([
                 cells_to_copy.push(cells[i])
             }
         }
-        Jupyter.sidebar.toggle(cells_to_copy)
+        Jupyter.notebook.session.sidebar.toggle(cells_to_copy)
     }
 
     function highlightMarker(marker){
@@ -414,9 +416,9 @@ define([
             .data('ids', cell_ids.slice())
             .click(function(){
                 that = this;
-                Jupyter.sidebar.marker = that;
-                Jupyter.sidebar.markerPosition = $(that).position().top;
-                Jupyter.sidebar.showWithCells($(this).data('ids'))
+                Jupyter.notebook.session.sidebar.marker = that;
+                Jupyter.notebook.session.sidebar.markerPosition = $(that).position().top;
+                Jupyter.notebook.session.sidebar.showWithCells($(this).data('ids'))
             })
             .text(`${cell_ids.length}`))
     }

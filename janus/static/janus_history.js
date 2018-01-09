@@ -47,7 +47,7 @@ define([
             janus_meta = cell.metadata.janus
             change_version(cell, v);
             if((janus_meta.cell_hidden || janus_meta.source_hidden)
-                && ! Jupyter.sidebar.collapsed && cell.nb_cell){
+                && ! Jupyter.notebook.session.sidebar.collapsed && cell.nb_cell){
                 change_version(cell.nb_cell, janus_meta.current_version)
             }
         }
@@ -287,7 +287,7 @@ define([
             show_markers(this);
             janus_meta = this.metadata.janus
             if((janus_meta.cell_hidden || janus_meta.source_hidden)
-                && ! Jupyter.sidebar.collapsed && this.sb_cell){
+                && ! Jupyter.notebook.session.sidebar.collapsed && this.sb_cell){
                 show_markers(this.sb_cell)
                 this.sb_cell.select()
             }
@@ -302,7 +302,7 @@ define([
             hide_markers(this);
             janus_meta = this.metadata.janus
             if((janus_meta.cell_hidden || janus_meta.source_hidden)
-                && ! Jupyter.sidebar.collapsed && this.sb_cell){
+                && ! Jupyter.notebook.session.sidebar.collapsed && this.sb_cell){
                 hide_markers(this.sb_cell)
             }
 		}
@@ -314,7 +314,7 @@ define([
         document.onkeydown = function(e){
             var cell = Jupyter.notebook.get_selected_cell();
             hidden_cell = false;
-            if((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden) && ! Jupyter.sidebar.collapsed && cell.sb_cell){
+            if((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden) && ! Jupyter.notebook.session.sidebar.collapsed && cell.sb_cell){
                 hidden_cell = true;
                 cell = cell.sb_cell
             }
