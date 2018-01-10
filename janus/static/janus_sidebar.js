@@ -198,7 +198,7 @@ define([
             }
             // may want to created a "thinking" animation for when loading large numbers of cells
             this.element.animate({
-                top: this.markerPosition - 12,
+                top: $(this.marker).position().top - 12,
             }, 0)
             if(cells.length > 0){
                 Jupyter.notebook.session.sidebar.renderCells(cells);
@@ -235,7 +235,7 @@ define([
             Jupyter.notebook.session.sidebar.element.animate({
                 right: '15px',
                 width: sidebar_width,
-                top: Jupyter.notebook.session.sidebar.markerPosition,
+                top: $(Jupyter.notebook.session.sidebar.marker).position().top,
                 padding: '0px'
             }, 400, function(){ // ensure code cells are fully rendered
                 sb_cells = Jupyter.notebook.session.sidebar.cells

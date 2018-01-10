@@ -24,12 +24,11 @@ define([
     JanusIndent
 ){
 
-    //TODO add a clutch for the cell history tracking (off by default)
-    //TODO move Jupyter.notebook.session.sidebar to Jupyter.notebook.session.sidebar
-    //TODO show full history of all cell executions
-    //TODO enable incrimental loading of previous results (incpy)
+    //TODO show full history of all cell executions (Sean?)
+    //TODO enagle truncated history based on program analysis... (Sean?)
     //TODO enable meta-data only notebook history tracking (stretch)
     //TODO render more informative marker of hidden cells (stretch)
+    //TODO enable incrimental loading of previous results (incpy) (stretch)
 
     function load_css() {
         /* Load css for sidebar */
