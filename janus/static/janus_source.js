@@ -39,7 +39,7 @@ define([
                     markers[0].parentNode.removeChild(markers[0]);
                 }
             }
-            Jupyter.notebook.session.sidebar.collapse();
+            Jupyter.sidebar.collapse();
         }
     }
 
@@ -66,9 +66,9 @@ define([
 
     function showSourceInSidebar(cell, marker){
         /* Show this cell's source in the sidebar */
-        Jupyter.notebook.session.sidebar.marker = marker
-        Jupyter.notebook.session.sidebar.markerPosition = $(cell.element).position().top
-        Jupyter.notebook.session.sidebar.toggle([cell])
+        Jupyter.sidebar.marker = marker
+        Jupyter.sidebar.markerPosition = $(cell.element).position().top
+        Jupyter.sidebar.toggle([cell])
     }
 
     function updateSourceVisibility(){

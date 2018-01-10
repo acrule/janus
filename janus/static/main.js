@@ -160,7 +160,7 @@ define([
         // run steps that require cells to already be loaded
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
             initializeJanusMetadata();
-            Jupyter.notebook.session.sidebar.hideIndentedCells();
+            Jupyter.sidebar.hideIndentedCells();
             JanusHistory.load_cell_history();
             JanusSource.updateSourceVisibility();
             JanusSource.renderAllSourceMarkers();
@@ -168,7 +168,7 @@ define([
 
         // or wait until the notebook has loaded to perform them
         events.on("notebook_loaded.Notebook", initializeJanusMetadata);
-        events.on("notebook_loaded.Notebook", Jupyter.notebook.session.sidebar.hideIndentedCells);
+        events.on("notebook_loaded.Notebook", Jupyter.sidebar.hideIndentedCells);
         events.on("notebook_loaded.Notebook", JanusHistory.load_cell_history);
         events.on("notebook_loaded.Notebook", JanusSource.updateSourceVisibility);
         events.on("notebook_loaded.Notebook", JanusSource.renderAllSourceMarkers);

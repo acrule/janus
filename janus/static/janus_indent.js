@@ -62,10 +62,10 @@ define([
         }
 
         // put placeholder div immediatley after last hidden cell
-        Jupyter.notebook.session.sidebar.addPlaceholderAfterElementWithIds(
+        Jupyter.sidebar.addPlaceholderAfterElementWithIds(
             hidden_cells[hidden_cells.length - 1].element,
             cell_ids)
-        Jupyter.notebook.session.sidebar.update();
+        Jupyter.sidebar.update();
     }
 
     function unindentCell(){
@@ -81,17 +81,17 @@ define([
         }
 
         // remove any hidden cells from the sidebar
-        for(j=0; j<Jupyter.notebook.session.sidebar.cells.length; j++){
-            if(Jupyter.notebook.session.sidebar.cells[j].selected){
-                Jupyter.notebook.session.sidebar.cells[j].element.addClass('hidden');
-                Jupyter.notebook.session.sidebar.cells[j].element.remove();
-                Jupyter.notebook.session.sidebar.cells.splice(i, 1);
+        for(j=0; j<Jupyter.sidebar.cells.length; j++){
+            if(Jupyter.sidebar.cells[j].selected){
+                Jupyter.sidebar.cells[j].element.addClass('hidden');
+                Jupyter.sidebar.cells[j].element.remove();
+                Jupyter.sidebar.cells.splice(i, 1);
             }
         }
 
         // update sidebar and notebook rendering of hidden cells
-        Jupyter.notebook.session.sidebar.hideIndentedCells();
-        Jupyter.notebook.session.sidebar.update();
+        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.update();
     }
 
     return {
