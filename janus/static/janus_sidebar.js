@@ -199,7 +199,7 @@ define([
             // may want to created a "thinking" animation for when loading large numbers of cells
             var markerPosition = $(Jupyter.sidebar.marker).position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
-                markerPosition = $(cells[0]).position().top;
+                markerPosition = $(cells[0].element).position().top;
             }
             this.element.animate({
                 top: markerPosition,
