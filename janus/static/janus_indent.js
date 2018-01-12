@@ -6,9 +6,11 @@ Handle indenting and unindenting of cells to and from the Janus sidebar
 define([
     'jquery',
     'base/js/namespace',
+    '../janus/janus_sidebar'
 ], function(
     $,
     Jupyter,
+    JanusSidebar
 ){
 
     function indentCell(){
@@ -66,9 +68,11 @@ define([
             hidden_cells[hidden_cells.length - 1].element,
             cell_ids)
         Jupyter.sidebar.update();
+        JanusSidebar.saveMarkerMetadata();
     }
 
     function unindentCell(){
+        JanusSidebar.saveMarkerMetadata()
         /* move selected cells back to main notebook */
         cells = Jupyter.notebook.get_selected_cells();
 
@@ -92,6 +96,7 @@ define([
         // update sidebar and notebook rendering of hidden cells
         Jupyter.sidebar.hideIndentedCells();
         Jupyter.sidebar.update();
+
     }
 
     return {

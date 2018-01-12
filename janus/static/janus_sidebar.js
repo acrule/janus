@@ -345,13 +345,13 @@ define([
     Sidebar.prototype.hideIndentedCells = function(){
         /* hide all indented cells and render placeholders in their place */
 
-        // TODO save the names and ids for later user
-        // then use them to populate the new placeholders
-
+        // save data from and remove current markers for hidden cells
+        // saveMarkerMetadata();
         $(".indent-container").remove()
 
         cells = Jupyter.notebook.get_cells();
         serial_hidden_cells = []
+        serial_lines = 0
 
         for(i = 0; i < cells.length; i++){
             // make sure all cells have the right metadata
@@ -366,6 +366,9 @@ define([
             // keep track of groups of hidden cells
             if(cells[i].metadata.janus.cell_hidden){
                 serial_hidden_cells.push(cells[i])
+                lines_of_code = cells[i].get_text().split('\n').length
+                serial_lines = serial_lines + lines_of_code
+
                 if(i == cells.length - 1){
                     cell_ids = []
                     for(j = 0; j < serial_hidden_cells.length; j++){
@@ -373,9 +376,10 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids, serial_lines)
 
                     serial_hidden_cells = []
+                    serial_lines = 0
                 }
             }
             else{
@@ -388,9 +392,10 @@ define([
                         cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                     }
                     // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids)
+                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids, serial_lines)
 
                     serial_hidden_cells = []
+                    serial_lines = 0
                 }
             }
         }
@@ -419,19 +424,21 @@ define([
         }
     }
 
-    Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids){
+    Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines){
         /* Add the placeholder used to open a group of indented cells */
-        // elem.after($('<div>')
-        //     .addClass('marker')
-        //     .addClass('placeholder')
-        //     .data('ids', cell_ids.slice())
-        //     .click(function(){
-        //         that = this;
-        //         Jupyter.sidebar.marker = that;
-        //         Jupyter.sidebar.markerPosition = $(that).position().top;
-        //         Jupyter.sidebar.showWithCells($(this).data('ids'))
-        //     })
-        //     .text(`${cell_ids.length}`))
+
+        // get placholder name from metadata, if present
+        var markerMetadata = Jupyter.notebook.metadata.janus_markers;
+        if(markerMetadata){
+            var first_stored = '';
+            for(j = 0; j < markerMetadata.length; j++){
+                overlap = markerMetadata[j].ids.filter((n) => cell_ids.includes(n))
+                if(overlap.length > 0){
+                    first_stored = markerMetadata[j].markerName
+                    break
+                }
+            }
+        }
 
         var place = elem.after($('<div>')
             .addClass('indent-container')
@@ -439,6 +446,14 @@ define([
                 .addClass('indent-spacer'))
             .append($('<div>')
                 .addClass('indent-marker')
+                .css('border', function(){
+                    if(first_stored == ""){
+                        return "1px solid #ccc"
+                    }
+                    else{
+                        return "0px solid #ccc"
+                    }
+                })
                 .data('ids', cell_ids.slice())
                 .click(function(){
                     that = this;
@@ -455,12 +470,20 @@ define([
                     .focusout(function(){
                         disableVersionNameEditing(this)
                     })
+                    .text(first_stored)
+                    .css('background-color', function(){
+                        if(first_stored == ""){
+                            return "#f5f5f5"
+                        }
+                        else{
+                            return "transparent"
+                        }
+                    })
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
                         .addClass('indent-text')
-                        .text(`${cell_ids.length} cells`)))
-                // .text(`${cell_ids.length} cells`))
+                        .text(serial_lines +  " lines")))
             )
     }
 
@@ -485,14 +508,23 @@ define([
             element.parentElement.style.border = "0px solid #0000FF"
         }
 
-        // TODO store the name for later use
+        saveMarkerMetadata()
 
-        // get the cell
-        // this_version = cell.metadata.janus.current_version
-        // cell.metadata.janus.versions[this_version].name = element.innerHTML
-        // if(cell.nb_cell != undefined){
-        //     cell.nb_cell.metadata.janus.versions[this_version].name = element.innerHTML
-        // }
+    }
+
+    function saveMarkerMetadata(){
+        /* Store marker names to notebook metadata for later use */
+        indentMarkers = $('.indent-marker').toArray()
+        indentMetadata = []
+        for(i=0; i < indentMarkers.length; i++){
+            markerIDs = $(indentMarkers[i]).data('ids')
+            markerName = $(indentMarkers[i]).find('.indent-label')[0].innerHTML
+            indentMetadata.push({
+                'ids': markerIDs,
+                'markerName': markerName
+            })
+        }
+        Jupyter.notebook.metadata.janus_markers = indentMetadata
     }
 
     function createSidebar() {
@@ -501,6 +533,7 @@ define([
     }
 
     return{
-        createSidebar: createSidebar
+        createSidebar: createSidebar,
+        saveMarkerMetadata: saveMarkerMetadata
     };
 });
