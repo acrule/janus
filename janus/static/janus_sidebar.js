@@ -197,7 +197,7 @@ define([
                 }
             }
             // may want to created a "thinking" animation for when loading large numbers of cells
-            var markerPosition = $(Jupyter.sidebar.marker).position().top - 12
+            var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
                 markerPosition = $(cells[0].element).position().top;
             }
@@ -236,7 +236,7 @@ define([
             marginLeft: '15px',
             width: sidebar_width
         }, 400, function(){
-            var markerPosition = $(Jupyter.sidebar.marker).position().top - 12
+            var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
                 markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
             }
@@ -329,11 +329,11 @@ define([
             // else update the sidebar
             else{
                 // get placeholder with the top previous hidden cell in it
-                placeholders = $('.placeholder').toArray()
+                placeholders = $('.indent-marker').toArray()
                 for(i=0; i<placeholders.length; i++){
                     if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0){
                         Jupyter.sidebar.marker = placeholders[i];
-                        Jupyter.sidebar.markerPosition = $(placeholders[i]).position().top
+                        Jupyter.sidebar.markerPosition = $(placeholders[i]).parent().position().top
                         Jupyter.sidebar.showWithCells($(placeholders[i]).data('ids'))
                         break
                     }
@@ -345,7 +345,10 @@ define([
     Sidebar.prototype.hideIndentedCells = function(){
         /* hide all indented cells and render placeholders in their place */
 
-        $(".placeholder").remove()
+        // TODO save the names and ids for later user
+        // then use them to populate the new placeholders
+
+        $(".indent-container").remove()
 
         cells = Jupyter.notebook.get_cells();
         serial_hidden_cells = []
@@ -409,7 +412,7 @@ define([
         /*  highlight the marker clicked to show the sidebar
         marker: dom element, or null */
 
-        $('.placeholder').removeClass('active')
+        $('.indent-marker').removeClass('active')
         $('.hidden-code').removeClass('active')
         if(marker != null){
             $(marker).addClass('active')
@@ -418,17 +421,80 @@ define([
 
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids){
         /* Add the placeholder used to open a group of indented cells */
-        elem.after($('<div>')
-            .addClass('marker')
-            .addClass('placeholder')
-            .data('ids', cell_ids.slice())
-            .click(function(){
-                that = this;
-                Jupyter.sidebar.marker = that;
-                Jupyter.sidebar.markerPosition = $(that).position().top;
-                Jupyter.sidebar.showWithCells($(this).data('ids'))
-            })
-            .text(`${cell_ids.length}`))
+        // elem.after($('<div>')
+        //     .addClass('marker')
+        //     .addClass('placeholder')
+        //     .data('ids', cell_ids.slice())
+        //     .click(function(){
+        //         that = this;
+        //         Jupyter.sidebar.marker = that;
+        //         Jupyter.sidebar.markerPosition = $(that).position().top;
+        //         Jupyter.sidebar.showWithCells($(this).data('ids'))
+        //     })
+        //     .text(`${cell_ids.length}`))
+
+        var place = elem.after($('<div>')
+            .addClass('indent-container')
+            .append($('<div>')
+                .addClass('indent-spacer'))
+            .append($('<div>')
+                .addClass('indent-marker')
+                .data('ids', cell_ids.slice())
+                .click(function(){
+                    that = this;
+                    Jupyter.sidebar.marker = that;
+                    Jupyter.sidebar.markerPosition = $(that).parent().position().top;
+                    Jupyter.sidebar.showWithCells($(this).data('ids'))
+                })
+                .append($('<div>')
+                    .addClass('indent-label')
+                    .click(function(event){
+                        enableVersionNameEditing(this)
+                        event.stopPropagation()
+                    })
+                    .focusout(function(){
+                        disableVersionNameEditing(this)
+                    })
+                    // TODO intercept "Enter" to unselect, rather than start new line
+                )
+                .append($('<div>')
+                        .addClass('indent-text')
+                        .text(`${cell_ids.length} cells`)))
+                // .text(`${cell_ids.length} cells`))
+            )
+    }
+
+
+    function enableVersionNameEditing(element){
+        /* let version marker div be edited to name version */
+        element.contentEditable = true;
+        element.focus()
+        Jupyter.notebook.keyboard_manager.edit_mode();
+    }
+
+    function disableVersionNameEditing(element){
+        /* stop editing version name and save to metadata */
+        element.contentEditable = false;
+        Jupyter.notebook.keyboard_manager.command_mode();
+
+
+
+        if(element.innerHTML == ""){
+            element.style.backgroundColor = "#dfebf1"
+        }
+        else{
+            console.log('Change Color')
+            element.style.backgroundColor = "transparent"
+        }
+
+        // TODO store the name for later use
+
+        // get the cell
+        // this_version = cell.metadata.janus.current_version
+        // cell.metadata.janus.versions[this_version].name = element.innerHTML
+        // if(cell.nb_cell != undefined){
+        //     cell.nb_cell.metadata.janus.versions[this_version].name = element.innerHTML
+        // }
     }
 
     function createSidebar() {

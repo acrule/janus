@@ -47,7 +47,7 @@ define([
         end_element = $(all_cells[end_id].element).next();
         contained_placeholders = $(start_element).nextUntil(end_element)
                                     .add(end_element)
-                                    .filter('div.placeholder');
+                                    .filter('div.indent-container');
         $(contained_placeholders).remove();
 
         // get the whole expanded selection of hidden cells_to_copy

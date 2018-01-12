@@ -1,5 +1,77 @@
 /* Janus: Jupyter Notebook Extension that assists with notebook cleaning */
 
+.indent-container{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+    overflow: visible;
+}
+
+.indent-spacer{
+    height: 20px;
+    min-width: 14ex;
+    padding: 0.4em;
+    margin: 0px;
+    font-family: monospace;
+    text-align: right;
+    line-height: 1.21429em;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+.indent-label{
+    height: 26px;
+    padding: 3px;
+    min-width: 120px;
+    color: #000;
+    background-color: #dfebf1;
+    font-weight: 500;
+    font-size: 1.4em;
+}
+
+.indent-text{
+    padding: 3px;
+    float: right;
+    text-align: right;
+}
+
+.indent-marker{
+    height: 30px;
+    padding: 1px 1px 0px;
+    margin: 6px;
+    color: #666;
+    background: #f5f5f5;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: vertical;
+    box-align: stretch;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    -webkit-box-flex: 1;
+    -moz-box-flex: 1;
+    box-flex: 1;
+    flex: 1;
+}
+
 .marker-container{
     height: 24px;
     position: absolute;

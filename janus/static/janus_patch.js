@@ -59,12 +59,12 @@ define([
             // if selecting a hidden cell
             if(this.metadata.janus.cell_hidden){
                 // highlight the associated placeholder
-                //$('.placeholder').removeClass('active')
-                $(this.element).nextAll('.placeholder').first().addClass('active')
+                //$('.indent-marker').removeClass('active')
+                $(this.element).nextAll('.indent-marker').first().addClass('active')
 
                 // attempted more robust selection of associate placeholder, but
                 // led to notebook freezing (unbounded for loop?)
-                // placeholders = $('.placeholder').toArray()
+                // placeholders = $('.indent-marker').toArray()
                 // janus_id = this.metadata.cell_id
                 // for(i=0; i<placeholders.length; i++){
                 //     if($(placeholders[i]).data('ids').indexOf(janus_id) >= 0){
@@ -86,7 +86,7 @@ define([
             // if selecting a cell visible in the notebook
             else{
                 // make sure all placeholders are not highlighted
-                //$('.placeholder').removeClass('active')
+                //$('.indent-marker').removeClass('active')
 
                 // unselect the corresponding cell in the sidebar, if visible
                 if(!Jupyter.sidebar.collapsed){
