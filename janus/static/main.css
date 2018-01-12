@@ -31,7 +31,8 @@
     padding: 3px;
     min-width: 120px;
     color: #000;
-    background-color: #dfebf1;
+    background-color: #f5f5f5;
+    /* background-color: #dfebf1; */
     font-weight: 500;
     font-size: 1.4em;
 }
@@ -47,7 +48,6 @@
     padding: 1px 1px 0px;
     margin: 6px;
     color: #666;
-    background: #f5f5f5;
     text-align: left;
     border: 1px solid #ccc;
     border-radius: 3px;

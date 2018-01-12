@@ -464,7 +464,6 @@ define([
             )
     }
 
-
     function enableVersionNameEditing(element){
         /* let version marker div be edited to name version */
         element.contentEditable = true;
@@ -477,14 +476,13 @@ define([
         element.contentEditable = false;
         Jupyter.notebook.keyboard_manager.command_mode();
 
-
-
         if(element.innerHTML == ""){
-            element.style.backgroundColor = "#dfebf1"
+            element.style.backgroundColor = "#f5f5f5"
+            element.parentElement.style.border = "1px solid #ccc"
         }
         else{
-            console.log('Change Color')
             element.style.backgroundColor = "transparent"
+            element.parentElement.style.border = "0px solid #0000FF"
         }
 
         // TODO store the name for later use
