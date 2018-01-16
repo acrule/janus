@@ -32,15 +32,17 @@
     min-width: 120px;
     color: #000;
     background-color: #f5f5f5;
-    /* background-color: #dfebf1; */
+    border-radius: 1px;
     font-weight: 500;
     font-size: 1.4em;
 }
 
 .indent-text{
     padding: 3px;
+    height: 26px;
     float: right;
     text-align: right;
+    border-radius: 1px;
 }
 
 .indent-marker{
@@ -147,7 +149,23 @@
 }
 
 #sidebar-container .cell-wrapper {
-  overflow: auto;
-  height: auto;
-  padding: 15px;
+    overflow: auto;
+    height: auto;
+    padding: 15px;
+}
+
+#minimap{
+    width: 200px;
+    /* height: 300px; */
+    background-color: white;
+    position: absolute;
+    z-index: 1000;
+    box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
+    -webkit-box-shadow: 0px 0px 12px 1px rgba(87, 87, 87, 0.2);
+}
+
+.mini-wrap{
+    width: 600px;
+    transform: scale(0.33);
+    transform-origin: left top;
 }

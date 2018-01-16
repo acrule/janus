@@ -429,8 +429,8 @@ define([
 
         // get placholder name from metadata, if present
         var markerMetadata = Jupyter.notebook.metadata.janus_markers;
+        var first_stored = '';
         if(markerMetadata){
-            var first_stored = '';
             for(j = 0; j < markerMetadata.length; j++){
                 overlap = markerMetadata[j].ids.filter((n) => cell_ids.includes(n))
                 if(overlap.length > 0){
@@ -456,6 +456,7 @@ define([
                 })
                 .data('ids', cell_ids.slice())
                 .click(function(){
+                    $('#minimap').remove()
                     that = this;
                     Jupyter.sidebar.marker = that;
                     Jupyter.sidebar.markerPosition = $(that).parent().position().top;
@@ -473,7 +474,7 @@ define([
                     .text(first_stored)
                     .css('background-color', function(){
                         if(first_stored == ""){
-                            return "#f5f5f5"
+                            return "#dce8ef"//"#f5f5f5"
                         }
                         else{
                             return "transparent"
@@ -483,8 +484,120 @@ define([
                 )
                 .append($('<div>')
                         .addClass('indent-text')
+                        .hover(showMinimap, hideMinimap)
                         .text(serial_lines +  " lines")))
             )
+    }
+
+    function showMinimap(event){
+        /* render rich tooltip with miniturized view of hidden cells */
+        var el = $(event.target).parent();
+        var el_top = $(el).parent().position().top;
+        var el_right = $(el).parent().position().left + $(el).parent().width();
+        var cell_ids = $(el).data('ids');
+
+        event.target.style.backgroundColor = "#dddddd"
+
+        // if this already shown in sidebar, don't show again
+        if(!Jupyter.sidebar.collapsed){
+            sidebar_cells = Jupyter.sidebar.cells
+            sidebar_cell_ids = []
+
+            for(i=0; i<sidebar_cells.length; i++){
+                sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.cell_id)
+            }
+
+            if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
+                return
+            }
+        }
+
+        cells = Jupyter.notebook.get_cells()
+        cells_to_copy = []
+        for(i=0; i<cells.length; i++){
+            if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
+                cells_to_copy.push(cells[i])
+            }
+        }
+
+        var minimap = $('<div id=minimap>');
+        minimap.css({
+            'top': el_top,
+            'left': el_right + 25
+        })
+        $("#notebook").append(minimap);
+        var mini_wrap = $('<div>').addClass('mini-wrap')
+        minimap.append(mini_wrap)
+
+
+        // populate it with our cells
+        // for each cell, create a new cell in the Sidebar with the same content
+        for (i = 0; i < cells_to_copy.length; i++){
+
+            // add new cell to the sidebar
+            cell = cells_to_copy[i]
+            newCell = null
+            nb = Jupyter.notebook
+
+            // markdown cells
+            if(cell.cell_type == 'markdown'){
+                newCell = new TextCell.MarkdownCell({
+                    events: nb.events,
+                    config: nb.config,
+                    keyboard_manager: nb.keyboard_manager,
+                    notebook: nb,
+                    tooltip: nb.tooltip,
+                });
+            }
+            // code cells
+            else if(cell.cell_type == 'code'){
+                newCell = new CodeCell.CodeCell(nb.kernel, {
+                    events: nb.events,
+                    config: nb.config,
+                    keyboard_manager: nb.keyboard_manager,
+                    notebook: nb,
+                    tooltip: nb.tooltip,
+                });
+            }
+            else if (cell.cell_type = 'raw'){
+                newCell = new TextCell.RawCell({
+                    events: nb.events,
+                    config: nb.config,
+                    keyboard_manager: nb.keyboard_manager,
+                    notebook: nb,
+                    tooltip: nb.tooltip,
+                });
+            }
+
+            // populate sidebar cell with content of notebook cell
+            cell_data = cell.toJSON();
+            newCell.fromJSON(cell_data);
+
+            // newCell = Jupyter.sidebar.createSidebarCell(cells[i]);
+            $('.mini-wrap').append(newCell.element);
+
+            // make sure all code cells are rendered
+            // TODO find another way to do this without it focusing the cell
+            if(newCell.cell_type == 'code'){
+                newCell.render();
+                newCell.refresh();
+            }
+
+            // hide output if needed
+            if(newCell.metadata.janus.source_hidden){
+                newCell.element.find("div.output_wrapper").hide();
+            }
+        }
+
+        // reset div height
+        cells_height = $(mini_wrap).height()
+        minimap.height(cells_height * 0.33)
+    }
+
+    function hideMinimap(){
+        // remove any mini-map divs
+        $('#minimap').remove()
+        event.target.style.backgroundColor = "transparent"
     }
 
     function enableVersionNameEditing(element){
@@ -500,7 +613,7 @@ define([
         Jupyter.notebook.keyboard_manager.command_mode();
 
         if(element.innerHTML == ""){
-            element.style.backgroundColor = "#f5f5f5"
+            element.style.backgroundColor = "#dce8ef"
             element.parentElement.style.border = "1px solid #ccc"
         }
         else{

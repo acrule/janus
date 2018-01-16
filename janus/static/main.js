@@ -137,9 +137,9 @@ define([
                                         full_toggle_hist_action_name]);
     }
 
-    function clickedHistory(){
-        console.log("History toggled")
-    }
+    // function clickedHistory(){
+    //     console.log("History toggled")
+    // }
 
     function initializeJanusMetadata(){
         /* ensure all notebook cells have Janus metadata */
