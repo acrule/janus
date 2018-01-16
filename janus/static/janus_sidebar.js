@@ -446,14 +446,6 @@ define([
                 .addClass('indent-spacer'))
             .append($('<div>')
                 .addClass('indent-marker')
-                .css('border', function(){
-                    if(first_stored == ""){
-                        return "1px solid #ccc"
-                    }
-                    else{
-                        return "0px solid #ccc"
-                    }
-                })
                 .data('ids', cell_ids.slice())
                 .click(function(){
                     $('#minimap').remove()
@@ -462,6 +454,13 @@ define([
                     Jupyter.sidebar.markerPosition = $(that).parent().position().top;
                     Jupyter.sidebar.showWithCells($(this).data('ids'))
                 })
+                .hover(function(event){
+                    showMinimap(event, this)
+                },
+                function(event){
+                    hideMinimap(event, this)
+                })
+                // .hover(showMinimap, hideMinimap)
                 .append($('<div>')
                     .addClass('indent-label')
                     .click(function(event){
@@ -471,32 +470,43 @@ define([
                     .focusout(function(){
                         disableVersionNameEditing(this)
                     })
-                    .text(first_stored)
-                    .css('background-color', function(){
-                        if(first_stored == ""){
-                            return "#dce8ef"//"#f5f5f5"
+                    .text(function(){
+                        if(first_stored == "" || first_stored == "Hidden Cells"){
+                            return "Hidden Cells"
                         }
                         else{
-                            return "transparent"
+                            return first_stored
+                        }
+                    })
+                    .css('color', function(){
+                        if(first_stored == "" || first_stored == "Hidden Cells"){
+                            return "#aaaaaa"
+                        }
+                        else{
+                            return ""
                         }
                     })
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
                         .addClass('indent-text')
-                        .hover(showMinimap, hideMinimap)
                         .text(serial_lines +  " lines")))
             )
     }
 
-    function showMinimap(event){
+    function high(event, el){
+        el.style.backgroundColor = "#f5f5f5"
+    }
+
+    function low(event, el){
+        el.style.backgroundColor = ""
+    }
+
+    function showMinimap(event, el){
         /* render rich tooltip with miniturized view of hidden cells */
-        var el = $(event.target).parent();
         var el_top = $(el).parent().position().top;
         var el_right = $(el).parent().position().left + $(el).parent().width();
         var cell_ids = $(el).data('ids');
-
-        event.target.style.backgroundColor = "#dddddd"
 
         // if this already shown in sidebar, don't show again
         if(!Jupyter.sidebar.collapsed){
@@ -511,6 +521,8 @@ define([
                 return
             }
         }
+
+        el.style.backgroundColor = "#f5f5f5"
 
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
@@ -594,10 +606,10 @@ define([
         minimap.height(cells_height * 0.33)
     }
 
-    function hideMinimap(){
+    function hideMinimap(event, el){
         // remove any mini-map divs
         $('#minimap').remove()
-        event.target.style.backgroundColor = "transparent"
+        el.style.backgroundColor = ""
     }
 
     function enableVersionNameEditing(element){
@@ -612,13 +624,14 @@ define([
         element.contentEditable = false;
         Jupyter.notebook.keyboard_manager.command_mode();
 
-        if(element.innerHTML == ""){
-            element.style.backgroundColor = "#dce8ef"
-            element.parentElement.style.border = "1px solid #ccc"
+        if(element.innerHTML == "" || element.innerHTML == "Hidden Cells"){
+            element.style.color = "#aaaaaa"
+            element.innerHTML = "Hidden Cells"
+            // element.parentElement.style.border = "1px solid #ccc"
         }
         else{
-            element.style.backgroundColor = "transparent"
-            element.parentElement.style.border = "0px solid #0000FF"
+            element.style.color = ""
+            // element.parentElement.style.border = "0px solid #0000FF"
         }
 
         saveMarkerMetadata()
