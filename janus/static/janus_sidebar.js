@@ -366,8 +366,14 @@ define([
             // keep track of groups of hidden cells
             if(cells[i].metadata.janus.cell_hidden){
                 serial_hidden_cells.push(cells[i])
-                lines_of_code = cells[i].get_text().split('\n').length
-                serial_lines = serial_lines + lines_of_code
+                if(cells[i].cell_type == "code"){
+                    console.log("Getting lines of code")
+                    lines_of_code = cells[i].get_text().split('\n').length
+                    console.log(lines_of_code)
+                    if(lines_of_code > 0){
+                        serial_lines = serial_lines + lines_of_code
+                    }
+                }
 
                 if(i == cells.length - 1){
                     cell_ids = []
@@ -426,6 +432,8 @@ define([
 
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines){
         /* Add the placeholder used to open a group of indented cells */
+        console.log('Lines to print')
+        console.log(serial_lines)
 
         // get placholder name from metadata, if present
         var markerMetadata = Jupyter.notebook.metadata.janus_markers;

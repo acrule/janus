@@ -64,9 +64,10 @@ define([
         }
 
         // put placeholder div immediatley after last hidden cell
-        Jupyter.sidebar.addPlaceholderAfterElementWithIds(
-            hidden_cells[hidden_cells.length - 1].element,
-            cell_ids)
+        Jupyter.sidebar.hideIndentedCells()
+        // Jupyter.sidebar.addPlaceholderAfterElementWithIds(
+        //     hidden_cells[hidden_cells.length - 1].element,
+        //     cell_ids)
         Jupyter.sidebar.update();
         JanusSidebar.saveMarkerMetadata();
     }
