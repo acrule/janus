@@ -25,10 +25,8 @@ define([
 ){
 
     //TODO show full history of all cell executions (Sean?)
-    //TODO enagle truncated history based on program analysis... (Sean?)
+    //TODO enable truncated history based on program analysis... (Sean?)
     //TODO enable meta-data only notebook history tracking (stretch)
-    //TODO render more informative marker of hidden cells (stretch)
-    //TODO enable incrimental loading of previous results (incpy) (stretch)
 
     function load_css() {
         /* Load css for sidebar */
@@ -41,14 +39,30 @@ define([
 
     function renderJanusMenu(){
         /* add Janus menu items to 'Edit' menu */
-        var editMenu = $('#edit_menu');
+        // var editMenu = $('#edit_menu');
+        var navbar = $('#menubar .nav').first()
 
-        editMenu.append($('<li>')
-            .addClass('divider')
+        navbar.append($('<li>')
+            .addClass('dropdown')
+            .attr('id', 'janus-header')
+            .append($('<a>')
+                .addClass('dropdown-toggle')
+                .attr('href','#')
+                .attr('data-toggle', 'dropdown')
+                .text('Janus')
+                )
+            );
+
+        var janusHeader = $('#janus-header')
+        janusHeader.append($('<ul>')
+            .addClass('dropdown-menu')
+            .attr('id', 'janus-menu')
         );
 
+        var janusMenu = $('#janus-menu');
+
         // indent cell
-        editMenu.append($('<li>')
+        janusMenu.append($('<li>')
             .attr('id', 'indent_cell')
             .append($('<a>')
                 .attr('href', '#')
@@ -58,7 +72,7 @@ define([
         );
 
         // unindent cell
-        editMenu.append($('<li>')
+        janusMenu.append($('<li>')
             .attr('id', 'unindent_cell')
             .append($('<a>')
                 .attr('href', '#')
@@ -68,7 +82,7 @@ define([
         );
 
         // Toggle Input
-        editMenu.append($('<li>')
+        janusMenu.append($('<li>')
             .attr('id', 'toggle_cell_input')
             .append($('<a>')
                 .attr('href', '#')
@@ -77,7 +91,20 @@ define([
             )
         );
 
-        editMenu.append($('<li>')
+        janusMenu.append($('<li>')
+            .addClass('divider')
+        );
+
+        janusMenu.append($('<li>')
+            .attr('id', 'toggle_nb_history')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Toggle Notebook History')
+                //.click(JanusHistory.toggleCellHistoryTracking)
+            )
+        );
+
+        janusMenu.append($('<li>')
             .attr('id', 'toggle_cell_history')
             .append($('<a>')
                 .attr('href', '#')
@@ -89,20 +116,6 @@ define([
 
     function renderJanusButtons() {
         /* add Janus buttons to toolbar for easy access */
-        var toggleSourceAction = {
-            icon: 'fa-code',
-            help    : 'Toggle Input',
-            help_index : 'zz',
-            handler : JanusSource.toggleSource
-        };
-
-        var toggleHistoryAction = {
-            icon: 'fa-history',
-            help    : 'Toggle Cell History',
-            help_index : 'zz',
-            handler : JanusHistory.toggleCellHistoryTracking
-        };
-
         var indentAction = {
             icon: 'fa-indent',
             help    : 'Indent cells',
@@ -117,6 +130,27 @@ define([
             handler : JanusIndent.unindentCell
         };
 
+        var toggleSourceAction = {
+            icon: 'fa-code',
+            help    : 'Toggle Input',
+            help_index : 'zz',
+            handler : JanusSource.toggleSource
+        };
+
+        var showNbHistAction = {
+            icon: 'fa-history',
+            help    : 'Show Notebook History',
+            help_index : 'zz',
+            handler : function(){console.log("Show Notebook History")}
+        };
+
+        var toggleHistoryAction = {
+            icon: 'fa-code-fork',
+            help    : 'Show Cell Versions',
+            help_index : 'zz',
+            handler : JanusHistory.toggleCellHistoryTracking
+        };
+
         var prefix = 'janus';
         var full_toggle_action_name = Jupyter.actions.register(toggleSourceAction,
                                                             'toggle-cell-input',
@@ -127,22 +161,36 @@ define([
         var full_unindent_action_name = Jupyter.actions.register(unindentAction,
                                                             'unindent-cell',
                                                             prefix);
+        var full_show_nb_hist_action_name = Jupyter.actions.register(showNbHistAction,
+                                                            'toggle-nb-history',
+                                                            prefix);
         var full_toggle_hist_action_name = Jupyter.actions.register(toggleHistoryAction,
                                                             'toggle-cell-history',
                                                             prefix);
 
         Jupyter.toolbar.add_buttons_group([full_indent_action_name,
                                         full_unindent_action_name,
-                                        full_toggle_action_name,
+                                        full_toggle_action_name]);
+
+        Jupyter.toolbar.add_buttons_group([full_show_nb_hist_action_name,
                                         full_toggle_hist_action_name]);
     }
 
-    // function clickedHistory(){
-    //     console.log("History toggled")
-    // }
-
     function initializeJanusMetadata(){
         /* ensure all notebook cells have Janus metadata */
+
+        // flag whether we want to track a full history of the notebook
+        // for now we won't use this metadata, but just track all the time
+        if (Notebook.metadata.track_history === undefined){
+            Notebook.metadata.track_history = true;
+        }
+
+        // track previous names of the notebook to maintain full history
+        if (Notebook.metadata.filepaths === undefined){
+            Notebook.metadata.filepaths = [];
+        }
+
+        // make sure each cell has the relevant metadata
         cells = Jupyter.notebook.get_cells();
         for(i=0; i<cells.length; i++){
             JanusPatch.generateDefaultJanusMetadata(cells[i]);
