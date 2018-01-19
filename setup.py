@@ -13,5 +13,5 @@ setup(
     license='BSD-3-Clause',
     packages=['janus'],
     package_dir={'janus': 'janus'},
-    package_data={'janus': ['static/*.js']}
+    package_data={'janus': ['static/*.js', 'static/*.css']}
 )
