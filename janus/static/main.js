@@ -11,7 +11,8 @@ define([
     '../janus/janus_sidebar',
     '../janus/janus_history',
     '../janus/janus_source',
-    '../janus/janus_indent'
+    '../janus/janus_indent',
+    '../janus/janus_nb_history'
 ], function(
     require,
     $,
@@ -21,7 +22,8 @@ define([
     JanusSidebar,
     JanusHistory,
     JanusSource,
-    JanusIndent
+    JanusIndent,
+    JanusHist
 ){
 
     //TODO show full history of all cell executions (Sean?)
@@ -212,6 +214,7 @@ define([
             JanusHistory.load_cell_history();
             JanusSource.updateSourceVisibility();
             JanusSource.renderAllSourceMarkers();
+            JanusHist.prepNbHistoryTracking();
         }
 
         // or wait until the notebook has loaded to perform them
@@ -220,6 +223,7 @@ define([
         events.on("notebook_loaded.Notebook", JanusHistory.load_cell_history);
         events.on("notebook_loaded.Notebook", JanusSource.updateSourceVisibility);
         events.on("notebook_loaded.Notebook", JanusSource.renderAllSourceMarkers);
+        events.on("notebook_loaded.Notebook", JanusHist.prepNbHistoryTracking);
     }
 
     return {
