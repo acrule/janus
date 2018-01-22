@@ -12,18 +12,20 @@ define([
     '../janus/janus_history',
     '../janus/janus_source',
     '../janus/janus_indent',
-    '../janus/janus_nb_history'
+    '../janus/janus_nb_history',
+    '../janus/janus_history_viewer'
 ], function(
     require,
     $,
     Jupyter,
-    events,
+    events,    
     JanusPatch,
     JanusSidebar,
     JanusHistory,
     JanusSource,
     JanusIndent,
-    JanusHist
+    JanusHist,
+    JanusViewer
 ){
 
     //TODO show full history of all cell executions (Sean?)
@@ -102,7 +104,7 @@ define([
             .append($('<a>')
                 .attr('href', '#')
                 .text('Toggle Notebook History')
-                //.click(JanusHistory.toggleCellHistoryTracking)
+                .click(JanusViewer.createHistoryModal)
             )
         );
 
@@ -110,7 +112,7 @@ define([
             .attr('id', 'toggle_cell_history')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Toggle Cell History')
+                .text('Show Cell History')
                 .click(JanusHistory.toggleCellHistoryTracking)
             )
         );
@@ -143,7 +145,7 @@ define([
             icon: 'fa-history',
             help    : 'Show Notebook History',
             help_index : 'zz',
-            handler : function(){console.log("Show Notebook History")}
+            handler : JanusViewer.createHistoryModal
         };
 
         var toggleHistoryAction = {

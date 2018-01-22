@@ -10,8 +10,6 @@ from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
 
-# TODO enable saving of only metadata, not the actual diff
-
 class DbManager(object):
     def __init__(self, db_path):
         # self.db_key = db_key
@@ -133,6 +131,22 @@ class DbManager(object):
             raise
 
 # FUNCTIONS FOR RETRIEVING DATA TO PERFORM NOTEBOOK DIFF
+    def get_nb_configs(self, nb_name):
+        matched_configs = [q for q in self.nb_queue if q[1] == nb_name].reverse()
+        if not matched_configs:
+            matched_configs = []
+
+        self.conn = sqlite3.connect(self.db_path)
+        self.c = self.conn.cursor()
+        search = "SELECT * FROM nb_configs WHERE name = \'" + nb_name + "\'"
+        self.c.execute(search)
+        rows = self.c.fetchall()
+
+        for row in rows:
+            matched_configs.append(row)
+
+        return matched_configs
+
     def get_last_nb_config(self, nb_name):
 
         # return the last nb configuration queued to be commited to the database
@@ -183,3 +197,28 @@ class DbManager(object):
             matched_versions.append(row)
 
         return matched_versions
+
+    def get_versions(self, version_ids):
+        matched_in_queue = [q for q in self.cell_queue if q[2] == version_id]
+        if not matched_in_queue:
+            matched_in_queue = []
+
+        # cell_versions_tuple = str(tuple(cell_versions))
+        self.conn = sqlite3.connect(self.db_path)
+        self.c = self.conn.cursor()
+
+        version_ids = str(tuple(version_ids))
+
+        search = "SELECT * FROM cells WHERE version_id in " + version_ids
+
+        self.c.execute(search)
+
+        rows = self.c.fetchall()
+        for row in rows:
+            matched_in_queue.append(row)
+
+        cell_dict = {}
+        for m in matched_in_queue:
+            cell_dict[m[2]] = pickle.loads(m[3])
+
+        return cell_dict

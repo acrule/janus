@@ -1,5 +1,10 @@
 /* Janus: Jupyter Notebook Extension that assists with notebook cleaning */
 
+#revision{
+    width: 100%;
+    height: 16px;
+}
+
 .indent-container{
     width: 100%;
     display: flex;

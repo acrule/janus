@@ -18,8 +18,6 @@ def check_for_nb_diff(t, hashed_full_path, cells, db):
     cells: (list) cells in the current notebook version
     db: (object) DBManager object to manage saving of new cells or configs
     """
-    # TODO may have to throttle so this does not happen too often, say every 2 seconds
-    # alternatively, we could keep the current cells and cell order in memory for accurate comparison
 
     last_nb_config = db.get_last_nb_config(hashed_full_path)
 
@@ -54,7 +52,6 @@ def check_for_nb_diff(t, hashed_full_path, cells, db):
     # db.get_last_cell_version(last_version_order)
 
     # for each cell in the current notebook
-    print(str(len(cells)) + " cells")
     for c in cells:
 
         cell_id = c['metadata']['janus']['id']
@@ -72,7 +69,6 @@ def check_for_nb_diff(t, hashed_full_path, cells, db):
             previous_version = previous_versions[0]
 
             if not cells_different(pickle.loads(previous_version[3]), c):
-                print('Adding cell from previous version')
                 version_id = previous_version[2]
                 new_cell_order.append(cell_id)
                 new_version_order.append(version_id)
@@ -83,7 +79,6 @@ def check_for_nb_diff(t, hashed_full_path, cells, db):
         older_versions = db.get_all_cell_versions(cell_id)
         for older_version in older_versions:
             if not cells_different(pickle.loads(older_version[3]), c):
-                print('Adding cell from older version')
                 version_id = older_version[2]
                 new_cell_order.append(cell_id)
                 new_version_order.append(version_id)

@@ -3,6 +3,7 @@ Janus: Jupyter Notebook Extension that assists with notebook cleaning
 """
 
 import os
+import ast
 import json
 import datetime
 
@@ -29,14 +30,36 @@ class JanusHandler(IPythonHandler):
         path: (str) relative path to notebook requesting POST
         """
 
+
         # get unique path to each file using filename and hashed path
         # we hash the path for a private, short, and unique identifier
         os_path = self.contents_manager._get_os_path(path)
-        os_dir, fname = os.path.split(os_path)
-        fname, file_ext = os.path.splitext(fname)
+        hashed_path = hash_path(os_path)
 
-        # display visualization of janus data
-        self.render("janus_template_nodata.html", filename = fname)
+        janus_dir = find_storage_dir()
+        db_path = os.path.join(janus_dir, "nb_history.db")
+
+        query_type = self.get_argument('q', None, True)
+
+
+        if not self.db_manager:
+            self.db_manager = DbManager(db_path)
+        # os_dir, fname = os.path.split(os_path)
+        # fname, file_ext = os.path.splitext(fname)
+
+        # query the database for nb_configs
+        if (query_type == 'config'):
+            nb_configs = self.db_manager.get_nb_configs(hashed_path)
+            self.finish(json.dumps({'nb_configs': nb_configs}))
+        elif (query_type == 'versions'):
+            version_ids = self.get_argument('version_ids', None, True)
+            version_ids = ast.literal_eval(version_ids)
+
+            cells = self.db_manager.get_versions(version_ids)
+
+            self.finish(json.dumps({'cells': cells}))
+        else:
+            self.finish(json.dumps({'msg': "Did not understand the request"}))
 
     def post(self, path=''):
         """
