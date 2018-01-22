@@ -27,9 +27,6 @@ class DbManager(object):
 
         # create db tables if they don't already exist
         self.create_initial_tables()
-        # self.create_action_table()
-        # self.create_cell_table()
-        # self.create_nb_table()
 
     def create_initial_tables(self):
         self.conn = sqlite3.connect(self.db_path)
@@ -46,33 +43,6 @@ class DbManager(object):
 
         self.conn.commit()
         self.conn.close()
-
-    # def create_action_table(self):
-    #     # create a db table for storing action data
-    #     self.conn = sqlite3.connect(self.db_path)
-    #     self.c = self.conn.cursor()
-    #     self.c.execute('''CREATE TABLE IF NOT EXISTS actions (time integer,
-    #         name text, selected_cell integer, selected_cells text)''')
-    #     self.conn.commit()
-    #     self.conn.close()
-    #
-    # def create_cell_table(self):
-    #     # create a db table for storing cell data
-    #     self.conn = sqlite3.connect(self.db_path)
-    #     self.c = self.conn.cursor()
-    #     self.c.execute('''CREATE TABLE IF NOT EXISTS cells (time integer,
-    #         cell_id text, version_id text, cell_data text)''')
-    #     self.conn.commit()
-    #     self.conn.close()
-    #
-    # def create_nb_table(self):
-    #     # create a db table for storing nb configuration data
-    #     self.conn = sqlite3.connect(self.db_path)
-    #     self.c = self.conn.cursor()
-    #     self.c.execute('''CREATE TABLE IF NOT EXISTS nb_configs (time integer,
-    #         name text, cell_order text, version_order text)''')
-    #     self.conn.commit()
-    #     self.conn.close()
 
     def record_nb_config(self, t, nb_name, cell_order, version_order):
         # save the data to the database queue
@@ -114,10 +84,6 @@ class DbManager(object):
         dest_fname: (str) full path to where file is saved on volume
         db_manager: (DbManager) object managing DB read / write
         """
-
-        # don't track extraneous unselect events
-        # if action_data['name'] in ['unselect-cell'] and diff == {}:
-        #     return
 
         # save the data to the database queue
         action_data_tuple = (str(action_data['time']), str(action_data['name']),
@@ -217,41 +183,3 @@ class DbManager(object):
             matched_versions.append(row)
 
         return matched_versions
-
-# def get_viewer_data(db, start_time, end_time):
-#     # get data for the janus visualization
-#     conn = sqlite3.connect(db)
-#     c = conn.cursor()
-#
-#     search = "SELECT name FROM actions WHERE name = 'delete-cell' AND time BETWEEN " + str(start_time) + " and " + str(end_time)
-#     c.execute(search)
-#     rows = c.fetchall()
-#     num_deletions = len(rows)
-#
-#     # TODO how to count when multiple cells are selected and run, or run-all?
-#     search = "SELECT name FROM actions WHERE name LIKE 'run-cell%' AND time BETWEEN " + str(start_time) + " and " + str(end_time)
-#     c.execute(search)
-#     rows = c.fetchall()
-#     num_runs = len(rows)
-#
-#     search = "SELECT time FROM actions WHERE time BETWEEN " + str(start_time) + " and " + str(end_time)
-#     c.execute(search)
-#     rows = c.fetchall()
-#     total_time = 0;
-#     if len(rows) > 0:
-#         start_time = rows[0][0]
-#         last_time = rows[0][0]
-#         for i in range(1,len(rows)):
-#             # use 5 minutes of inactivity as threshold for each editing session
-#             if (rows[i][0] - last_time) >= (5 * 60 * 1000) or i == len(rows) - 1:
-#                 total_time = total_time + last_time - start_time
-#                 start_time = rows[i][0]
-#                 last_time = rows[i][0]
-#             else:
-#                 last_time = rows[i][0]
-#
-#     search = "SELECT * FROM actions WHERE time BETWEEN " + str(start_time) + " and " + str(end_time)
-#     c.execute(search)
-#     all_rows = c.fetchall()
-#
-#     return (num_deletions, num_runs, total_time/1000, all_rows)

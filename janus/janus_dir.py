@@ -55,22 +55,3 @@ def hash_path(path):
     #only need first 8 charachters of hash to be uniquely identified
     h = sha1(path.encode())
     return h.hexdigest()[0:8]
-
-# def was_saved_recently(version_dir, min_time=300):
-#     """ check if a previous version of the file has been saved recently
-#
-#     version_dir: (str) dir to look for previous versions
-#     min_time: (int) minimum time in seconds allowed between saves """
-#
-#     versions = [f for f in os.listdir(version_dir)
-#         if os.path.isfile(os.path.join(version_dir, f))
-#         and f[-6:] == '.ipynb']
-#     if len(versions) > 0:
-#         vdir, vname = os.path.split(versions[-1])
-#         vname, vext = os.path.splitext(vname)
-#         last_time_saved = datetime.datetime.strptime(vname[-26:],
-#             "%Y-%m-%d-%H-%M-%S-%f")
-#         delta = (datetime.datetime.now() - last_time_saved).seconds
-#         return delta <= min_time
-#     else:
-#         return False

@@ -34,14 +34,8 @@ class JanusHandler(IPythonHandler):
         os_path = self.contents_manager._get_os_path(path)
         os_dir, fname = os.path.split(os_path)
         fname, file_ext = os.path.splitext(fname)
-        # hashed_path = hash_path(os_dir)
-        # data_dir = find_storage_dir()
 
         # display visualization of janus data
-        # data = get_viewer_html(data_dir, hashed_path, fname)
-        # if len(data['versions']) > 0:
-        #     self.render("comet_template.html", data = data)
-        # else:
         self.render("janus_template_nodata.html", filename = fname)
 
     def post(self, path=''):
@@ -57,15 +51,6 @@ class JanusHandler(IPythonHandler):
         # find where the nb_history database should be
         janus_dir = find_storage_dir()
         db_path = os.path.join(janus_dir, "nb_history.db")
-
-
-        # os_dir, fname = os.path.split(os_path)
-        # fname, file_ext = os.path.splitext(fname)
-        # hashed_path = hash_path(os_dir)
-        # dest_dir = os.path.join(find_storage_dir(), hashed_path, fname)
-        # version_dir = os.path.join(dest_dir, "versions")
-        # db_path = os.path.join(dest_dir, fname + ".db")
-        # db_key = os.path.join(hashed_path, fname)
 
         # if needed, create storage directories
         if not os.path.isdir(janus_dir):
@@ -126,57 +111,3 @@ def load_jupyter_server_extension(nb_app):
     route_pattern = url_path_join(web_app.settings['base_url'],
                                     r"/api/janus%s" % path_regex)
     web_app.add_handlers(host_pattern, [(route_pattern, JanusHandler)])
-
-    # def get_template_path(self):
-    #     return None
-
-# def save_changes(os_path, action_data, db_manager, hashed_full_path,
-#                 track_versions=True, track_actions=True):
-#     """
-#     Track notebook changes with periodic snapshots, and action tracking
-#     os_path: (str) path to notebook as saved on the operating system
-#     action_data: (dict) action data in the form of
-#         t: (int) time action was performed
-#         name: (str) name of action
-#         index: (int) selected index
-#         indices: (list of ints) selected indices
-#         model: (dict) notebook JSON
-#     track_versions: (bool) periodically save full versions of the notebook
-#     track_actions: (bool) track individual actions performed on the notebook
-#     """
-#
-#     data_dir = find_storage_dir()
-#     if not data_dir:
-#         print("Could not find directory to save Janus data")
-#     else:
-#         # generate file names, using a hashed path to uniquely identify files
-#         # with the same name (e.g., Untitled.ipynb)
-#         os_dir, fname = os.path.split(os_path)
-#         hashed_path = hash_path(os_dir)
-#         fname, file_ext = os.path.splitext(fname)
-#         # date_string = datetime.datetime.now().strftime("-%Y-%m-%d-%H-%M-%S-%f")
-#
-#         dest_dir = os.path.join(data_dir, hashed_path, fname)
-#         version_dir = os.path.join(dest_dir, "versions")
-#         dbname = os.path.join(dest_dir, fname + ".db")
-#         # dest_fname = os.path.join(dest_dir, fname + ".ipynb")
-#         # ver_fname = os.path.join(version_dir, fname + date_string + ".ipynb")
-#
-#         # save information about the action to the database
-#
-#         # # get the notebook in the correct format (nbnode)
-#         # current_nb = nbformat.from_dict(action_data['model'])
-#
-#         # save file versions and only continue if nb has meaningfully changed
-#         # if os.path.isfile(dest_fname):
-#         #     diff, cell_order = get_nb_diff(action_data, dest_fname, True)
-#         #     if not diff:
-#         #         return
-#         #
-#         # # save the current file for future comparison
-#         # nbformat.write(current_nb, dest_fname, nbformat.NO_CONVERT)
-#
-#         # save a time-stamped version periodically
-#         # if track_versions:
-#         #     if not was_saved_recently(version_dir):
-#         #         nbformat.write(current_nb, ver_fname, nbformat.NO_CONVERT)
