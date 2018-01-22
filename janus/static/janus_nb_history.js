@@ -80,7 +80,7 @@ define([
             // compose url to POST to
             var baseUrl = notebook.base_url;
             var notebookUrl =  notebook.notebook_path;
-            var url = utils.url_path_join(baseUrl, 'api/nbcomet', notebookUrl);
+            var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
 
             // get data ready to post
             var mod = notebook.toJSON();

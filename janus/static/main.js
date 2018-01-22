@@ -180,6 +180,7 @@ define([
 
     function initializeJanusMetadata(){
         /* ensure all notebook cells have Janus metadata */
+        Notebook = Jupyter.notebook
 
         // flag whether we want to track a full history of the notebook
         // for now we won't use this metadata, but just track all the time

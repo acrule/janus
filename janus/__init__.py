@@ -10,7 +10,7 @@ import nbformat
 from notebook.utils import url_path_join
 from notebook.base.handlers import IPythonHandler, path_regex
 
-from .janus_diff import get_nb_diff
+# from .janus_diff import get_nb_diff
 from .janus_sqlite import DbManager
 from .janus_dir import find_storage_dir, create_dir, hash_path # was_saved_recently
 # from .janus_viewer import get_viewer_html
@@ -19,7 +19,8 @@ class JanusHandler(IPythonHandler):
 
     # TODO merge all connections as using only one database
     # manage connections to various sqlite databases
-    db_manager_directory = {}
+    # db_manager_directory = {}
+    db_manager = None
 
     # check if extension loaded by visiting http://localhost:8888/api/janus
     def get(self, path=''):
@@ -30,10 +31,11 @@ class JanusHandler(IPythonHandler):
 
         # get unique path to each file using filename and hashed path
         # we hash the path for a private, short, and unique identifier
-        os_dir, fname = os.path.split(self.contents_manager._get_os_path(path))
+        os_path = self.contents_manager._get_os_path(path)
+        os_dir, fname = os.path.split(os_path)
         fname, file_ext = os.path.splitext(fname)
-        hashed_path = hash_path(os_dir)
-        data_dir = find_storage_dir()
+        # hashed_path = hash_path(os_dir)
+        # data_dir = find_storage_dir()
 
         # display visualization of janus data
         # data = get_viewer_html(data_dir, hashed_path, fname)
@@ -47,37 +49,47 @@ class JanusHandler(IPythonHandler):
         Save data about notebook actions
         path: (str) relative path to notebook requesting POST
         """
-        # get file, directory, and database names
-        # we hash the path for a private, short, and unique identifier
+
+        # hash the path for a private, short, and unique nb identifier
         os_path = self.contents_manager._get_os_path(path)
-        os_dir, fname = os.path.split(os_path)
-        fname, file_ext = os.path.splitext(fname)
-        hashed_path = hash_path(os_dir)
-        dest_dir = os.path.join(find_storage_dir(), hashed_path, fname)
-        version_dir = os.path.join(dest_dir, "versions")
-        db_path = os.path.join(dest_dir, fname + ".db")
-        db_key = os.path.join(hashed_path, fname)
+        hashed_path = hash_path(os_path)
+
+        # find where the nb_history database should be
+        janus_dir = find_storage_dir()
+        db_path = os.path.join(janus_dir, "nb_history.db")
+
+
+        # os_dir, fname = os.path.split(os_path)
+        # fname, file_ext = os.path.splitext(fname)
+        # hashed_path = hash_path(os_dir)
+        # dest_dir = os.path.join(find_storage_dir(), hashed_path, fname)
+        # version_dir = os.path.join(dest_dir, "versions")
+        # db_path = os.path.join(dest_dir, fname + ".db")
+        # db_key = os.path.join(hashed_path, fname)
 
         # if needed, create storage directories
-        if not os.path.isdir(dest_dir):
-            create_dir(dest_dir)
-            create_dir(version_dir)
+        if not os.path.isdir(janus_dir):
+            create_dir(janus_dir)
+            # create_dir(version_dir)
 
         # set up connection with database
-        if db_key not in self.db_manager_directory:
-            self.db_manager_directory[db_key] = DbManager(db_key, db_path)
+        if not self.db_manager:
+            self.db_manager = DbManager(db_path)
 
-        db_manager = self.db_manager_directory[db_key]
+        # db_manager = self.db_manager_directory[db_key]
 
         # save data
         post_data = self.get_json_body()
-        hashed_full_path = os.path.join(hashed_path, fname + file_ext)
+        # hashed_full_path = os.path.join(hashed_path, fname + file_ext)
+
+        # TODO make this a flag in the metadta
+        track_actions = True
 
         if track_actions:
-            db_manager.record_action(post_data, hashed_full_path)
+            self.db_manager.record_action(post_data, hashed_path)
         # save_changes(os_path, post_data, db_manager, hashed_full_path)
 
-        self.finish(json.dumps({'hashed_nb_path': hashed_full_path}))
+        self.finish(json.dumps({'hashed_nb_path': hashed_path}))
 
 def _jupyter_server_extension_paths():
     """
