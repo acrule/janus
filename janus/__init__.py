@@ -39,8 +39,15 @@ class JanusHandler(IPythonHandler):
 
         # either a list of all previous notebook cell configurations
         query_type = self.get_argument('q', None, True)
+
+        path = self.get_argument('path', None, True)
+        start = self.get_argument('start', None, True)
+        end = self.get_argument('end', None, True)
+        
+        # paths = ast.literal_eval( self.get_argument('paths', None, True) )
+
         if (query_type == 'config'):
-            nb_configs = self.db_manager.get_nb_configs(hashed_path)
+            nb_configs = self.db_manager.get_nb_configs(path, start, end)
             self.finish(json.dumps({'nb_configs': nb_configs}))
 
         # or data about individual cell versions

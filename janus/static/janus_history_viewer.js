@@ -60,13 +60,15 @@ define([
             .attr('id', 'history-cell-wrapper')
             .addClass('cell-wrapper'));
 
-        dialog.modal({
+        var mod = dialog.modal({
             title: 'Notebook History',
             body: modal_body,
             buttons: { 'OK': {} }
-        });
+        })
 
-        this.updateModal(num_configs - 1)
+        mod.on("shown.bs.modal", function () {
+            that.updateModal(num_configs - 1)
+        })
     }
 
     HistoryModal.prototype.getNBConfigs = function(){
@@ -75,27 +77,37 @@ define([
         var baseUrl = Jupyter.notebook.base_url;
         var notebookUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
+        var paths = Jupyter.notebook.metadata.filepaths;
+        this.nb_configs = []
 
-        // prepare POST settings
-        var settings = {
-            type : 'GET',
-            data: {
-                q: 'config'
-            },
-            // processData : false,
-            // cache : false,
-            // dataType: 'json',
-            // contentType: 'application/json',
-        };
+        for(var i=0; i<paths.length; i++){
+            // prepare POST settings
+            var settings = {
+                type : 'GET',
+                data: {
+                    q: 'config',
+                    path: paths[i][0],
+                    start: paths[i][1],
+                    end: paths[i][2]
+                },
+            };
 
-        // send the POST request, then check if filename has changed
-        utils.promising_ajax(url, settings).then(function(value){
-            get_data = JSON.parse(value)
-            // console.log(get_data['nb_configs']);
-            that.nb_configs = get_data['nb_configs'];
-            that.showModal();
-
-        });
+            if(i == paths.length - 1){
+                // send the POST request
+                utils.promising_ajax(url, settings).then(function(value, i){
+                    get_data = JSON.parse(value)
+                    that.nb_configs = that.nb_configs.concat(get_data['nb_configs']);
+                    that.showModal();
+                });
+            }
+            else{
+                // send the POST request
+                utils.promising_ajax(url, settings).then(function(value, i){
+                    get_data = JSON.parse(value)
+                    that.nb_configs = that.nb_configs.concat(get_data['nb_configs']);
+                });
+            }
+        }
     }
 
     HistoryModal.prototype.getVersions = function(version_ids){
@@ -104,6 +116,7 @@ define([
         var baseUrl = Jupyter.notebook.base_url;
         var notebookUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
+        var paths = Jupyter.notebook.metadata.filepaths;
 
         // prepare POST settings
         var settings = {
@@ -117,10 +130,7 @@ define([
         // send the POST request, then check if filename has changed
         utils.promising_ajax(url, settings).then(function(value){
             get_data = JSON.parse(value)
-            // console.log(get_data['nb_configs']);
             that.cells = get_data['cells'];
-            // console.log(version_ids)
-            // console.log(that.cells)
 
             version_ids = eval(version_ids)
 
@@ -183,15 +193,12 @@ define([
             newCell.render();
             newCell.focus_editor();
         }
-
-
     }
 
     HistoryModal.prototype.updateModal = function(version_num){
         $('#revision').html(version_num)
         version_ids = this.nb_configs[version_num][3]
         this.getVersions(version_ids)
-        // console.log(this.nb_configs[version_num][3])
     }
 
     function createHistoryModal() {

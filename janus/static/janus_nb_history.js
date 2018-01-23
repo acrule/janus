@@ -109,10 +109,13 @@ define([
                 var paths = Notebook.metadata.filepaths
 
                 if(paths.length == 0){
-                    paths.push([hashed_nb_path, t])
+                    paths.push([hashed_nb_path, t, t])
                 }
                 else if(paths[paths.length - 1][0] != hashed_nb_path){
-                    paths.push([hashed_nb_path, t])
+                    paths.push([hashed_nb_path, t, t])
+                }
+                else{
+                    paths[paths.length - 1][2] = t;
                 }
             });
         }
@@ -151,7 +154,6 @@ define([
                 function trackActionAfterExecution(evt){
                     trackAction(Notebook, t, actionName, selectedIndex,
                                 selectedIndices);
-                    console.log("Tracking actions after execution")
                     events.off('kernel_idle.Kernel', trackActionAfterExecution)
                 }
 

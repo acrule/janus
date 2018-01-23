@@ -11,6 +11,14 @@ from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
 
+"""
+Time restrict queries based on name history (use start time with new names)
+Make cells not editable
+Put time and version history numbers into the history scroller
+Style the history window
+Enable cell folding in history viewer
+"""
+
 class DbManager(object):
     def __init__(self, db_path):
 
@@ -155,24 +163,28 @@ class DbManager(object):
         rows = self.c.fetchall()
         return rows
 
-    def get_nb_configs(self, nb_name):
+    def get_nb_configs(self, path, start, end):
         """
         Return list of all prior nb configurations (e.g. cell and cell versions)
 
-        nb_name: (str) hashed path to the notebook
+        paths: (list) with [hashed_path, start_time, end_time]
         """
 
+        matched_configs = []
+
         # look for nb_configs in the queue
-        matched_configs = [q for q in self.nb_queue if q[1] == nb_name].reverse()
-        if not matched_configs:
-            matched_configs = []
+        queued_configs = [q for q in self.nb_queue if q[1] == nb_name].reverse()
+        if(queued_configs):
+            for q in queued_configs:
+                matched_configs.append(q)
 
         # look for older configs in the database
-        search = "SELECT * FROM nb_configs WHERE name = \'" + nb_name + "\'"
+        search = "SELECT * FROM nb_configs WHERE name = \'" + path + "\' AND time BETWEEN " + str(start) + " and " + str(end)
         rows = self.execute_search(search)
         for row in rows:
             matched_configs.append(row)
 
+        matched_configs.sort(key=lambda x: x[0])
         return matched_configs
 
     def get_last_nb_config(self, nb_name):
