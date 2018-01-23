@@ -11,13 +11,9 @@ from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
 
-"""
-Time restrict queries based on name history (use start time with new names)
-Make cells not editable
-Put time and version history numbers into the history scroller
-Style the history window
-Enable cell folding in history viewer
-"""
+# TODO Put time and version history numbers into the history scroller
+# TODO Style the history window
+# TODO Enable cell folding in history viewer
 
 class DbManager(object):
     def __init__(self, db_path):

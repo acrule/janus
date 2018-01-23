@@ -182,6 +182,7 @@ define([
         // populate sidebar cell with content of notebook cell
         // cell_data = cell.toJSON();
         newCell.fromJSON(cell);
+        newCell.code_mirror.setOption('readOnly', "nocursor")
 
 
         // add new cell to the sidebar
