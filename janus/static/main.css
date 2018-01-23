@@ -6,6 +6,37 @@ folding cells and keeping track of all changes
 #revision{
     width: 100%;
     height: 16px;
+    margin-bottom: 12px;
+}
+
+#rev_num{
+    width: 90px;
+    height: 16px;
+    float: left;
+}
+
+#rev_time{
+    font-weight: 600;
+    height: 16px;
+}
+
+#modal-slide{
+    height: 4px;
+    margin-bottom: 12px;
+    border: 0px;
+    background: #efefef;
+}
+
+#modal-slide.ui-slider-range{
+    top: 0px;
+    height: 3px;
+}
+
+#modal-slide a.ui-slider-handle{
+    top: -6px;
+    width: 8px;
+    margin-left: -6px;
+    background: #ffffff;
 }
 
 .indent-container{

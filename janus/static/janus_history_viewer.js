@@ -25,6 +25,12 @@ define([
     JanusHistory
 ){
 
+    // TODO Pull cell history from database, not metadata
+    // TODO default cell history slider to n - 1 version
+    // TODO debug saving of cell versions before cell fully executed
+    // TODO debug history dialog window overflowing the main screen
+    // TODO fix "hidden cell" to be grey text "folded cell"
+    // TODO enable cell folding in history viewer
 
     var HistoryModal = function(nb){
         var historyViewer = this;
@@ -43,7 +49,13 @@ define([
         that = this
 
         var modal_body = $('<div/>');
-        var revision = modal_body.append($('<div id="revision"/>'));
+        var revision = $('<div id="revision"/>')
+        revision.append($('<div id="rev_num"/>'));
+        revision.append($('<div id="rev_time"/>'));
+        modal_body.append(revision);
+
+
+
         var slide = modal_body.append($('<div id="modal-slide"/>').slider({
             min: 0,
             max: num_configs - 1,
@@ -197,7 +209,29 @@ define([
     }
 
     HistoryModal.prototype.updateModal = function(version_num){
-        $('#revision').html(version_num)
+        t = parseInt( this.nb_configs[version_num][0] )
+        t_now = Date.now()
+        t_diff = (t_now - t) / 1000
+        rev_string = (version_num + 1).toString() + " of " + this.nb_configs.length.toString()
+        date_string = ""
+
+        if (t_diff < 3600){
+            num_min = parseInt(t_diff / 60)
+            date_string = num_min.toString() + " min ago"
+        }
+        else if (t_diff < 86400){
+            num_hours = parseInt(t_diff / 3600)
+            date_string = num_hours.toString() + " hours ago"
+        }
+        else{
+            num_days = parseInt(t_diff / 86400)
+            date_string = num_days.toString() + " days ago"
+        }
+
+        $('#rev_num').html(rev_string)
+        $('#rev_time').html(date_string)
+
+
         version_ids = this.nb_configs[version_num][3]
         this.getVersions(version_ids)
     }

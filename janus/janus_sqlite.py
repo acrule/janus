@@ -11,11 +11,6 @@ from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
 
-# TODO Put time and version history numbers into the history scroller
-# TODO Style the history window
-# TODO Enable cell folding in history viewer
-# TODO fix cell selection bug
-
 class DbManager(object):
     def __init__(self, db_path):
 
