@@ -368,9 +368,7 @@ define([
             if(cells[i].metadata.janus.cell_hidden){
                 serial_hidden_cells.push(cells[i])
                 if(cells[i].cell_type == "code"){
-                    console.log("Getting lines of code")
                     lines_of_code = cells[i].get_text().split('\n').length
-                    console.log(lines_of_code)
                     if(lines_of_code > 0){
                         serial_lines = serial_lines + lines_of_code
                     }
@@ -433,8 +431,6 @@ define([
 
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines){
         /* Add the placeholder used to open a group of indented cells */
-        console.log('Lines to print')
-        console.log(serial_lines)
 
         // get placholder name from metadata, if present
         var markerMetadata = Jupyter.notebook.metadata.janus_markers;
@@ -480,21 +476,21 @@ define([
                         disableVersionNameEditing(this)
                     })
                     .text(function(){
-                        if(first_stored == "" || first_stored == "Hidden Cells"){
-                            return "Hidden Cells"
+                        if(first_stored == "" || first_stored == "Folded Cells"){
+                            return "Folded Cells"
                         }
                         else{
                             return first_stored
                         }
                     })
-                    .css('color', function(){
-                        if(first_stored == "" || first_stored == "Hidden Cells"){
-                            return "#aaaaaa"
-                        }
-                        else{
-                            return ""
-                        }
-                    })
+                    // .css('color', function(){
+                    //     if(first_stored == "" || first_stored == "Hidden Cells"){
+                    //         return "#aaaaaa"
+                    //     }
+                    //     else{
+                    //         return ""
+                    //     }
+                    // })
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
@@ -633,13 +629,13 @@ define([
         element.contentEditable = false;
         Jupyter.notebook.keyboard_manager.command_mode();
 
-        if(element.innerHTML == "" || element.innerHTML == "Hidden Cells"){
-            element.style.color = "#aaaaaa"
-            element.innerHTML = "Hidden Cells"
+        if(element.innerHTML == "" || element.innerHTML == "Folded Cells"){
+            // element.style.color = "#aaaaaa"
+            element.innerHTML = "Folded Cells"
             // element.parentElement.style.border = "1px solid #ccc"
         }
         else{
-            element.style.color = ""
+            // element.style.color = ""
             // element.parentElement.style.border = "0px solid #0000FF"
         }
 
