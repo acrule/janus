@@ -304,7 +304,7 @@ define([
 
     function patchCellUnselect(){
         /* Track when cells are edited and unselected before being executed */
-        oldCellUnselect = cell.Cell.prototype.unselect;
+        var oldCellUnselect = cell.Cell.prototype.unselect;
         cell.Cell.prototype.unselect = function(){
             var i = Notebook.get_selected_index();
             var li = cellsWithUnexecutedEdits.indexOf(i)
@@ -316,7 +316,9 @@ define([
                 trackAction(Notebook, t, 'unselect-cell', i, selectedIndices);
                 cellsWithUnexecutedEdits.splice(li, 1);
             }
-            oldCellUnselect.apply(this);
+
+            var cont = oldCellUnselect.apply(this, arguments);
+            return cont
         }
     }
 
