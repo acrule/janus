@@ -1,5 +1,6 @@
 /*
-NBComet: Jupyter Notebook extension to track full notebook history
+Janus: Jupyter Notebook extension that helps users keep clean notebooks by
+folding cells and keeping track of all changes
 */
 
 // TODO debug run-cell not being tracked

@@ -1,6 +1,6 @@
 /*
-Janus: Jupyter Notebook Extension that assists with notebook cleaning
-Handle hiding and showing of individual code cell sources
+Janus: Jupyter Notebook extension that helps users keep clean notebooks by
+folding cells and keeping track of all changes
 */
 
 define([

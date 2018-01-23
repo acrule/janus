@@ -1,5 +1,6 @@
 """
-Janus: Jupyter Notebook Extension that assist with notebook cleaning
+Janus: Jupyter Notebook extension that helps users keep clean notebooks by 
+folding cells and keeping track of all changes
 """
 
 from distutils.core import setup
@@ -7,7 +8,7 @@ from distutils.core import setup
 setup(
     name='janus',
     version='0.1',
-    description='Jupyter Notebook Extension that helps with notebook cleaning',
+    description='Jupyter Notebook extension that helps users keep clean notebooks by folding cells and keeping track of all changes',
     author='Adam Rule',
     author_email='acrule@ucsd.edu',
     license='BSD-3-Clause',

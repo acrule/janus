@@ -1,6 +1,8 @@
 # Janus
-Janus is a Jupyter Notebook extension that assists with organizing and cleaning
-notebooks. It currently provides a side-panel where certain cells can be
-"hidden" until needed, and the ability to track the history of individual cells.
+Janus is a Jupyter Notebook extension that helps users keep clean notebooks. It
+tracks all changes to the notebook and lets users *fold cells* so their
+notebooks can provide a summary of their work with details-on-demand. Together
+these history and summarization features enable users to keep a short notebook
+without losing the full context of their work.
 
 ![Janus](/img/janus.gif)

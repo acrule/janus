@@ -1,5 +1,6 @@
 """
-Janus: Jupyter Notebook Extension that assists with notebook cleaning
+Janus: Jupyter Notebook extension that helps users keep clean notebooks by
+folding cells and keeping track of all changes
 """
 
 import os
