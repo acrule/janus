@@ -3,6 +3,18 @@ Janus: Jupyter Notebook extension that helps users keep clean notebooks by
 folding cells and keeping track of all changes
 */
 
+#history-label{
+    margin-left: 8px;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#history-label a{
+    color: #777777;
+    cursor: pointer;
+}
+
 #revision{
     width: 100%;
     height: 16px;

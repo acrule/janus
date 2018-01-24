@@ -8,6 +8,7 @@ define([
     'jquery',
     'base/js/namespace',
     'base/js/events',
+    'notebook/js/toolbar',
     '../janus/janus_patch',
     '../janus/janus_sidebar',
     '../janus/janus_history',
@@ -20,6 +21,7 @@ define([
     $,
     Jupyter,
     events,
+    toolbar,
     JanusPatch,
     JanusSidebar,
     JanusHistory,
@@ -29,9 +31,10 @@ define([
     JanusViewer
 ){
 
-    //TODO show full history of all cell executions (Sean?)
-    //TODO enable truncated history based on program analysis... (Sean?)
-    //TODO enable meta-data only notebook history tracking (stretch)
+    // TODO flag
+    // TODO show full history of all cell executions (Sean?)
+    // TODO enable truncated history based on program analysis... (Sean?)
+    // TODO enable meta-data only notebook history tracking (stretch)
 
     function load_css() {
         /* Load css for sidebar */
@@ -101,11 +104,11 @@ define([
         );
 
         janusMenu.append($('<li>')
-            .attr('id', 'toggle_nb_history')
+            .attr('id', 'toggle_nb_recording')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Toggle Notebook History')
-                .click(JanusViewer.createHistoryModal)
+                .text('Toggle Notebook Recording')
+                .click(toggleHistoryRecording)
             )
         );
 
@@ -113,8 +116,17 @@ define([
             .attr('id', 'toggle_cell_history')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Show Cell History')
+                .text('Show Cell Versions')
                 .click(JanusHistory.toggleCellHistoryTracking)
+            )
+        );
+
+        janusMenu.append($('<li>')
+            .attr('id', 'show_nb_history')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Show Notebook History')
+                .click(JanusViewer.createHistoryModal)
             )
         );
     }
@@ -142,11 +154,11 @@ define([
             handler : JanusSource.toggleSource
         };
 
-        var showNbHistAction = {
+        var toggleNbHistAction = {
             icon: 'fa-history',
-            help    : 'Show Notebook History',
+            help    : 'Toggle Notebook Recording',
             help_index : 'zz',
-            handler : JanusViewer.createHistoryModal
+            handler : toggleHistoryRecording
         };
 
         var toggleHistoryAction = {
@@ -155,6 +167,14 @@ define([
             help_index : 'zz',
             handler : JanusHistory.toggleCellHistoryTracking
         };
+
+        // var showNbHistAction = {
+        //     icon: 'fa-history',
+        //     label: 'Show History',
+        //     help    : 'Show Notebook History',
+        //     help_index : 'zz',
+        //     handler : JanusViewer.createHistoryModal
+        // };
 
         var prefix = 'janus';
         var full_toggle_action_name = Jupyter.actions.register(toggleSourceAction,
@@ -166,19 +186,41 @@ define([
         var full_unindent_action_name = Jupyter.actions.register(unindentAction,
                                                             'unindent-cell',
                                                             prefix);
-        var full_show_nb_hist_action_name = Jupyter.actions.register(showNbHistAction,
+        var full_toggle_nb_hist_action_name = Jupyter.actions.register(toggleNbHistAction,
                                                             'toggle-nb-history',
                                                             prefix);
         var full_toggle_hist_action_name = Jupyter.actions.register(toggleHistoryAction,
                                                             'toggle-cell-history',
                                                             prefix);
+        // var full_show_nb_hist_action_name = Jupyter.actions.register(showNbHistAction,
+        //                                                     'show-nb-history',
+        //                                                     prefix);
 
         Jupyter.toolbar.add_buttons_group([full_indent_action_name,
                                         full_unindent_action_name,
                                         full_toggle_action_name]);
 
-        Jupyter.toolbar.add_buttons_group([full_show_nb_hist_action_name,
+        Jupyter.toolbar.add_buttons_group([full_toggle_nb_hist_action_name,
                                         full_toggle_hist_action_name]);
+
+        var history_label = $('<div id="history-label"/>')
+        history_label.append($('<a>View Notebook History</a>')
+                                .click(JanusViewer.createHistoryModal))
+
+        Jupyter.toolbar.element.append(history_label)
+
+
+    }
+
+    function toggleHistoryRecording(){
+        Jupyter.notebook.metadata.track_history = ! Jupyter.notebook.metadata.track_history
+
+        // Set message about recording
+       var message = 'Notebook history recording off';
+       if(Jupyter.notebook.metadata.track_history){
+           message = 'Notebook history recording on';
+       }
+       Jupyter.notification_area.widget('notebook').set_message(message, 2000)
     }
 
     function initializeJanusMetadata(){
