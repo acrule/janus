@@ -42,7 +42,8 @@ define([
     }
 
     HistoryModal.prototype.getDataForModal = function(){
-        /* get data about previous notebook cell orders */
+        /* get data about previous notebook cell orders
+           then render the modal using that data */
 
         that = this;
         this.nb_configs = [];
@@ -129,8 +130,39 @@ define([
         })
     }
 
+    HistoryModal.prototype.updateModal = function(version_num){
+        /* update the history viewer when the slider moves */
+
+        // get the time since the edit being shown
+        var t = parseInt( this.nb_configs[version_num][0] );
+        var t_now = Date.now();
+        var t_diff = ( t_now - t ) / 1000;
+        var rev_string = ( version_num + 1 ).toString() + " of " + this.nb_configs.length.toString();
+        var date_string = "";
+
+        // get a human readible version of the time
+        if ( t_diff < 3600 ) {
+            num_min = parseInt( t_diff / 60 );
+            date_string = num_min.toString() + " min ago";
+        } else if ( t_diff < 86400 ) {
+            num_hours = parseInt( t_diff / 3600 );
+            date_string = num_hours.toString() + " hours ago";
+        } else {
+            num_days = parseInt( t_diff / 86400 );
+            date_string = num_days.toString() + " days ago";
+        }
+
+        // set the time and revision number in the ui
+        $('#rev_num').html(rev_string);
+        $('#rev_time').html(date_string);
+
+        version_ids = this.nb_configs[version_num][3];
+        this.getCellVersionData(version_ids);
+    }
+
     HistoryModal.prototype.getCellVersionData = function(version_ids){
-        /* get data on specific cell versions to show */
+        /* get data on specific cell versions to show
+           then update the modal based on that data */
 
         that = this;
 
@@ -165,6 +197,7 @@ define([
     }
 
     HistoryModal.prototype.appendCell = function(cell){
+        /* add cell to modal */
 
         newCell = null;
 
@@ -212,37 +245,6 @@ define([
             newCell.render();
             newCell.focus_editor();
         }
-    }
-
-    HistoryModal.prototype.updateModal = function(version_num){
-        /* update the history viewer when the slider moves */
-
-        // get the time since the edit being shown
-        var t = parseInt( this.nb_configs[version_num][0] );
-        var t_now = Date.now();
-        var t_diff = ( t_now - t ) / 1000;
-        var rev_string = ( version_num + 1 ).toString() + " of " + this.nb_configs.length.toString();
-        var date_string = "";
-
-        // get a human readible version of the time
-        if ( t_diff < 3600 ) {
-            num_min = parseInt( t_diff / 60 );
-            date_string = num_min.toString() + " min ago";
-        } else if ( t_diff < 86400 ) {
-            num_hours = parseInt( t_diff / 3600 );
-            date_string = num_hours.toString() + " hours ago";
-        } else {
-            num_days = parseInt( t_diff / 86400 );
-            date_string = num_days.toString() + " days ago";
-        }
-
-        // set the time and revision number in the ui
-        $('#rev_num').html(rev_string);
-        $('#rev_time').html(date_string);
-
-
-        version_ids = this.nb_configs[version_num][3];
-        this.getCellVersionData(version_ids);
     }
 
     function createHistoryModal() {
