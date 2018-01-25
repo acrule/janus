@@ -333,6 +333,19 @@ define([
         }
     }
 
+    function toggleHistoryRecording(){
+        /* turn on/off recording of notebook history */
+
+        Jupyter.notebook.metadata.track_history = ! Jupyter.notebook.metadata.track_history
+
+        // Set message about recording
+       var message = 'Notebook history recording off';
+       if(Jupyter.notebook.metadata.track_history){
+           message = 'Notebook history recording on';
+       }
+       Jupyter.notification_area.widget('notebook').set_message(message, 2000)
+    }
+
 
 // LOAD EXTENSION
     function prepNbHistoryTracking(){
@@ -344,6 +357,7 @@ define([
     }
 
     return {
-        prepNbHistoryTracking: prepNbHistoryTracking
+        prepNbHistoryTracking: prepNbHistoryTracking,
+        toggleHistoryRecording: toggleHistoryRecording
     };
 });

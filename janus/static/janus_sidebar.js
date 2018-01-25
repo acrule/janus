@@ -347,7 +347,6 @@ define([
         /* hide all indented cells and render placeholders in their place */
 
         // save data from and remove current markers for hidden cells
-        // saveMarkerMetadata();
         $(".indent-container").remove()
 
         cells = Jupyter.notebook.get_cells();
@@ -483,28 +482,12 @@ define([
                             return first_stored
                         }
                     })
-                    // .css('color', function(){
-                    //     if(first_stored == "" || first_stored == "Hidden Cells"){
-                    //         return "#aaaaaa"
-                    //     }
-                    //     else{
-                    //         return ""
-                    //     }
-                    // })
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
                         .addClass('indent-text')
                         .text(serial_lines +  " lines")))
             )
-    }
-
-    function high(event, el){
-        el.style.backgroundColor = "#f5f5f5"
-    }
-
-    function low(event, el){
-        el.style.backgroundColor = ""
     }
 
     function showMinimap(event, el){
@@ -630,21 +613,16 @@ define([
         Jupyter.notebook.keyboard_manager.command_mode();
 
         if(element.innerHTML == "" || element.innerHTML == "Folded Cells"){
-            // element.style.color = "#aaaaaa"
             element.innerHTML = "Folded Cells"
-            // element.parentElement.style.border = "1px solid #ccc"
-        }
-        else{
-            // element.style.color = ""
-            // element.parentElement.style.border = "0px solid #0000FF"
         }
 
-        saveMarkerMetadata()
+        Jupyter.sidebar.saveMarkerMetadata()
 
     }
 
-    function saveMarkerMetadata(){
+    Sidebar.prototype.saveMarkerMetadata = function() {
         /* Store marker names to notebook metadata for later use */
+
         indentMarkers = $('.indent-marker').toArray()
         indentMetadata = []
         for(i=0; i < indentMarkers.length; i++){
@@ -665,6 +643,5 @@ define([
 
     return{
         createSidebar: createSidebar,
-        saveMarkerMetadata: saveMarkerMetadata
     };
 });

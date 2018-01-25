@@ -17,8 +17,6 @@ define([
     codecell
 ){
 
-    //TODO do better comparison of cell version so we don't save duplicate copies
-
     // reference for later use
     var CodeCell = codecell.CodeCell;
 

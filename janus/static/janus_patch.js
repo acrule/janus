@@ -385,8 +385,31 @@ define([
         }
     }
 
+    function initializeJanusMetadata(){
+        /* ensure all notebook cells have Janus metadata */
+
+        Notebook = Jupyter.notebook
+
+        // flag whether we want to track a full history of the notebook
+        if (Notebook.metadata.track_history === undefined){
+            Notebook.metadata.track_history = true;
+        }
+
+        // track previous names of the notebook to maintain full history
+        if (Notebook.metadata.filepaths === undefined){
+            Notebook.metadata.filepaths = [];
+        }
+
+        // make sure each cell has the relevant metadata
+        cells = Jupyter.notebook.get_cells();
+        for(i=0; i<cells.length; i++){
+            generateDefaultJanusMetadata(cells[i]);
+        }
+    }
+
     return{
         applyJanusPatches: applyJanusPatches,
-        generateDefaultJanusMetadata: generateDefaultJanusMetadata
+        generateDefaultJanusMetadata: generateDefaultJanusMetadata,
+        initializeJanusMetadata: initializeJanusMetadata
     };
 });
