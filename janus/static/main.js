@@ -25,7 +25,7 @@ define([
     JanusSource,
     JanusNBHist,
     JanusMenu
-){    
+){
 
     function load_css() {
         /* Load css for sidebar */

@@ -96,7 +96,7 @@ define([
             .append($('<a>')
                 .attr('href', '#')
                 .text('Show Cell Versions')
-                .click(JanusHistory.toggleCellHistoryTracking)
+                .click(JanusHistory.toggleCellVersions)
             )
         );
 
@@ -146,7 +146,7 @@ define([
             icon: 'fa-code-fork',
             help    : 'Show Cell Versions',
             help_index : 'zz',
-            handler : JanusHistory.toggleCellHistoryTracking
+            handler : JanusHistory.toggleCellVersions
         };
 
         var prefix = 'janus';

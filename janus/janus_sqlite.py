@@ -241,6 +241,44 @@ class DbManager(object):
 
         return matched_versions
 
+    def get_cell_history(self, path, start, end, cell_id):
+        """
+        Return list of all versions of this cell
+
+        path:
+        start:
+        end:
+        cell_id:
+        """
+
+        matched_versions = []
+
+        # look for nb_configs in the queue
+        queued_versions = [q for q in self.cell_queue if q[1] == cell_id].reverse()
+        if(queued_versions):
+            for q in queued_versions:
+                matched_versions.append(q)
+
+        # look for older configs in the database
+        search = "SELECT * FROM cells WHERE cell_id = \'" + cell_id + "\' AND time BETWEEN " + str(start) + " and " + str(end)
+        rows = self.execute_search(search)
+        for row in rows:
+            matched_versions.append(row)
+
+        matched_versions.sort(key=lambda x: x[0])
+        version_arr = []
+        for m in matched_versions:
+            v_dict = {
+                "name":"",
+                "cell_id": cell_id,
+                "version_id": m[2],
+                "content": pickle.loads(m[3])
+            }
+            version_arr.append(v_dict)
+
+        return version_arr
+
+
     def get_versions(self, version_ids):
         """
         Return dict of particular cell versions with cell_id as keys

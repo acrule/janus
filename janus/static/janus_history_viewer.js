@@ -12,7 +12,6 @@ define([
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
-    '../janus/janus_history'
 ], function(
     require,
     $,
@@ -22,7 +21,6 @@ define([
     Cell,
     CodeCell,
     TextCell,
-    JanusHistory
 ){
 
     // TODO Pull cell history from database, not metadata

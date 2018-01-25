@@ -43,7 +43,7 @@ class JanusHandler(IPythonHandler):
         path = self.get_argument('path', None, True)
         start = self.get_argument('start', None, True)
         end = self.get_argument('end', None, True)
-        
+
         # paths = ast.literal_eval( self.get_argument('paths', None, True) )
 
         if (query_type == 'config'):
@@ -56,6 +56,12 @@ class JanusHandler(IPythonHandler):
             version_ids = ast.literal_eval(version_ids)
             cells = self.db_manager.get_versions(version_ids)
             self.finish(json.dumps({'cells': cells}))
+
+        # or data about a cell's entrie history
+        elif (query_type == 'cell_history'):
+            cell_id = self.get_argument('cell_id', None, True)
+            versions = self.db_manager.get_cell_history(path, start, end, cell_id)
+            self.finish(json.dumps({'versions': versions}))
 
         else:
             self.finish(json.dumps({'msg': "Did not understand the request"}))
