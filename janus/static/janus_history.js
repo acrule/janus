@@ -59,22 +59,6 @@ define([
         }
     }
 
-    function toggle_version_markers(marker, cell){
-        /* show/hide version markers */
-
-        janus_meta = cell.metadata.janus
-        janus_meta.versions_showing = !janus_meta.versions_showing;
-        render_markers(cell);
-    }
-
-    function createSummaryClick(marker, cell) {
-        /* attach version marker toggle to summary marker on click event */
-
-        return function() {
-            toggle_version_markers(marker, cell);
-        }
-    }
-
     function toggleCellVersions() {
         cell = Jupyter.notebook.get_selected_cell();
         cell.metadata.janus.track_versions = ! cell.metadata.janus.track_versions;
@@ -123,7 +107,7 @@ define([
                     get_data = JSON.parse(value)
                     cell_versions = cell_versions.concat(get_data['versions']);
                     render_version_markers(cell, cell_versions)
-                    render_summary_marker(cell, cell_versions);
+                    // render_summary_marker(cell, cell_versions);
                 });
             }
             else{
@@ -136,46 +120,40 @@ define([
         }
     }
 
-    function render_summary_marker(cell, cell_versions){
+    function render_summary_marker(cell){
         /* create a summary marker for cell history versions */
-        if(cell_versions.length > 0){
-            var input_area = cell.element.find('div.input_area')[0];
-            var num_versions = cell_versions.length
-            // var showing = cell.metadata.janus.versions_showing
+        // if(cell_versions.length > 0){
+        var input_area = cell.element.find('div.input_area')[0];
+        // var num_versions = cell_versions.length
+        // var showing = cell.metadata.janus.versions_showing
 
-            // clear current summary marker
-            var markers = input_area.getElementsByClassName('summary')
-            while(markers[0]){
-                markers[0].parentNode.removeChild(markers[0]);
-            }
+        // clear current summary marker
+        var markers = input_area.getElementsByClassName('summary')
+        while(markers[0]){
+            markers[0].parentNode.removeChild(markers[0]);
+        }
 
-            // change styling and add events to the marker
-            var newElement = document.createElement('div');
-            newElement.className = "marker summary fa fa-history"
-            newElement.onclick = createSummaryClick(newElement, cell);
+        // change styling and add events to the marker
+        var newElement = document.createElement('div');
+        newElement.className = "marker summary fa fa-code-fork"
+        // newElement.onclick = createSummaryClick(newElement, cell);
+
+        marker_container = $(input_area).find('.marker-container')[0]
+        if(marker_container){
+            marker_container.appendChild(newElement);
+        }
+        else{
+            var markerContainer = document.createElement('div')
+            markerContainer.className = "marker-container"
+
+            // prepare for absolute positioning of marker
+            input_area.style.position = "relative";
+            input_area.appendChild(markerContainer);
 
             marker_container = $(input_area).find('.marker-container')[0]
-            if(marker_container){
-                marker_container.appendChild(newElement);
-            }
-            else{
-                var markerContainer = document.createElement('div')
-                markerContainer.className = "marker-container"
-
-                // prepare for absolute positioning of marker
-                input_area.style.position = "relative";
-                input_area.appendChild(markerContainer);
-
-                marker_container = $(input_area).find('.marker-container')[0]
-                marker_container.appendChild(newElement);
-            }
-            // hide the cell history summary marker if cell not selected
-            if (!cell.selected){
-                hide_markers(cell)
-            }
+            marker_container.appendChild(newElement);
         }
     }
-
 
     // TODO update to use version markers
     function render_version_markers(cell, cell_versions){
@@ -193,19 +171,6 @@ define([
             var namedVersionsIds = namedVersions.map(function(a) {return a.version_id;});
             var versionsToShow = []
 
-            if (namedVersions.length > 0) {
-                for (i=0; i < namedVersions.length; i++) {
-                    versionsToShow.push(namedVersions[i])
-                }
-            }
-            if( cell_versions.length > 0 && cell.selected ){
-                for ( j = 0; j < cell_versions.length; j++ ){
-                    if (namedVersionsIds.indexOf(cell_versions[j].version_id ) == -1) {
-                        versionsToShow.push(cell_versions[j])
-                    }
-                }
-            }
-
             // clear current markers
             var input_area = cell.element.find('div.input_area')[0];
             var markers = input_area.getElementsByClassName('version');
@@ -213,12 +178,31 @@ define([
                 markers[0].parentNode.removeChild(markers[0]);
             }
 
+            // if (! cell.selected && namedVersions.length == 0 ) {
+            //     render_summary_marker(cell, cell_versions);
+            //     return
+            // }
+
+            if (namedVersions.length > 0) {
+                for (i=0; i < namedVersions.length; i++) {
+                    versionsToShow.push(namedVersions[i])
+                }
+            }
+
+            if( cell_versions.length > 0 ){
+                for ( j = 0; j < cell_versions.length; j++ ){
+                    if (namedVersionsIds.indexOf(cell_versions[j].version_id ) == -1) {
+                        versionsToShow.push(cell_versions[j])
+                    }
+                }
+            }
+
             var num_versions = versionsToShow.length;
-            var showing = cell.metadata.janus.versions_showing;
+            // var showing = cell.metadata.janus.versions_showing;
 
             cell.metadata.janus.versions = versionsToShow
 
-            if(showing && cell.selected && num_versions > 0){
+            if( num_versions > 0){
 
                 // prepare for absolute positioning of markers
                 input_area.style.position = "relative";
@@ -229,6 +213,7 @@ define([
                     newElement.className = "marker version";
 
                     // assign colors
+                    // TODO need to check if version matches what is in the cell
                     if (v == cell.metadata.janus.current_version){
                         newElement.classList.add('selected-version')
                     } else {
@@ -238,6 +223,9 @@ define([
                     // render version name
                     if(versionsToShow[v].name){
                         newElement.innerHTML = versionsToShow[v].name
+                        newElement.classList.add('named-version')
+                    } else{
+                        newElement.classList.add('unnamed-version')
                     }
 
                     // events
@@ -265,6 +253,8 @@ define([
                 }
             }
         }
+
+        hide_markers(cell);
     }
 
     function render_markers(cell){
@@ -280,12 +270,9 @@ define([
 
         // only show markers if the flag is set
         if (cell.metadata.janus.track_versions) {
+            render_summary_marker(cell);
             getCellVersions(cell);
-
-        } else {
-            hide_markers(cell);
         }
-
     }
 
     function initialize_markers(){
@@ -305,6 +292,7 @@ define([
                 input_area.appendChild(markerContainer);
 
                 render_markers(cell);
+                hide_markers(cell);
             }
         }
     }
@@ -312,17 +300,31 @@ define([
     function hide_markers(cell){
         /* hide all markers for this cell */
 
-        $(cell.element[0]).find(".marker").hide();
-        $(cell.element[0]).find(".marker.active").show();
+        var janus_meta = cell.metadata.janus
+        var input_area = cell.element.find('div.input_area')[0];
+        var sum_marker = $(input_area).find(".summary")
+        var named_markers = $(input_area).find(".named-version")
+        var unnamed_markers = $(input_area).find(".unnamed-version")
 
-        // TODO clean metadata list
-    }
+        // start by hiding all markers
+        $(input_area).find(".marker").hide();
+        console.log("hiding markers")
 
-    function show_markers(cell){
-        /* show all markers for this cell */
-
-        if (cell.metadata.janus.track_versions) {
-            $(cell.element[0]).find(".marker").show();
+        // show just the
+        if ( janus_meta.track_versions ) {
+            if ( cell.selected ){
+                console.log("Showing all")
+                named_markers.show();
+                unnamed_markers.show();
+            } else {
+                if (named_markers.length > 0) {
+                    console.log("Showing named")
+                    named_markers.show();
+                } else {
+                    console.log("Showing summary")
+                    sum_marker.show();
+                }
+            }
         }
     }
 
@@ -359,12 +361,16 @@ define([
 
         // if it now has no name, remove from our list
         if(new_name == ""){
+            element.classList.remove('named-version')
+            element.classList.add('unnamed-version')
             if (named_index > -1){
                 named_versions.splice(named_index, 1)
             }
         }
         // if if now has a name, either update its entry, or add to our list
         else{
+            element.classList.add('named-version')
+            element.classList.remove('unnamed-version')
             if (named_index == -1){
                 named_versions.push(cur_version)
                 named_versions[named_versions.length - 1].name = new_name
@@ -395,14 +401,14 @@ define([
         CodeCell.prototype.select = function() {
 
             old_select.apply(this, arguments);
-            show_markers(this);
+            hide_markers(this);
 
             // update sidebar
             janus_meta = this.metadata.janus
             if ( (janus_meta.cell_hidden || janus_meta.source_hidden)
                 && ! Jupyter.sidebar.collapsed && this.sb_cell) {
-                show_markers(this.sb_cell);
                 this.sb_cell.select();
+                hide_markers(this.sb_cell);
             }
 		}
     }
