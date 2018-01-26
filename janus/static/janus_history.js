@@ -375,16 +375,16 @@ define([
 
 // PATCH FUNCTIONS
 
-    function patch_CodeCell_execute() {
-        /* re-render version markers after each execution */
-
-		var old_execute = CodeCell.prototype.execute;
-        CodeCell.prototype.execute = function () {
-            old_execute.apply(this, arguments);
-            // check_version(this);
-            render_markers(this);
-		}
-    }
+    // function patch_CodeCell_execute() {
+    //     /* re-render version markers after each execution */
+    //
+	// 	var old_execute = CodeCell.prototype.execute;
+    //     CodeCell.prototype.execute = function () {
+    //         old_execute.apply(this, arguments);
+    //         // check_version(this);
+    //         render_markers(this);
+	// 	}
+    // }
 
     function patch_CodeCell_select() {
         /* show version markers when cell is selected, and update sidebar */
@@ -472,7 +472,7 @@ define([
     function load_cell_history(){
         /* patch functions needed to manage cell histories */
 
-        patch_CodeCell_execute();
+        // patch_CodeCell_execute();
         patch_CodeCell_select();
         patch_CodeCell_unselect();
         patch_keydown();

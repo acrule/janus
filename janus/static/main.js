@@ -8,7 +8,7 @@ define([
     'jquery',
     'base/js/namespace',
     'base/js/events',
-    '../janus/janus_patch',
+    '../janus/patch',
     '../janus/janus_sidebar',
     '../janus/janus_history',
     '../janus/fold',
