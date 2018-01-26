@@ -102,7 +102,7 @@ define([
             });
 
             // render any history markers
-            JanusVersions.render_markers(newCell);
+            JanusVersions.renderMarkers(newCell);
         }
 
         // focus the first cell in the sidebar

@@ -49,13 +49,18 @@ define([
                 $(this.element).nextAll('.indent-marker').first().addClass('active')
                 if (! Jupyter.sidebar.collapsed && this.sb_cell != undefined) {
                     this.sb_cell.selected = true;
+                    this.sb_cell.select();
                     this.sb_cell.element.removeClass('unselected');
                     this.sb_cell.element.addClass('selected');
+                    JanusVersions.updateMarkerVisibility(this.sb_cell);
                 }
             }
 
             // do the normal cell selection
             oldCellSelect.apply(this, arguments);
+
+            // then update marker visibility
+            JanusVersions.updateMarkerVisibility(this);
         }
     }
 
@@ -82,6 +87,14 @@ define([
 
             // need to return context object so mult-cell selection works
             var cont = oldCellUnselect.apply(this, arguments);
+
+            // update version markers, but don't think we need to do this will another cell being selected
+            JanusVersions.updateMarkerVisibility(this);
+            janus_meta = this.metadata.janus
+            if((janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
+                    && ! Jupyter.sidebar.collapsed && this.sb_cell){
+                JanusVersions.updateMarkerVisibility(this.sb_cell)
+            }
 
             return cont
         }
@@ -163,7 +176,7 @@ define([
             // function to run once cell is executed
             function updateCellOnExecution(evt) {
                 that.sb_cell.fromJSON( that.toJSON() );
-                JanusVersions.render_markers(that.sb_cell);
+                JanusVersions.renderMarkers(that.sb_cell);
                 events.off('kernel_idle.Kernel', updateCellOnExecution);
             }
 
@@ -185,7 +198,7 @@ define([
             }
 
             // update cell version markers if needed
-            JanusVersions.render_markers(this);
+            JanusVersions.renderMarkers(this);
         }
     }
 
@@ -479,6 +492,53 @@ define([
     }
 
 
+    function patchKeydown() {
+        /* enable keyboard shortcuts to edit cell history */
+
+        document.onkeydown = function(e) {
+            var cell = Jupyter.notebook.get_selected_cell();
+            var janusMeta = cell.metadata.janus
+            var hidden_cell = false;
+
+            // if operating on a hidden cell, make changes to sidebar cell first
+            if ((janusMeta.cell_hidden || janusMeta.source_hidden || janusMeta.output_hidden)
+                    && ! Jupyter.sidebar.collapsed && cell.sb_cell){
+                hidden_cell = true;
+                cell = cell.sb_cell
+                janusMeta = cell.sb_cell.metadata.janus
+            }
+
+            var expanded = janusMeta.versions_showing
+            var versions = janusMeta.versions
+            var curIndex = janusMeta.current_version
+
+            if (Jupyter.notebook.keyboard_manager.mode == "command" ) { // if not editing cell and versions are showing
+                if (e.keyCode == 37) { // left
+                    if ( curIndex > 0 ) {
+                        var newIndex = curIndex - 1;
+                        JanusVersions.changeVersion(cell, newIndex);
+
+                        // update the main cell notebook too
+                        if (hidden_cell) {
+                            JanusVersions.changeVersion(cell.nb_cell, newIndex)
+                        }
+                    }
+                } else if (e.keyCode == 39) { // right
+
+                    if ( curIndex < versions.length - 1 ) {
+                        var newIndex = curIndex + 1;
+                        JanusVersions.changeVersion(cell, newIndex)
+
+                        // update the main cell notebook too
+                        if(hidden_cell){
+                            JanusVersions.changeVersion(cell.nb_cell, newIndex)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 // JANUS METADATA
     function generateDefaultCellMetadata(cell) {
         /* generate default Janus metadata for a cell */
@@ -488,9 +548,10 @@ define([
             'cell_hidden': false,
             'source_hidden': false,
             'ouput_hidden': false,
-            'track_versions': false,
+            'show_versions': false,
             'versions_showing': false,
             'versions': [],
+            'named_versions': [],
             'current_version': 0
         }
 
@@ -587,6 +648,7 @@ define([
         //new patches
         patchCutCopyPaste();
         patchCellUnselect();
+        patchKeydown();
     }
 
 

@@ -43,7 +43,7 @@ define([
 
         JanusPatch.initializeJanusMetadata();
         Jupyter.sidebar.hideIndentedCells();
-        JanusVersions.load_cell_history();
+        JanusVersions.initializeVersionMarkers();
         JanusFold.initializeVisibility();
         JanusHistory.prepHistoryTracking();
     }

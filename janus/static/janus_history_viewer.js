@@ -39,7 +39,7 @@ define([
         this.getDataForModal()
     }
 
-    HistoryModal.prototype.getDataForModal = function(){
+    HistoryModal.prototype.getDataForModal = function() {
         /* get data about previous notebook cell orders
            then render the modal using that data */
 
@@ -83,7 +83,8 @@ define([
         }
     }
 
-    HistoryModal.prototype.renderModal = function(){
+
+    HistoryModal.prototype.renderModal = function() {
         /* show the modal, assuming we already have the nb history data */
 
         // get the number of versions from the database
@@ -128,7 +129,8 @@ define([
         })
     }
 
-    HistoryModal.prototype.updateModal = function(version_num){
+
+    HistoryModal.prototype.updateModal = function(version_num) {
         /* update the history viewer when the slider moves */
 
         // get the time since the edit being shown
@@ -158,7 +160,8 @@ define([
         this.getCellVersionData(version_ids);
     }
 
-    HistoryModal.prototype.getCellVersionData = function(version_ids){
+
+    HistoryModal.prototype.getCellVersionData = function(version_ids) {
         /* get data on specific cell versions to show
            then update the modal based on that data */
 
@@ -194,7 +197,8 @@ define([
         });
     }
 
-    HistoryModal.prototype.appendCell = function(cell){
+
+    HistoryModal.prototype.appendCell = function(cell) {
         /* add cell to modal */
 
         newCell = null;
@@ -245,11 +249,13 @@ define([
         }
     }
 
+
     function createHistoryModal() {
         /* create a new sidebar element */
 
         return new HistoryModal(Jupyter.notebook);
     }
+
 
     return{
         createHistoryModal: createHistoryModal

@@ -7,10 +7,12 @@ Handle indenting and unindenting of cells to and from the Janus sidebar
 
 define([
     'jquery',
-    'base/js/namespace'
+    'base/js/namespace',
+    '../janus/utils'
 ], function(
     $,
-    Jupyter
+    Jupyter,
+    JanusUtils
 ){
 
 // INDENT AND UNINDENT
@@ -81,14 +83,16 @@ define([
             cell: main notebook cell to hide source
         */
 
+        var outputArea = cell.element.find('div.output_wrapper')[0];
+        var classes = "marker hidden-code fa fa-code";
+
         if (cell.metadata.janus.source_hidden) {
-            var outputArea = cell.element.find('div.output_wrapper')[0];
-            var classes = "marker hidden-code fa fa-code";
-            removeMarkerType('hidden-code', cell);
-            addMarkerToElement(outputArea, cell, classes);
+            JanusUtils.removeMarkerType('.hidden-code', outputArea);
+            var marker = JanusUtils.addMarkerToElement(outputArea, classes);
+            marker.onclick = function() { showCellInSidebar(cell, marker); };
         }
         else if (cell.cell_type == 'code') {
-            removeMarkerType('hidden-code', cell);
+            JanusUtils.removeMarkerType('.hidden-code', outputArea);
             Jupyter.sidebar.collapse();
             // TODO may want to do Jupyter.sidebar.update() instead
         }
@@ -115,14 +119,16 @@ define([
             Cell: cell to place marker on
         */
 
+        var markerContainer = JanusUtils.getMarkerContainer(cell)
+        var classes = "marker hidden-output fa fa-area-chart";
+
         if (cell.metadata.janus.output_hidden) {
-            var inputArea = cell.element.find('div.marker-container')[0];
-            var classes = "marker hidden-output fa fa-area-chart";
-            removeMarkerType('hidden-output', cell);
-            addMarkerToElement(inputArea, cell, classes);
+            JanusUtils.removeMarkerType('.hidden-output', markerContainer);
+            var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
+            marker.onclick = function() { showCellInSidebar(cell, marker); };
         }
         else if (cell.cell_type == 'code') {
-            removeMarkerType('hidden-output', cell);
+            JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             Jupyter.sidebar.collapse();
             // TODO may want to do Jupyter.sidebar.update() instead
         }
@@ -162,43 +168,6 @@ define([
         Jupyter.sidebar.marker = marker
         Jupyter.sidebar.markerPosition = $(cell.element).position().top
         Jupyter.sidebar.toggle([cell])
-    }
-
-
-    function removeMarkerType(markerClass, cell) {
-        /* remove all markers of a particular type for a certain cell
-
-        Args:
-            markerClass: class of element to remove
-            cell: cell to remove markers from
-        */
-
-        var markers = $(cell.element).find(markerClass);
-        while (markers[0]) {
-            markers[0].parentNode.removeChild(markers[0]);
-        }
-    }
-
-
-    function addMarkerToElement(element, cell, classes) {
-        /* add a marker to a particular element of the cells
-
-        Args:
-            element: specific element to append marker to
-            cell: cell that marker will be attached to
-            classes: classes to assign to marker
-        */
-        if (element) {
-            var newElement = document.createElement('div');
-            newElement.className = classes
-            newElement.onclick = function() {
-                showCellInSidebar(cell, newElement);
-            };
-            element.appendChild(newElement);
-            if (! cell.selected) {
-                $(newElement).hide()
-            }
-        }
     }
 
 
