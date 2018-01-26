@@ -30,6 +30,7 @@ define([
         Jupyter.sidebar.update();
     }
 
+
     function unindentSelectedCells() {
         /* move selected cells back to the main notebook */
 
@@ -59,6 +60,7 @@ define([
         Jupyter.sidebar.update();
     }
 
+
 // HIDE SOURCE
     function toggleSourceVisibility() {
         /* Hide/Show the source of individual cells */
@@ -71,6 +73,7 @@ define([
         }
     }
 
+
     function renderSourceMarker(cell) {
         /* Show marker on cell with hidden source
 
@@ -79,68 +82,18 @@ define([
         */
 
         if (cell.metadata.janus.source_hidden) {
-            removeHiddenSourceMarkers(cell);
-            addHiddenSourceMarker(cell);
+            var outputArea = cell.element.find('div.output_wrapper')[0];
+            var classes = "marker hidden-code fa fa-code";
+            removeMarkerType('hidden-code', cell);
+            addMarkerToElement(outputArea, cell, classes);
         }
-        else if (cell.cell_type == 'code'){
-            removeHiddenSourceMarkers(cell);
+        else if (cell.cell_type == 'code') {
+            removeMarkerType('hidden-code', cell);
             Jupyter.sidebar.collapse();
+            // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
 
-    function removeHiddenSourceMarkers(cell) {
-        /* remove all hidden source markers from a cell
-
-        Args:
-            cell: main notebook cell to hide source
-        */
-
-        var output_area = cell.element.find('div.output_wrapper')[0];
-        if (output_area) {
-            var markers = output_area.getElementsByClassName('hidden-code')
-            while (markers[0]) {
-                markers[0].parentNode.removeChild(markers[0]);
-            }
-        }
-    }
-
-    function addHiddenSourceMarker(cell) {
-        /* add a hidden source marker to a cell */
-
-        var output_area = cell.element.find('div.output_wrapper')[0];
-        if (output_area) {
-            var newElement = document.createElement('div');
-            newElement.className = "marker hidden-code fa fa-code";
-            newElement.onclick = function() {
-                showSourceInSidebar(cell, newElement);
-            };
-            output_area.appendChild(newElement);
-            if (! cell.selected) {
-                $(newElement).hide()
-            }
-        }
-    }
-
-    function showSourceInSidebar(cell, marker) {
-        /* Show this cell's source in the sidebar */
-
-        Jupyter.sidebar.marker = marker
-        Jupyter.sidebar.markerPosition = $(cell.element).position().top
-        Jupyter.sidebar.toggle([cell])
-    }
-
-    function initializeSourceVisibility() {
-        /* hide any sources of cells with source hidden metadata */
-
-        var cells = Jupyter.notebook.get_cells()
-        for ( i=0; i < cells.length; i++ ) {
-
-            if (cells[i].metadata.janus.source_hidden) {
-                renderSourceMarker(cells[i]);
-                cells[i].element.find("div.input").hide();
-            }
-        }
-    };
 
 // HIDE OUTPUTS
     function toggleOutputVisibility() {
@@ -154,73 +107,100 @@ define([
         }
     }
 
+
     function renderOutputMarker(cell) {
-        /* Show marker on cell with hidden source */
+        /* Show marker on cell with hidden source
+
+        Args:
+            Cell: cell to place marker on
+        */
 
         if (cell.metadata.janus.output_hidden) {
-            removeHiddenOutputMarkers(cell);
-            addHiddenOutputMarker(cell);
+            var inputArea = cell.element.find('div.marker-container')[0];
+            var classes = "marker hidden-output fa fa-area-chart";
+            removeMarkerType('hidden-output', cell);
+            addMarkerToElement(inputArea, cell, classes);
         }
-        else if (cell.cell_type == 'code'){
-            removeHiddenOutputMarkers(cell);
+        else if (cell.cell_type == 'code') {
+            removeMarkerType('hidden-output', cell);
             Jupyter.sidebar.collapse();
+            // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
 
-    function removeHiddenOutputMarkers(cell) {
-        /* remove all hidden source markers from a cell */
 
-        var input_area = cell.element.find('div.marker-container')[0];
-        if (input_area) {
-            var markers = input_area.getElementsByClassName('hidden-output')
-            while (markers[0]) {
-                markers[0].parentNode.removeChild(markers[0]);
+// GENERAL
+    function initializeVisibility() {
+        /* hide source and outputs of all cells in nb with proper metadata */
+
+        var cells = Jupyter.notebook.get_cells()
+        for ( i=0; i < cells.length; i++ ) {
+
+            // output hidden
+            if (cells[i].metadata.janus.output_hidden) {
+                renderOutputMarker(cells[i]);
+                cells[i].element.find("div.output").hide();
+            }
+
+            // source hidden
+            if (cells[i].metadata.janus.source_hidden) {
+                renderSourceMarker(cells[i]);
+                cells[i].element.find("div.input").hide();
             }
         }
     }
 
-    function addHiddenOutputMarker(cell) {
-        /* add a hidden source marker to a cell */
 
-        var input_area = cell.element.find('div.marker-container')[0];
-        if (input_area) {
-            var newElement = document.createElement('div');
-            newElement.className = "marker hidden-output fa fa-area-chart";
-            newElement.onclick = function() {
-                showOutputInSidebar(cell, newElement);
-            };
-            input_area.appendChild(newElement);
-            if (! cell.selected) {
-                $(newElement).hide()
-            }
-        }
-    }
+    function showCellInSidebar(cell, marker) {
+        /* Show this cell in the sidebar
 
-    function showOutputInSidebar(cell, marker) {
-        /* Show this cell's source in the sidebar */
+        Args:
+            cell: cell to show
+            marker: marker being clicked to show cell (use for sidebar position)
+        */
 
         Jupyter.sidebar.marker = marker
         Jupyter.sidebar.markerPosition = $(cell.element).position().top
         Jupyter.sidebar.toggle([cell])
     }
 
-    function initializeOutputVisibility() {
-        /* hide any sources of cells with source hidden metadata */
 
-        var cells = Jupyter.notebook.get_cells()
-        for ( i=0; i < cells.length; i++ ) {
+    function removeMarkerType(markerClass, cell) {
+        /* remove all markers of a particular type for a certain cell
 
-            if (cells[i].metadata.janus.output_hidden) {
-                renderOutputMarker(cells[i]);
-                cells[i].element.find("div.output").hide();
+        Args:
+            markerClass: class of element to remove
+            cell: cell to remove markers from
+        */
+
+        var markers = $(cell.element).find(markerClass);
+        while (markers[0]) {
+            markers[0].parentNode.removeChild(markers[0]);
+        }
+    }
+
+
+    function addMarkerToElement(element, cell, classes) {
+        /* add a marker to a particular element of the cells
+
+        Args:
+            element: specific element to append marker to
+            cell: cell that marker will be attached to
+            classes: classes to assign to marker
+        */
+        if (element) {
+            var newElement = document.createElement('div');
+            newElement.className = classes
+            newElement.onclick = function() {
+                showCellInSidebar(cell, newElement);
+            };
+            element.appendChild(newElement);
+            if (! cell.selected) {
+                $(newElement).hide()
             }
         }
-    };
-
-    function initializeVisibility() {
-        initializeOutputVisibility();
-        initializeSourceVisibility();
     }
+
 
     return {
         indentSelectedCells: indentSelectedCells,
@@ -229,4 +209,5 @@ define([
         toggleOutputVisibility: toggleOutputVisibility,
         initializeVisibility, initializeVisibility
     };
+
 });
