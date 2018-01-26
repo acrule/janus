@@ -10,7 +10,9 @@ define([
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
-    '../janus/janus_history'
+    '../janus/versions',
+    '../janus/history',
+    '../janus/utils'
 ], function(
     $,
     Jupyter,
@@ -18,7 +20,9 @@ define([
     Cell,
     CodeCell,
     TextCell,
-    JanusHistory
+    JanusVersions,
+    JanusHistory,
+    JanusUtils
 ){
 
 // PATCH CELL FUNCTIONS
@@ -52,6 +56,34 @@ define([
 
             // do the normal cell selection
             oldCellSelect.apply(this, arguments);
+        }
+    }
+
+
+    function patchCellUnselect() {
+        /* Track when cells are edited and unselected before being executed
+
+        This can help us reconstruct the whole nb history, including edits that
+        change a cell's content and are saved, but not executed
+        */
+
+        var oldCellUnselect = Cell.Cell.prototype.unselect;
+        Cell.Cell.prototype.unselect = function(){
+
+            var ts = JanusUtils.getTimeAndSelection()
+            var cell_id = this.metadata.janus.cell_id
+            var li = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
+            var unexecutedChanges = li > -1;
+
+            if(this.selected && unexecutedChanges){
+                JanusHistory.trackAction(Jupyter.notebook, ts.t, 'unselect-cell', ts.selIndex, ts.selIndices);
+                Jupyter.notebook.metadata.unexecutedCells.splice(li, 1);
+            }
+
+            // need to return context object so mult-cell selection works
+            var cont = oldCellUnselect.apply(this, arguments);
+
+            return cont
         }
     }
 
@@ -131,7 +163,7 @@ define([
             // function to run once cell is executed
             function updateCellOnExecution(evt) {
                 that.sb_cell.fromJSON( that.toJSON() );
-                JanusHistory.render_markers(that.sb_cell);
+                JanusVersions.render_markers(that.sb_cell);
                 events.off('kernel_idle.Kernel', updateCellOnExecution);
             }
 
@@ -145,8 +177,15 @@ define([
                 oldCodeCellExecute.apply(this, arguments);
             }
 
+            // remove from unexecuted cells with edits list
+            var cell_id = this.metadata.janus.cell_id;
+            var unexecutedIndex = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
+            if ( unexecutedIndex > -1 ) {
+                Jupyter.notebook.metadata.unexecutedCells.splice(unexecutedIndex, 1);
+            }
+
             // update cell version markers if needed
-            JanusHistory.render_markers(this);
+            JanusVersions.render_markers(this);
         }
     }
 
@@ -178,6 +217,8 @@ define([
 
             // if creating a new cell after a hidden one, make new cell hidden
             generateDefaultCellMetadata(c);
+            trackChangesToCell(c);
+
             curMetadata = Jupyter.notebook.get_selected_cell().metadata;
             if (curMetadata.janus.cell_hidden) {
                 c.metadata.janus.cell_hidden = true;
@@ -289,6 +330,78 @@ define([
     }
 
 
+    function patchCutCopyPaste() {
+        /* Track when cells are cut, copied, and pasted
+
+        Primarily listening to cut/copy/paste so we can save action data
+        */
+
+        // TODO the 'cut_cell' function calls the copy function, so for now cut
+        // actions will be tracked twice, and data need to be cleaned later
+
+        // First, patch action initiated by the notebook
+        var oldCut = Jupyter.notebook.__proto__.cut_cell;
+        var oldCopy = Jupyter.notebook.__proto__.copy_cell;
+        var oldPasteReplace = Jupyter.notebook.__proto__.paste_cell_replace;
+        var oldPasteAbove = Jupyter.notebook.__proto__.paste_cell_above;
+        var oldPasteBelow = Jupyter.notebook.__proto__.paste_cell_below;
+
+        Jupyter.notebook.__proto__.cut_cell = function(){
+            var ts = JanusUtils.getTimeAndSelection()
+            oldCut.apply(this, arguments);
+            JanusHistory.trackAction(this, ts.t, 'cut-cell', ts.selIndex, ts.selIndices);
+        }
+
+        Jupyter.notebook.__proto__.copy_cell = function(){
+            var ts = JanusUtils.getTimeAndSelection()
+            oldCopy.apply(this, arguments);
+            JanusHistory.trackAction(this, ts.t, 'copy-cell', ts.selIndex, ts.selIndices);
+        }
+
+        Jupyter.notebook.__proto__.paste_cell_replace = function(){
+            var ts = JanusUtils.getTimeAndSelection()
+            oldPasteReplace.apply(this, arguments);
+            JanusHistory.trackAction(this, ts.t, 'paste-cell-replace', ts.selIndex, ts.selIndices);
+        }
+
+        Jupyter.notebook.__proto__.paste_cell_above = function(){
+            var ts = JanusUtils.getTimeAndSelection()
+            oldPasteAbove.apply(this, arguments);
+            JanusHistory.trackAction(this, ts.t, 'paste-cell-above', ts.selIndex, ts.selIndices);
+        }
+
+        Jupyter.notebook.__proto__.paste_cell_below = function(){
+            var ts = JanusUtils.getTimeAndSelection()
+            oldPasteBelow.apply(this, arguments);
+            JanusHistory.trackAction(this, ts.t, 'paste-cell-below', ts.selIndex, ts.selIndices);
+        }
+
+
+        // Next, listen for broswer-initiated (e.g. hotkey) cut, copy, paste events
+        document.addEventListener('cut', function(){
+            if (Jupyter.notebook.mode == 'command') {
+                var ts = JanusUtils.getTimeAndSelection()
+                JanusHistory.trackAction(Jupyter.notebook, ts.t, 'cut-cell', ts.selIndex, ts.selIndices);
+            }
+        });
+
+        document.addEventListener('copy', function(){
+            if (Jupyter.notebook.mode == 'command') {
+                var ts = JanusUtils.getTimeAndSelection()
+                JanusHistory.trackAction(Jupyter.notebook, ts.t, 'copy-cell', ts.selIndex, ts.selIndices);
+            }
+        });
+
+        document.addEventListener('paste', function(){
+            if (Jupyter.notebook.mode == 'command') {
+                var ts = JanusUtils.getTimeAndSelection()
+                JanusHistory.trackAction(Jupyter.notebook, ts.t, 'paste-cell-below', ts.selIndex, ts.selIndices);
+            }
+        });
+
+    }
+
+
     function patchPasteCellAbove() {
         /* ensure pasted cells have a unique janus id and sidebar updates */
 
@@ -353,7 +466,7 @@ define([
 
     function patchCommandMode() {
         /* handle going to command mode when sidebar cell is selected */
-        
+
         var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
         Jupyter.notebook.__proto__.command_mode = function() {
             cell = Jupyter.notebook.get_selected_cell()
@@ -407,6 +520,10 @@ define([
         if (nb_meta.filepaths === undefined) {
             nb_meta.filepaths = [];
         }
+
+        if (nb_meta.unexecutedCells === undefined) {
+            nb_meta.unexecutedCells = [];
+        }
     }
 
 
@@ -418,7 +535,20 @@ define([
         cells = Jupyter.notebook.get_cells();
         for (i = 0; i<cells.length; i++) {
             generateDefaultCellMetadata(cells[i]);
+            trackChangesToCell(cells[i]);
         }
+    }
+
+
+    function trackChangesToCell(cell) {
+        /* Track which cells have unexecuted changes */
+
+        cell.code_mirror.on('change', function() {
+            var cell_id = cell.metadata.janus.cell_id
+            if ( Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id) == -1 ) {
+                Jupyter.notebook.metadata.unexecutedCells.push(cell_id);
+            }
+        });
     }
 
 
@@ -453,6 +583,10 @@ define([
         patchPasteCellReplace();
         patchEditMode();
         patchCommandMode();
+
+        //new patches
+        patchCutCopyPaste();
+        patchCellUnselect();
     }
 
 

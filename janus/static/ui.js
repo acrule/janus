@@ -6,16 +6,16 @@ folding cells and keeping track of all changes
 define([
     'jquery',
     'base/js/namespace',
-    '../janus/janus_history',
+    '../janus/versions',
     '../janus/fold',
-    '../janus/janus_nb_history',
+    '../janus/history',
     '../janus/janus_history_viewer'
 ], function(
     $,
     Jupyter,
-    JanusHistory,
+    JanusVersions,
     JanusFold,
-    JanusNBHist,
+    JanusHistory,
     JanusViewer
 ){
 
@@ -87,11 +87,11 @@ define([
         addItemToMenu(janusMenu,
                         'toggle_nb_recording',
                         'Toggle Notebook Recording',
-                        JanusNBHist.toggleHistoryRecording);
+                        JanusHistory.toggleHistoryRecording);
         addItemToMenu(janusMenu,
                         'toggle_cell_versions',
                         'Show / Cell Version',
-                        JanusHistory.toggleCellVersions);
+                        JanusVersions.toggleCellVersions);
         addItemToMenu(janusMenu,
                         'show_nb_history',
                         'Show Notebook History',
@@ -134,14 +134,14 @@ define([
             icon: 'fa-history',
             help    : 'Toggle Notebook Recording',
             help_index : 'zz',
-            handler : JanusNBHist.toggleHistoryRecording
+            handler : JanusHistory.toggleHistoryRecording
         };
 
         var toggleCellVerAction = {
             icon: 'fa-code-fork',
             help    : 'Show Cell Versions',
             help_index : 'zz',
-            handler : JanusHistory.toggleCellVersions
+            handler : JanusVersions.toggleCellVersions
         };
 
 

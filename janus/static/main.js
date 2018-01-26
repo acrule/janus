@@ -10,9 +10,9 @@ define([
     'base/js/events',
     '../janus/patch',
     '../janus/janus_sidebar',
-    '../janus/janus_history',
+    '../janus/versions',
     '../janus/fold',
-    '../janus/janus_nb_history',
+    '../janus/history',
     '../janus/ui'
 ], function(
     require,
@@ -21,9 +21,9 @@ define([
     events,
     JanusPatch,
     JanusSidebar,
-    JanusHistory,
+    JanusVersions,
     JanusFold,
-    JanusNBHist,
+    JanusHistory,
     JanusUI
 ){
 
@@ -43,9 +43,9 @@ define([
 
         JanusPatch.initializeJanusMetadata();
         Jupyter.sidebar.hideIndentedCells();
-        JanusHistory.load_cell_history();
+        JanusVersions.load_cell_history();
         JanusFold.initializeVisibility();
-        JanusNBHist.prepNbHistoryTracking();
+        JanusHistory.prepHistoryTracking();
     }
 
 
