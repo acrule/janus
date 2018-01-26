@@ -70,7 +70,8 @@ define([
        }
        Jupyter.notification_area.widget('notebook').set_message(message, 2000)
 
-       render_markers(cell)
+       render_markers(cell);
+       hide_markers(cell);
     }
 
 // RENDERING Functions
@@ -308,20 +309,16 @@ define([
 
         // start by hiding all markers
         $(input_area).find(".marker").hide();
-        console.log("hiding markers")
 
         // show just the
         if ( janus_meta.track_versions ) {
             if ( cell.selected ){
-                console.log("Showing all")
                 named_markers.show();
                 unnamed_markers.show();
             } else {
                 if (named_markers.length > 0) {
-                    console.log("Showing named")
                     named_markers.show();
                 } else {
-                    console.log("Showing summary")
                     sum_marker.show();
                 }
             }
@@ -347,12 +344,6 @@ define([
         var version_id = cur_version.version_id
         var new_name = element.innerHTML
 
-        // assign the new name
-        // temp_version.name = new_name
-        // if(cell.nb_cell != undefined){
-        //     cell.nb_cell.metadata.janus.temp_versions[temp_index].name = new_name
-        // }
-
         cur_version.name = new_name;
 
         // determine if newly named version is already in our named version list
@@ -365,6 +356,8 @@ define([
             element.classList.add('unnamed-version')
             if (named_index > -1){
                 named_versions.splice(named_index, 1)
+                render_markers(cell);
+                hide_markers(cell);
             }
         }
         // if if now has a name, either update its entry, or add to our list
@@ -374,6 +367,8 @@ define([
             if (named_index == -1){
                 named_versions.push(cur_version)
                 named_versions[named_versions.length - 1].name = new_name
+                render_markers(cell);
+                hide_markers(cell);
             }
             else{
                 named_versions[named_index].name = new_name
@@ -390,7 +385,7 @@ define([
         CodeCell.prototype.execute = function () {
             old_execute.apply(this, arguments);
             // check_version(this);
-            render_markers(cell);
+            render_markers(this);
 		}
     }
 
@@ -449,7 +444,7 @@ define([
             var versions = cell.metadata.janus.versions
             var curIndex = cell.metadata.janus.current_version
 
-            if (Jupyter.notebook.keyboard_manager.mode == "command" && expanded) { // if not editing cell and versions are showing
+            if (Jupyter.notebook.keyboard_manager.mode == "command" ) { // if not editing cell and versions are showing
                 if (e.keyCode == 37) { // left
 
                     if ( curIndex > 0 ) {
@@ -471,25 +466,6 @@ define([
                         if(hidden_cell){
                             change_version(cell.nb_cell, newIndex)
                         }
-                    }
-                } else if (e.keyCode == 8 && versions.length > 1){ // delete
-
-                    // remove the selected version
-                    versions.splice(curIndex, 1);
-                    if (hidden_cell) {
-                        cell.nb_cell.metadata.janus.versions.splice(curIndex, 1);
-                    }
-
-                    // decrement index if on last version
-                    if (versions.length == curIndex) {
-                        curIndex = curIndex - 1
-                    }
-
-                    // update the selected version
-                    render_markers(cell);
-                    change_version(cell, curIndex);
-                    if(hidden_cell){
-                        change_version(cell.nb_cell, curIndex)
                     }
                 }
             }
