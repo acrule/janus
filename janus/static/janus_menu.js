@@ -71,8 +71,18 @@ define([
             .attr('id', 'toggle_cell_input')
             .append($('<a>')
                 .attr('href', '#')
-                .text('Toggle Cell Input')
+                .text('Toggle Cell Input Visibility')
                 .click(JanusSource.toggleSourceVisibility)
+            )
+        );
+
+        // toggle cell output
+        janusMenu.append($('<li>')
+            .attr('id', 'toggle_cell_output')
+            .append($('<a>')
+                .attr('href', '#')
+                .text('Toggle Cell Output Visibility')
+                .click(JanusSource.toggleOutputVisibility)
             )
         );
 
@@ -135,6 +145,13 @@ define([
             handler : JanusSource.toggleSourceVisibility
         };
 
+        var toggleOutputAction = {
+            icon: 'fa-area-chart',
+            help    : 'Toggle Output',
+            help_index : 'zz',
+            handler : JanusSource.toggleOutputVisibility
+        };
+
         var toggleNbHistAction = {
             icon: 'fa-history',
             help    : 'Toggle Notebook Recording',
@@ -155,6 +172,9 @@ define([
         var full_toggle_action_name = Jupyter.actions.register(toggleSourceAction,
                                                             'toggle-cell-input',
                                                             prefix);
+        var full_toggle_out_action_name = Jupyter.actions.register(toggleOutputAction,
+                                                            'toggle-cell-output',
+                                                            prefix);
         var full_indent_action_name = Jupyter.actions.register(indentAction,
                                                             'indent-cell',
                                                             prefix);
@@ -171,7 +191,8 @@ define([
         // add button groups to the main toolbar
         Jupyter.toolbar.add_buttons_group([full_indent_action_name,
                                         full_unindent_action_name,
-                                        full_toggle_action_name]);
+                                        full_toggle_action_name,
+                                        full_toggle_out_action_name]);
 
         Jupyter.toolbar.add_buttons_group([full_toggle_nb_hist_action_name,
                                         full_toggle_hist_action_name]);

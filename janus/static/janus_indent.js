@@ -13,20 +13,22 @@ define([
     Jupyter
 ){
 
+// INDENT AND UNINDENT
     function indentCell() {
         /* move selected cells to the sidebar */
 
         // find where the selected cells are in the notebook
         var cells = Jupyter.notebook.get_selected_cells();
         var nb_cells = Jupyter.notebook.get_cells();
+
         var sel_start_id = nb_cells.indexOf(cells[0]);
         var sel_end_id = nb_cells.indexOf(cells[cells.length - 1]);
         var start_id = nb_cells.indexOf(cells[0]);
         var end_id = nb_cells.indexOf(cells[cells.length - 1]);
 
         // check if cells prior to selection are already hidden
-        while ( start_id > 0 ) {
-            if ( nb_cells[start_id - 1].metadata.janus.cell_hidden == true ) {
+        while (start_id > 0) {
+            if (nb_cells[start_id - 1].metadata.janus.cell_hidden == true) {
                 start_id = start_id -1;
             } else{
                 break;
@@ -34,8 +36,8 @@ define([
         }
 
         // check if cells after the selection are already hidden
-        while ( end_id < nb_cells.length - 1 ) {
-            if ( nb_cells[end_id + 1].metadata.janus.cell_hidden == true ) {
+        while (end_id < nb_cells.length - 1) {
+            if (nb_cells[end_id + 1].metadata.janus.cell_hidden == true) {
                 end_id = end_id + 1;
             } else{
                 break;
@@ -78,16 +80,16 @@ define([
 
         // make hidden cells visible
         var cells = Jupyter.notebook.get_selected_cells();
-        for ( i=0; i<cells.length; i++ ) {
+        for (i = 0; i < cells.length; i++) {
             cells[i].element.removeClass('hidden');
             cells[i].metadata.janus.cell_hidden = false;
             cells[i].set_text(cells[i].sb_cell.get_text());
             cells[i].render();
         }
 
-        // remove any hidden cells from the sidebar
-        for ( j=0; j<Jupyter.sidebar.cells.length; j++ ) {
-            if ( Jupyter.sidebar.cells[j].selected ) {
+        // remove any unindented cells from the sidebar
+        for (j = 0; j < Jupyter.sidebar.cells.length; j++) {
+            if (Jupyter.sidebar.cells[j].selected) {
                 Jupyter.sidebar.cells[j].element.addClass('hidden');
                 Jupyter.sidebar.cells[j].element.remove();
                 Jupyter.sidebar.cells.splice(j, 1);

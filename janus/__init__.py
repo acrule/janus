@@ -16,9 +16,7 @@ from .janus_sqlite import DbManager
 from .janus_dir import find_storage_dir, create_dir, hash_path
 
 class JanusHandler(IPythonHandler):
-    """
-    Implements main handler for saving and retrieving notebook history
-    """
+    """Implements main handler for saving and retrieving notebook history."""
 
     # object managing connection to notebook history database
     db_manager = None
@@ -67,8 +65,7 @@ class JanusHandler(IPythonHandler):
             self.finish(json.dumps({'msg': "Did not understand the request"}))
 
     def post(self, path=''):
-        """
-        Save data about notebook actions
+        """Save data about notebook actions
 
         path: (str) relative path to notebook requesting POST
         """
@@ -104,20 +101,14 @@ class JanusHandler(IPythonHandler):
 
 
 def _jupyter_server_extension_paths():
-    """
-    Jupyter server configuration
-    returns dictionary with where to find server extension files
-    """
+    """serverextension configuration. Returns dict of serverext file location."""
 
     return [{
         "module": "janus"
     }]
 
 def _jupyter_nbextension_paths():
-    """
-    Jupyter nbextension configuration
-    returns dictionary with where to find nbextension files
-    """
+    """nbextension configuration. Returns dict of nbextension file location."""
 
     return [dict(
         section="notebook",
@@ -129,8 +120,8 @@ def _jupyter_nbextension_paths():
         require="janus/main")]
 
 def load_jupyter_server_extension(nb_app):
-    """
-    Load the server extension and set up routing to proper handler
+    """Load the server extension and set up routing to proper handler.
+
     nb_app: (obj) Jupyter Notebook Application
     """
 

@@ -129,7 +129,7 @@ define([
                 events.off('kernel_idle.Kernel', updateCellOnExecution)
             }
 
-            if(this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden){
+            if(this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden || this.metadata.janus.output_hidden){
                 this.set_text(this.sb_cell.get_text())
                 oldCodeCellExecute.apply(this, arguments);
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
@@ -368,7 +368,7 @@ define([
             id = Math.random().toString(16).substring(2);
             cell_hidden = false;
             source_hidden = false;
-            outputs_hidden = false;
+            output_hidden = false;
             track_versions = false;
             versions = [];
             current_version = 0;
@@ -376,7 +376,7 @@ define([
                 'id': id,
                 'cell_hidden': cell_hidden,
                 'source_hidden': source_hidden,
-                'ouputs_hidden': outputs_hidden,
+                'ouput_hidden': output_hidden,
                 'track_versions': track_versions,
                 'versions_showing': false,
                 'versions': versions,

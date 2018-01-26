@@ -52,7 +52,7 @@ define([
         return function() {
             janus_meta = cell.metadata.janus
             change_version(cell, v);
-            if((janus_meta.cell_hidden || janus_meta.source_hidden)
+            if((janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
                 && ! Jupyter.sidebar.collapsed && cell.nb_cell){
                 change_version(cell.nb_cell, janus_meta.current_version)
             }
@@ -306,11 +306,16 @@ define([
         var sum_marker = $(input_area).find(".summary")
         var named_markers = $(input_area).find(".named-version")
         var unnamed_markers = $(input_area).find(".unnamed-version")
+        var output_markers = $(input_area).find(".hidden-output")
 
         // start by hiding all markers
         $(input_area).find(".marker").hide();
 
         // show just the
+        if (janus_meta.output_hidden){
+            output_markers.show();
+        }
+
         if ( janus_meta.track_versions ) {
             if ( cell.selected ){
                 named_markers.show();
@@ -400,7 +405,7 @@ define([
 
             // update sidebar
             janus_meta = this.metadata.janus
-            if ( (janus_meta.cell_hidden || janus_meta.source_hidden)
+            if ( (janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
                 && ! Jupyter.sidebar.collapsed && this.sb_cell) {
                 this.sb_cell.select();
                 hide_markers(this.sb_cell);
@@ -418,7 +423,7 @@ define([
 
             // update sidebar
             janus_meta = this.metadata.janus
-            if((janus_meta.cell_hidden || janus_meta.source_hidden)
+            if((janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
                     && ! Jupyter.sidebar.collapsed && this.sb_cell){
                 hide_markers(this.sb_cell)
             }
@@ -434,7 +439,7 @@ define([
             var hidden_cell = false;
 
             // if operating on a hidden cell, make changes to sidebar cell first
-            if ((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden)
+            if ((cell.metadata.janus.cell_hidden || cell.metadata.janus.source_hidden || janus_meta.output_hidden)
                     && ! Jupyter.sidebar.collapsed && cell.sb_cell){
                 hidden_cell = true;
                 cell = cell.sb_cell

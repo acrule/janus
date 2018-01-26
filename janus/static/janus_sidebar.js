@@ -70,6 +70,10 @@ define([
                 newCell.element.find("div.output_wrapper").hide();
             }
 
+            if(newCell.metadata.janus.output_hidden){
+                newCell.element.find("div.input_wrapper").hide();
+            }
+
             // intercept sidebar click events and apply them to original cell
             newCell._on_click = function(event){
                 // unselect all cells in sidebar
@@ -201,6 +205,9 @@ define([
             var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
                 markerPosition = $(cells[0].element).position().top;
+            }            
+            if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
+                markerPosition = $(cells[0].element).position().top;
             }
             this.element.animate({
                 top: markerPosition,
@@ -239,6 +246,9 @@ define([
         }, 400, function(){
             var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
+                markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
+            }
+            if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
                 markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
             }
             Jupyter.sidebar.element.animate({
@@ -586,6 +596,9 @@ define([
             // hide output if needed
             if(newCell.metadata.janus.source_hidden){
                 newCell.element.find("div.output_wrapper").hide();
+            }
+            if(newCell.metadata.janus.output_hidden){
+                newCell.element.find("div.input_wrapper").hide();
             }
         }
 

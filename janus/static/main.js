@@ -51,6 +51,7 @@ define([
             Jupyter.sidebar.hideIndentedCells();
             JanusHistory.load_cell_history();
             JanusSource.initializeSourceVisibility();
+            JanusSource.initializeOutputVisibility();
             JanusNBHist.prepNbHistoryTracking();
         }
 
@@ -59,6 +60,7 @@ define([
         events.on("notebook_loaded.Notebook", Jupyter.sidebar.hideIndentedCells);
         events.on("notebook_loaded.Notebook", JanusHistory.load_cell_history);
         events.on("notebook_loaded.Notebook", JanusSource.initializeSourceVisibility);
+        events.on("notebook_loaded.Notebook", JanusSource.initializeOutputVisibility);
         events.on("notebook_loaded.Notebook", JanusNBHist.prepNbHistoryTracking);
     }
 

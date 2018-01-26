@@ -173,6 +173,14 @@ folding cells and keeping track of all changes
     right: 2px;
 }
 
+.marker.hidden-output{
+    padding: 4px 3px 0px;
+    position: absolute;
+    z-index: 10;
+    top: 0px;
+    right: 0px;
+}
+
 .marker.selected-version{
     opacity: 1.0;
     border: 1px solid #666666;
