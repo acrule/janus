@@ -144,9 +144,6 @@ define([
         /* render main cell using sidebar text, then update sidebar cell */
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
         TextCell.MarkdownCell.prototype.render = function(){
-            if(this.metadata.janus == undefined){
-                generateDefaultJanusMetadata(this)
-            }
 
             if(this.metadata.janus.cell_hidden && this.sb_cell != undefined){
                 this.set_text(this.sb_cell.get_text())
@@ -285,7 +282,7 @@ define([
         var oldInsertCellAtIndex = Jupyter.notebook.__proto__.insert_cell_at_index;
         Jupyter.notebook.__proto__.insert_cell_at_index = function(){
             c = oldInsertCellAtIndex.apply(this, arguments);
-            generateDefaultJanusMetadata(c);
+            generateDefaultCellMetadata(c);
             currentCellMetadata = Jupyter.notebook.get_selected_cell().metadata
             // if creating a new cell after a hidden one, make new cell hidden
             if(currentCellMetadata.janus.cell_hidden){
@@ -362,54 +359,61 @@ define([
         }
     }
 
-    function generateDefaultJanusMetadata(cell){
+    function generateDefaultCellMetadata(cell){
         /* generate default Janus metadata for a cell */
-        if(cell.metadata.janus == undefined){
-            id = Math.random().toString(16).substring(2);
-            cell_hidden = false;
-            source_hidden = false;
-            output_hidden = false;
-            track_versions = false;
-            versions = [];
-            current_version = 0;
-            cell.metadata.janus = {
-                'id': id,
-                'cell_hidden': cell_hidden,
-                'source_hidden': source_hidden,
-                'ouput_hidden': output_hidden,
-                'track_versions': track_versions,
-                'versions_showing': false,
-                'versions': versions,
-                'current_version': current_version
+
+        var defaultCellMetadata = {
+            'id': Math.random().toString(16).substring(2),
+            'cell_hidden': false,
+            'source_hidden': false,
+            'ouput_hidden': false,
+            'track_versions': false,
+            'versions_showing': false,
+            'versions': [],
+            'current_version': 0
+        }
+
+        if (cell.metadata.janus === undefined) {
+            cell.metadata.janus = defaultCellMetadata;
+        } else {
+            for (var key in defaultCellMetadata) {
+                if (! cell.metadata.janus.hasOwnProperty(key)) {
+                    cell.metadata.janus[key] =  defaultCellMetadata[key];
+                }
             }
         }
     }
 
-    function initializeJanusMetadata(){
-        /* ensure all notebook cells have Janus metadata */
+    function generateDefaultNBMetadata() {
+        /* generate default Janus metadata for the notebook */
 
-        Notebook = Jupyter.notebook
+        nb_meta = Jupyter.notebook.metadata
 
         // flag whether we want to track a full history of the notebook
-        if (Notebook.metadata.track_history === undefined){
-            Notebook.metadata.track_history = true;
+        if (nb_meta.track_history === undefined){
+            nb_meta.track_history = true;
         }
 
         // track previous names of the notebook to maintain full history
-        if (Notebook.metadata.filepaths === undefined){
-            Notebook.metadata.filepaths = [];
+        if (nb_meta.filepaths === undefined){
+            nb_meta.filepaths = [];
         }
+    }
 
-        // make sure each cell has the relevant metadata
+    function initializeJanusMetadata(){
+        /* ensure the notebook and all cells have proper Janus metadata */
+
+        generateDefaultNBMetadata();
+
         cells = Jupyter.notebook.get_cells();
         for(i=0; i<cells.length; i++){
-            generateDefaultJanusMetadata(cells[i]);
+            generateDefaultCellMetadata(cells[i]);
         }
     }
 
     return{
         applyJanusPatches: applyJanusPatches,
-        generateDefaultJanusMetadata: generateDefaultJanusMetadata,
+        generateDefaultCellMetadata: generateDefaultCellMetadata,
         initializeJanusMetadata: initializeJanusMetadata
     };
 });

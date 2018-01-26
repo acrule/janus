@@ -205,7 +205,7 @@ define([
             var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
                 markerPosition = $(cells[0].element).position().top;
-            }            
+            }
             if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
                 markerPosition = $(cells[0].element).position().top;
             }
@@ -364,14 +364,6 @@ define([
         serial_lines = 0
 
         for(i = 0; i < cells.length; i++){
-            // make sure all cells have the right metadata
-            if (cells[i].metadata.janus.cell_hidden === undefined){
-                cells[i].metadata.janus.cell_hidden = false;
-            }
-            // make sure all cells have a unique Janus id
-            if (cells[i].metadata.janus.cell_id === undefined){
-                cells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
-            }
 
             // keep track of groups of hidden cells
             if(cells[i].metadata.janus.cell_hidden){

@@ -261,14 +261,6 @@ define([
     function render_markers(cell){
         /* show version and summary markers */
 
-        // make sure the showing variable has a value before we call renderers
-        if (cell.metadata.janus.versions_showing === undefined){
-            cell.metadata.janus.versions_showing = false;
-        }
-        if (cell.metadata.janus.track_versions === undefined){
-            cell.metadata.janus.track_versions = false;
-        }
-
         // only show markers if the flag is set
         if (cell.metadata.janus.track_versions) {
             render_summary_marker(cell);

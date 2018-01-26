@@ -11,9 +11,9 @@ define([
     '../janus/janus_patch',
     '../janus/janus_sidebar',
     '../janus/janus_history',
-    '../janus/janus_source',
+    '../janus/fold',
     '../janus/janus_nb_history',
-    '../janus/janus_menu'
+    '../janus/ui'
 ], function(
     require,
     $,
@@ -22,13 +22,13 @@ define([
     JanusPatch,
     JanusSidebar,
     JanusHistory,
-    JanusSource,
+    JanusFold,
     JanusNBHist,
-    JanusMenu
+    JanusUI
 ){
 
-    function load_css() {
-        /* Load css for sidebar */
+    function loadCSS() {
+        /* Load Janus css */
 
         var link = document.createElement("link");
         link.type = "text/css";
@@ -37,35 +37,38 @@ define([
         document.getElementsByTagName("head")[0].appendChild(link);
     };
 
-    function load_extension(){
+
+    function loadJanusPostNotebook() {
+        /* run steps that require cells to already be loaded */
+
+        JanusPatch.initializeJanusMetadata();
+        Jupyter.sidebar.hideIndentedCells();
+        JanusHistory.load_cell_history();
+        JanusFold.initializeVisibility();
+        JanusNBHist.prepNbHistoryTracking();
+    }
+
+
+    function loadExtension(){
         /* Called as extension loads and notebook opens */
 
-        load_css();
-        JanusMenu.renderJanusUI();
+        loadCSS();
+        JanusUI.renderJanusUI();
         JanusSidebar.createSidebar();
         JanusPatch.applyJanusPatches();
 
-        // run steps that require cells to already be loaded
+        // make sure notebook is fully loaded before interacting with it
         if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
-            JanusPatch.initializeJanusMetadata();
-            Jupyter.sidebar.hideIndentedCells();
-            JanusHistory.load_cell_history();
-            JanusSource.initializeSourceVisibility();
-            JanusSource.initializeOutputVisibility();
-            JanusNBHist.prepNbHistoryTracking();
+            loadJanusPostNotebook();
         }
-
-        // or wait until the notebook has loaded to perform them
-        events.on("notebook_loaded.Notebook", JanusPatch.initializeJanusMetadata);
-        events.on("notebook_loaded.Notebook", Jupyter.sidebar.hideIndentedCells);
-        events.on("notebook_loaded.Notebook", JanusHistory.load_cell_history);
-        events.on("notebook_loaded.Notebook", JanusSource.initializeSourceVisibility);
-        events.on("notebook_loaded.Notebook", JanusSource.initializeOutputVisibility);
-        events.on("notebook_loaded.Notebook", JanusNBHist.prepNbHistoryTracking);
+        events.on("notebook_loaded.Notebook", loadJanusPostNotebook);
     }
 
+
     return {
-        load_jupyter_extension: load_extension,
-        load_ipython_extension: load_extension
+        /* Tell Jupyter what to run when the extension loads */
+        load_jupyter_extension: loadExtension,
+        load_ipython_extension: loadExtension
     };
+
 });
