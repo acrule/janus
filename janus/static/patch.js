@@ -76,7 +76,7 @@ define([
         Cell.Cell.prototype.unselect = function(){
 
             var ts = JanusUtils.getTimeAndSelection()
-            var cell_id = this.metadata.janus.cell_id
+            var cell_id = this.metadata.janus.id
             var li = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
             var unexecutedChanges = li > -1;
 
@@ -114,8 +114,8 @@ define([
 
             //
             var selCells = Jupyter.notebook.get_selected_cells();
-            for (var i = 0; i < selected_cells.length; i++) {
-                selCells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
+            for (var i = 0; i < selCells.length; i++) {
+                selCells[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
 
             // update the sidebar
@@ -124,7 +124,7 @@ define([
 
             // render and focus markdown cell
             if(!Jupyter.sidebar.collapsed){
-                for (i = 0; i<selected_cells.length; i++) {
+                for (var i = 0; i < selCells.length; i++) {
                     if (selCells[i].sb_cell) {
                         selCells[i].sb_cell.unrender()
                     }
@@ -150,8 +150,8 @@ define([
             oldToCode.apply(this, arguments);
 
             selCells = Jupyter.notebook.get_selected_cells();
-            for (i=0; i<selected_cells.length; i++) {
-                selCells[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
+            for (var i = 0; i < selCells.length; i++) {
+                selCells[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
 
             // update the sidebar
@@ -191,7 +191,7 @@ define([
             }
 
             // remove from unexecuted cells with edits list
-            var cell_id = this.metadata.janus.cell_id;
+            var cell_id = this.metadata.janus.id;
             var unexecutedIndex = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
             if ( unexecutedIndex > -1 ) {
                 Jupyter.notebook.metadata.unexecutedCells.splice(unexecutedIndex, 1);
@@ -207,7 +207,11 @@ define([
         /* render main cell using sidebar text, then update sidebar cell */
 
         var oldTextCellRender = TextCell.MarkdownCell.prototype.render;
+
         TextCell.MarkdownCell.prototype.render = function() {
+
+            // seems to be an issue with new cell having metadata
+            generateDefaultCellMetadata(this);
 
             if (this.metadata.janus.cell_hidden && this.sb_cell != undefined) {
                 this.set_text( this.sb_cell.get_text() );
@@ -330,7 +334,7 @@ define([
 
                     // set new sidebar cell metadata
                     new_cell.metadata.janus = JSON.parse(JSON.stringify(cell.metadata.janus));
-                    new_cell.metadata.janus.cell_id = Math.random().toString(16).substring(2);
+                    new_cell.metadata.janus.id = Math.random().toString(16).substring(2);
                 }
 
                 // update the sidebar
@@ -421,7 +425,7 @@ define([
         var oldPasteCellAbove = Jupyter.notebook.__proto__.paste_cell_above;
         Jupyter.notebook.__proto__.paste_cell_above = function() {
             for (var i = 0; i < Jupyter.notebook.clipboard.length; i++) {
-                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellAbove.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -436,7 +440,7 @@ define([
         var oldPasteCellBelow = Jupyter.notebook.__proto__.paste_cell_below;
         Jupyter.notebook.__proto__.paste_cell_below = function() {
             for (var i = 0; i < Jupyter.notebook.clipboard.length; i++) {
-                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellBelow.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -452,7 +456,7 @@ define([
         Jupyter.notebook.__proto__.paste_cell_replace = function() {
             //ensure newly created cells have a unique janus id
             for (var i = 0; i < Jupyter.notebook.clipboard.length; i++) {
-                Jupyter.notebook.clipboard[i].metadata.janus.cell_id = Math.random().toString(16).substring(2);
+                Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellReplace.apply(this, arguments);
             Jupyter.sidebar.hideIndentedCells();
@@ -605,7 +609,7 @@ define([
         /* Track which cells have unexecuted changes */
 
         cell.code_mirror.on('change', function() {
-            var cell_id = cell.metadata.janus.cell_id
+            var cell_id = cell.metadata.janus.id
             if ( Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id) == -1 ) {
                 Jupyter.notebook.metadata.unexecutedCells.push(cell_id);
             }

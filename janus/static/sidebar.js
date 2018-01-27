@@ -150,10 +150,10 @@ define([
         new_cell_ids = []
         old_cell_ids = []
         for(i=0; i<cells.length; i++){
-            new_cell_ids.push(cells[i].metadata.janus.cell_id)
+            new_cell_ids.push(cells[i].metadata.janus.id)
         }
         for(j=0; j<this.cells.length; j++){
-            old_cell_ids.push(this.cells[j].metadata.janus.cell_id)
+            old_cell_ids.push(this.cells[j].metadata.janus.id)
         }
 
         // expand sidebar if collapsed
@@ -161,7 +161,7 @@ define([
             this.expand()
             nb_cells = Jupyter.notebook.get_cells()
             for(i=0; i < nb_cells.length; i++){
-                if(cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
+                if(cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id){
                     Jupyter.notebook.select(i);
                     Jupyter.notebook.scroll_to_cell(i, 500)
                 }
@@ -180,7 +180,7 @@ define([
             // select the corect cell
             nb_cells = Jupyter.notebook.get_cells()
             for (i=0; i < nb_cells.length; i++) {
-                if (cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id) {
+                if (cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id) {
                     Jupyter.notebook.select(i);
                 }
             }
@@ -263,7 +263,7 @@ define([
                 // then scroll the page to the correct spot, in case it jumped
                 nb_cells = Jupyter.notebook.get_cells()
                 for (var i=0; i < nb_cells.length; i++) {
-                    if (sb_cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id ) {
+                    if (sb_cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id ) {
                         Jupyter.notebook.scroll_to_cell(i, 500)
                     }
                 }
@@ -314,11 +314,11 @@ define([
             old_cell_ids = []
             hidden_cell_ids = []
             for (var j = 0; j < this.cells.length; j++) {
-                old_cell_ids.push(this.cells[j].metadata.janus.cell_id)
+                old_cell_ids.push(this.cells[j].metadata.janus.id)
             }
             for (var i = 0; i < nb_cells.length; i++) {
                 if (nb_cells[i].metadata.janus.cell_hidden) {
-                    hidden_cell_ids.push(nb_cells[i].metadata.janus.cell_id)
+                    hidden_cell_ids.push(nb_cells[i].metadata.janus.id)
                 }
             }
 
@@ -386,7 +386,7 @@ define([
                 var cell_ids = []
                 for (var j = 0; j < numHidden; j++) {
                     serial_hidden_cells[j].element.addClass('hidden');
-                    cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
+                    cell_ids.push(serial_hidden_cells[j].metadata.janus.id);
                 }
 
                 // create placeholder that will render this group of hidden cells
@@ -409,7 +409,7 @@ define([
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
         for(i = 0; i < cells.length; i++){
-            if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
+            if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
         }
@@ -561,7 +561,7 @@ define([
             var sidebar_cell_ids = []
             var sidebar_cells = Jupyter.sidebar.cells
             for (i = 0; i < sidebar_cells.length; i++) {
-                sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.cell_id)
+                sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
             }
             if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
                 return
@@ -572,7 +572,7 @@ define([
         var cells = Jupyter.notebook.get_cells()
         var cells_to_copy = []
         for(i=0; i<cells.length; i++){
-            if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
+            if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
         }
