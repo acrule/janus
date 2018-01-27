@@ -35,7 +35,7 @@ define([
             // unselect all cells in the sidebar
             if (! Jupyter.sidebar.collapsed) {
                 sb_cells = Jupyter.sidebar.cells
-                for(var i = 0; i < sb_cells.length; i++){
+                for (var i = 0; i < sb_cells.length; i++) {
                     sb_cells[i].selected = false
                     sb_cells[i].element.removeClass('selected')
                     sb_cells[i].element.addClass('unselected')
@@ -43,7 +43,7 @@ define([
             }
 
             // if this cell is hidden, select the proper cell in the sidebar
-            if (this.metadata.janus.cell_hidden) {
+            if (this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden || this.metadata.janus.output_hidden) {
 
                 // TODO find more robust way to find placeholder associated with thei cell
                 $(this.element).nextAll('.indent-marker').first().addClass('active')
@@ -172,6 +172,7 @@ define([
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function() {
             that = this;
+            console.log(this)
 
             // function to run once cell is executed
             function updateCellOnExecution(evt) {

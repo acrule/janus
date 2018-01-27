@@ -58,7 +58,7 @@ define([
             .addClass('cell-wrapper'));
 
         // for each cell, create a new cell in the Sidebar with the same content
-        for (i = 0; i < cells.length; i++) {
+        for (var i = 0; i < cells.length; i++) {
 
             // add new cell to the sidebar
             newCell = this.createSidebarCell(cells[i]);
@@ -81,10 +81,10 @@ define([
             }
 
             // intercept sidebar click events and apply them to original cell
-            newCell._on_click = function(event){
+            newCell._on_click = function(event) {
                 // unselect all cells in sidebar
-                sb_cells = Jupyter.sidebar.cells
-                for(j=0; j < sb_cells.length; j++){
+                var sb_cells = Jupyter.sidebar.cells
+                for (var j = 0; j < sb_cells.length; j++) {
                     sb_cells[j].selected = false;
                     sb_cells[j].element.removeClass('selected');
                     sb_cells[j].element.addClass('unselected');
@@ -97,7 +97,7 @@ define([
 
                 // select the appropriate cell in the original notebook
                 this.events.trigger('select.Cell', {
-                    'cell':this.nb_cell,
+                    'cell': this.nb_cell,
                     'extendSelection':event.shiftKey
                 });
             }
