@@ -7,10 +7,16 @@ Handle indenting and unindenting of cells to and from the Janus sidebar
 
 define([
     'jquery',
-    'base/js/namespace'
+    'base/js/namespace',
+    'notebook/js/cell',
+    'notebook/js/codecell',
+    'notebook/js/textcell',
 ], function(
     $,
-    Jupyter
+    Jupyter,
+    Cell,
+    CodeCell,
+    TextCell,
 ){
 
     function getTimeAndSelection() {
@@ -83,11 +89,59 @@ define([
     }
 
 
+    function getDuplicateCell(cellJSON, nb) {
+        /* return a copy of a cell
+
+        Args:
+            cellJSON: JSON of cell to duplicate
+        */
+
+        newCell = null;
+
+        // markdown cells
+        if(cellJSON.cell_type == 'markdown'){
+            newCell = new TextCell.MarkdownCell({
+                events: nb.events,
+                config: nb.config,
+                keyboard_manager: nb.keyboard_manager,
+                notebook: nb,
+                tooltip: nb.tooltip,
+            });
+        }
+        // code cells
+        else if(cellJSON.cell_type == 'code'){
+            newCell = new CodeCell.CodeCell(nb.kernel, {
+                events: nb.events,
+                config: nb.config,
+                keyboard_manager: nb.keyboard_manager,
+                notebook: nb,
+                tooltip: nb.tooltip,
+            });
+        }
+        else if (cellJSON.cell_type = 'raw'){
+            newCell = new TextCell.RawCell({
+                events: nb.events,
+                config: nb.config,
+                keyboard_manager: nb.keyboard_manager,
+                notebook: nb,
+                tooltip: nb.tooltip,
+            });
+        }
+
+        // populate sidebar cell with content of notebook cell
+        // cell_data = cell.toJSON();
+        newCell.fromJSON(cellJSON);
+
+        return newCell
+
+    }
+
     return {
         getTimeAndSelection: getTimeAndSelection,
         removeMarkerType: removeMarkerType,
         addMarkerToElement: addMarkerToElement,
-        getMarkerContainer: getMarkerContainer
+        getMarkerContainer: getMarkerContainer,
+        getDuplicateCell: getDuplicateCell
     }
 
 

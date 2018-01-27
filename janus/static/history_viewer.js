@@ -9,18 +9,14 @@ define([
     'base/js/namespace',
     'base/js/dialog',
     'base/js/utils',
-    'notebook/js/cell',
-    'notebook/js/codecell',
-    'notebook/js/textcell',
+    '../janus/utils'
 ], function(
     require,
     $,
     Jupyter,
     dialog,
     utils,
-    Cell,
-    CodeCell,
-    TextCell,
+    JanusUtils
 ){
 
     // TODO Pull cell history from database, not metadata
@@ -31,7 +27,11 @@ define([
     // TODO enable truncated history based on program analysis (stretch)
 
     var HistoryModal = function(nb) {
-        /* object represeting the history viewer modal popup */
+        /* object represeting the history viewer modal popup
+
+        Args:
+            nb: notebook where history modal will live
+        */
 
         var historyViewer = this;
         Jupyter.historyViewer = historyViewer;
@@ -66,18 +66,18 @@ define([
             };
 
             // show the modal window only after we have all our data ready
-            if ( i == paths.length - 1 ) {
+            if (i == paths.length - 1) {
                 utils.promising_ajax(url, settings).then( function(value, i) {
-                    var get_data = JSON.parse(value)
-                    that.nb_configs = that.nb_configs.concat(get_data['nb_configs']);
+                    var d = JSON.parse(value)
+                    that.nb_configs = that.nb_configs.concat(d['nb_configs']);
                     that.renderModal();
                 });
             }
             else{
                 // send the POST request
                 utils.promising_ajax(url, settings).then(function(value, i){
-                    var get_data = JSON.parse(value)
-                    that.nb_configs = that.nb_configs.concat(get_data['nb_configs']);
+                    var d = JSON.parse(value)
+                    that.nb_configs = that.nb_configs.concat(d['nb_configs']);
                 });
             }
         }
@@ -89,7 +89,7 @@ define([
 
         // get the number of versions from the database
         that = this
-        num_configs = this.nb_configs.length
+        numConfigs = this.nb_configs.length
 
         // create HTML for the modal's content
         var modal_body = $('<div/>');
@@ -101,8 +101,8 @@ define([
         // create the slider itself
         var slide = modal_body.append($('<div id="modal-slide"/>').slider({
             min: 0,
-            max: num_configs - 1,
-            value: num_configs - 1,
+            max: numConfigs - 1,
+            value: numConfigs - 1,
             step: 1,
             orientation: "horizontal",
             range: "min",
@@ -125,13 +125,17 @@ define([
 
         // and when it shows, render the last notebook configuration
         mod.on("shown.bs.modal", function () {
-            that.updateModal(num_configs - 1);
+            that.updateModal(numConfigs - 1);
         })
     }
 
 
     HistoryModal.prototype.updateModal = function(version_num) {
-        /* update the history viewer when the slider moves */
+        /* update the history viewer when the slider moves
+
+        Args:
+            version_num: version of the notebook to show (int)
+        */
 
         // get the time since the edit being shown
         var t = parseInt( this.nb_configs[version_num][0] );
@@ -198,48 +202,12 @@ define([
     }
 
 
-    HistoryModal.prototype.appendCell = function(cell) {
+    HistoryModal.prototype.appendCell = function(cellJSON) {
         /* add cell to modal */
 
-        newCell = null;
-
-        // markdown cells
-        if(cell.cell_type == 'markdown'){
-            newCell = new TextCell.MarkdownCell({
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-        // code cells
-        else if(cell.cell_type == 'code'){
-            newCell = new CodeCell.CodeCell(this.notebook.kernel, {
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-        else if (cell.cell_type = 'raw'){
-            newCell = new TextCell.RawCell({
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-
-        // populate sidebar cell with content of notebook cell
-        // cell_data = cell.toJSON();
-        newCell.fromJSON(cell);
+        // add redonly cell to the wraper
+        var newCell = JanusUtils.getDuplicateCell(cellJSON, Jupyter.notebook);
         newCell.code_mirror.setOption('readOnly', "nocursor");
-
-
-        // add new cell to the sidebar
         $('#history-cell-wrapper').append(newCell.element);
 
         // make sure all code cells are rendered

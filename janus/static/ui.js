@@ -9,7 +9,7 @@ define([
     '../janus/versions',
     '../janus/fold',
     '../janus/history',
-    '../janus/janus_history_viewer'
+    '../janus/history_viewer'
 ], function(
     $,
     Jupyter,
