@@ -10,7 +10,8 @@ define([
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
-    '../janus/versions'
+    '../janus/versions',
+    '../janus/utils'
 ], function(
     require,
     $,
@@ -18,11 +19,12 @@ define([
     Cell,
     CodeCell,
     TextCell,
-    JanusVersions
+    JanusVersions,
+    JanusUtils
 ){
 
 
-    var Sidebar = function(nb){
+    var Sidebar = function(nb) {
         /* A sidebar panel for showing indented cells */
         var sidebar = this;
         Jupyter.sidebar = sidebar;
@@ -40,19 +42,23 @@ define([
         return this;
     };
 
-    Sidebar.prototype.renderCells = function(cells){
+
+    Sidebar.prototype.renderCells = function(cells) {
         /* render notebook cells in the sidebar
-        cells: list of cell objects from the main notebook */
+
+        Args:
+            cells: list of cell objects from the main notebook
+        */
 
         // remove any cells currently in sidebar
         this.cells = []
         $('#sidebar-cell-wrapper').remove();
-        this.element.append($("<div/>")
+        this.element.append( $("<div/>")
             .attr('id', 'sidebar-cell-wrapper')
             .addClass('cell-wrapper'));
 
         // for each cell, create a new cell in the Sidebar with the same content
-        for (i = 0; i < cells.length; i++){
+        for (i = 0; i < cells.length; i++) {
 
             // add new cell to the sidebar
             newCell = this.createSidebarCell(cells[i]);
@@ -60,17 +66,17 @@ define([
             this.cells.push(newCell);
 
             // make sure all code cells are rendered
-            if(newCell.cell_type == 'code'){
+            if (newCell.cell_type == 'code') {
                 newCell.render();
                 newCell.focus_editor();
             }
 
             // hide output if needed
-            if(newCell.metadata.janus.source_hidden){
+            if (newCell.metadata.janus.source_hidden) {
                 newCell.element.find("div.output_wrapper").hide();
             }
 
-            if(newCell.metadata.janus.output_hidden){
+            if (newCell.metadata.janus.output_hidden) {
                 newCell.element.find("div.input_wrapper").hide();
             }
 
@@ -98,7 +104,7 @@ define([
 
             // propigate edits in sidebar cell to main notebook cell
             newCell.code_mirror.on('change', function(){
-                newCell.nb_cell.set_text(newCell.get_text())
+                newCell.nb_cell.set_text( newCell.get_text() )
             });
 
             // render any history markers
@@ -114,45 +120,16 @@ define([
         }
     }
 
-    Sidebar.prototype.createSidebarCell = function(cell){
+
+    Sidebar.prototype.createSidebarCell = function(cell) {
         /* Create sidebar cell duplicating a cell in the main notebook
-        cell: a single cell object from the main notebook */
 
-        newCell = null
+        Args:
+            cell: a single cell object from the main notebook
+        */
 
-        // markdown cells
-        if(cell.cell_type == 'markdown'){
-            newCell = new TextCell.MarkdownCell({
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-        // code cells
-        else if(cell.cell_type == 'code'){
-            newCell = new CodeCell.CodeCell(this.notebook.kernel, {
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-        else if (cell.cell_type = 'raw'){
-            newCell = new TextCell.RawCell({
-                events: this.notebook.events,
-                config: this.notebook.config,
-                keyboard_manager: this.notebook.keyboard_manager,
-                notebook: this.notebook,
-                tooltip: this.notebook.tooltip,
-            });
-        }
-
-        // populate sidebar cell with content of notebook cell
-        cell_data = cell.toJSON();
-        newCell.fromJSON(cell_data);
+        var cellJSON = cell.toJSON();
+        var newCell = JanusUtils.getDuplicateCell(cellJSON, this.notebook)
 
         // link the notebook and sidebar cells
         newCell.nb_cell = cell;
@@ -161,9 +138,13 @@ define([
         return newCell;
     }
 
-    Sidebar.prototype.toggle = function(cells = []){
+
+    Sidebar.prototype.toggle = function(cells = []) {
         /* expand or collapse sidebar
-        cells: list of cell objects from the main notebook */
+
+        Args:
+            cells: list of cell objects from the main notebook
+        */
 
         // get ids for cells to render, and cells already in sidebar
         new_cell_ids = []
@@ -190,18 +171,21 @@ define([
             }
             highlightMarker(this.marker);
         }
-        // update sidebar if new cells, or new cell border
-        // this comparison method seems hacky
-        else if(JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)){
+
+        // update sidebar if new cells, or new cell order
+        else if (JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)) {
+
             highlightMarker(this.marker)
+
+            // select the corect cell
             nb_cells = Jupyter.notebook.get_cells()
-            for(i=0; i < nb_cells.length; i++){
-                if(cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
+            for (i=0; i < nb_cells.length; i++) {
+                if (cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id) {
                     Jupyter.notebook.select(i);
-                    //Jupyter.notebook.scroll_to_cell(i, 500)
                 }
             }
-            // may want to created a "thinking" animation for when loading large numbers of cells
+
+            // move the sidebar to a new position, this has been buggy
             var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
             if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
                 markerPosition = $(cells[0].element).position().top;
@@ -212,12 +196,13 @@ define([
             this.element.animate({
                 top: markerPosition,
             }, 0)
+
             if(cells.length > 0){
                 Jupyter.sidebar.renderCells(cells);
                 Jupyter.sidebar.cells[0].focus_editor();
             }
-
         }
+
         // otherwise collapse sidebar
         else{
             this.collapse()
@@ -225,7 +210,8 @@ define([
         }
     }
 
-    Sidebar.prototype.expand = function(){
+
+    Sidebar.prototype.expand = function() {
         /* Show sidebar expanding from left of page */
 
         // only proceed if sidebar is collapsed
@@ -240,34 +226,44 @@ define([
 
         $('#sidebar-cell-wrapper').show()
 
+        // first move the notebook container to the side
         $("#notebook-container").animate({
             marginLeft: '15px',
             width: sidebar_width
-        }, 400, function(){
+        }, 400, function() {
+
+            // get position based on the type of marker we are using
             var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
-            if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
+            if ($(Jupyter.sidebar.marker).hasClass('hidden-code')) {
                 markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
             }
-            if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
+            if ($(Jupyter.sidebar.marker).hasClass('hidden-output')) {
                 markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
             }
+
+            // then move it the sidebar into position
             Jupyter.sidebar.element.animate({
                 right: '15px',
                 width: sidebar_width,
                 top: markerPosition,
                 padding: '0px'
-            }, 400, function(){ // ensure code cells are fully rendered
+            }, 400, function() {
+
+                // ensure code cells are fully rendered
                 sb_cells = Jupyter.sidebar.cells
-                for(i = 0; i < sb_cells.length; i++){
-                    if(sb_cells[i].cell_type == 'code'){
+                for (var i = 0; i < sb_cells.length; i++) {
+                    if (sb_cells[i].cell_type == 'code') {
                         sb_cells[i].render();
                         sb_cells[i].focus_editor();
                     }
                 }
+
                 sb_cells[0].focus_editor();
+
+                // then scroll the page to the correct spot, in case it jumped
                 nb_cells = Jupyter.notebook.get_cells()
-                for(i=0; i < nb_cells.length; i++){
-                    if(sb_cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id){
+                for (var i=0; i < nb_cells.length; i++) {
+                    if (sb_cells[0].metadata.janus.cell_id == nb_cells[i].metadata.janus.cell_id ) {
                         Jupyter.notebook.scroll_to_cell(i, 500)
                     }
                 }
@@ -275,11 +271,12 @@ define([
         });
     };
 
-    Sidebar.prototype.collapse = function(){
+
+    Sidebar.prototype.collapse = function() {
         /* Collapse the sidebar to the right page border */
 
         // only proceed if sidebar is expanded
-        if(this.collapsed){
+        if (this.collapsed) {
             return;
         }
 
@@ -306,43 +303,44 @@ define([
         });
     };
 
-    Sidebar.prototype.update = function(){
+
+    Sidebar.prototype.update = function() {
         /* update the cells rendered in the sidebar, such as after deletion */
 
-        if(!this.collapsed){
+        if (! this.collapsed) {
+
             // get list of previous cells in sidebar and currently hidden cells
             nb_cells = Jupyter.notebook.get_cells()
             old_cell_ids = []
             hidden_cell_ids = []
-
-            for(j=0; j<this.cells.length; j++){
+            for (var j = 0; j < this.cells.length; j++) {
                 old_cell_ids.push(this.cells[j].metadata.janus.cell_id)
             }
-            for(i=0; i<nb_cells.length; i++){
-                if(nb_cells[i].metadata.janus.cell_hidden){
+            for (var i = 0; i < nb_cells.length; i++) {
+                if (nb_cells[i].metadata.janus.cell_hidden) {
                     hidden_cell_ids.push(nb_cells[i].metadata.janus.cell_id)
                 }
             }
 
             // find the first hidden cell that was in our previous sidebar
             var first_hidden = null
-            for(k=0; k<hidden_cell_ids.length; k++){
-                if(old_cell_ids.indexOf(hidden_cell_ids[k]) >= 0 ){
+            for (var k = 0; k < hidden_cell_ids.length; k++) {
+                if (old_cell_ids.indexOf( hidden_cell_ids[k] ) >= 0) {
                     first_hidden = hidden_cell_ids[k]
                     break
                 }
             }
 
             // if none found, then collapse the sidebar
-            if(first_hidden == null){
+            if (first_hidden == null) {
                 this.collapse()
             }
             // else update the sidebar
             else{
                 // get placeholder with the top previous hidden cell in it
                 placeholders = $('.indent-marker').toArray()
-                for(i=0; i<placeholders.length; i++){
-                    if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0){
+                for (i = 0; i < placeholders.length; i++) {
+                    if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0) {
                         Jupyter.sidebar.marker = placeholders[i];
                         Jupyter.sidebar.markerPosition = $(placeholders[i]).parent().position().top
                         Jupyter.sidebar.showWithCells($(placeholders[i]).data('ids'))
@@ -353,65 +351,64 @@ define([
         }
     }
 
-    Sidebar.prototype.hideIndentedCells = function(){
+
+    Sidebar.prototype.hideIndentedCells = function() {
         /* hide all indented cells and render placeholders in their place */
 
         // save data from and remove current markers for hidden cells
         $(".indent-container").remove()
 
-        cells = Jupyter.notebook.get_cells();
-        serial_hidden_cells = []
-        serial_lines = 0
+        var cells = Jupyter.notebook.get_cells();
+        var serial_hidden_cells = []
+        var serial_lines = 0
 
-        for(i = 0; i < cells.length; i++){
+        for (var i = 0; i < cells.length; i++) {
 
             // keep track of groups of hidden cells
-            if(cells[i].metadata.janus.cell_hidden){
+            var cellHidden = cells[i].metadata.janus.cell_hidden
+            if (cellHidden) {
                 serial_hidden_cells.push(cells[i])
-                if(cells[i].cell_type == "code"){
-                    lines_of_code = cells[i].get_text().split('\n').length
-                    if(lines_of_code > 0){
+
+                // count lines of code
+                if (cells[i].cell_type == "code") {
+                    var lines_of_code = cells[i].get_text().split('\n').length
+                    if (lines_of_code > 0) {
                         serial_lines = serial_lines + lines_of_code
                     }
                 }
-
-                if(i == cells.length - 1){
-                    cell_ids = []
-                    for(j = 0; j < serial_hidden_cells.length; j++){
-                        serial_hidden_cells[j].element.addClass('hidden');
-                        cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
-                    }
-                    // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids, serial_lines)
-
-                    serial_hidden_cells = []
-                    serial_lines = 0
-                }
             }
-            else{
-                // if this cell is visible but preceeded by a hidden cell
-                if(serial_hidden_cells.length > 0){
-                    // hide the previously cells and get a list of their ids
-                    cell_ids = []
-                    for(j = 0; j < serial_hidden_cells.length; j++){
-                        serial_hidden_cells[j].element.addClass('hidden');
-                        cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
-                    }
-                    // create placeholder that will render this group of hidden cells
-                    Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[serial_hidden_cells.length - 1].element, cell_ids, serial_lines)
 
-                    serial_hidden_cells = []
-                    serial_lines = 0
+            // create placeholder if at last cell, or at visible cell after
+            // a group of hidden cells
+            var numHidden = serial_hidden_cells.length
+            if ( i == cells.length - 1 && cellHidden || (! cellHidden && numHidden > 0) ){
+
+                var cell_ids = []
+                for (var j = 0; j < numHidden; j++) {
+                    serial_hidden_cells[j].element.addClass('hidden');
+                    cell_ids.push(serial_hidden_cells[j].metadata.janus.cell_id);
                 }
+
+                // create placeholder that will render this group of hidden cells
+                Jupyter.sidebar.addPlaceholderAfterElementWithIds(serial_hidden_cells[numHidden - 1].element, cell_ids, serial_lines)
+
+                // clear our lists
+                serial_hidden_cells = []
+                serial_lines = 0
             }
         }
     }
 
-    Sidebar.prototype.showWithCells = function (cell_ids){
-        /* get cells to show in sidebar if given their Janus ids */
+
+    Sidebar.prototype.showWithCells = function (cell_ids) {
+        /* get cells to show in sidebar if given their Janus ids
+
+        cell_ids: ids of the cells to show
+        */
+
         cells = Jupyter.notebook.get_cells()
         cells_to_copy = []
-        for(i=0; i<cells.length; i++){
+        for(i = 0; i < cells.length; i++){
             if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
@@ -419,18 +416,9 @@ define([
         Jupyter.sidebar.toggle(cells_to_copy)
     }
 
-    function highlightMarker(marker){
-        /*  highlight the marker clicked to show the sidebar
-        marker: dom element, or null */
 
-        $('.indent-marker').removeClass('active')
-        $('.hidden-code').removeClass('active')
-        if(marker != null){
-            $(marker).addClass('active')
-        }
-    }
-
-    Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines){
+// PLACEHOLDERS FOR HIDDEN CELLS
+    Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines) {
         /* Add the placeholder used to open a group of indented cells */
 
         // get placholder name from metadata, if present
@@ -492,36 +480,104 @@ define([
             )
     }
 
-    function showMinimap(event, el){
-        /* render rich tooltip with miniturized view of hidden cells */
+
+    Sidebar.prototype.saveMarkerMetadata = function() {
+        /* Store marker names to notebook metadata for later use */
+
+        indentMarkers = $('.indent-marker').toArray()
+        indentMetadata = []
+        for (i = 0; i < indentMarkers.length; i++) {
+            markerIDs = $(indentMarkers[i]).data('ids')
+            markerName = $(indentMarkers[i]).find('.indent-label')[0].innerHTML
+            indentMetadata.push({
+                'ids': markerIDs,
+                'markerName': markerName
+            })
+        }
+        Jupyter.notebook.metadata.janus_markers = indentMetadata
+    }
+
+
+    function highlightMarker(marker) {
+        /*  highlight the marker clicked to show the sidebar
+        marker: dom element, or null */
+
+        $('.indent-marker').removeClass('active')
+        $('.hidden-code').removeClass('active')
+        if(marker != null){
+            $(marker).addClass('active')
+        }
+    }
+
+
+    function enableVersionNameEditing(element) {
+        /* let version marker div be edited to name version
+
+        Args:
+            element: placeholder element to enable naming on
+        */
+
+        element.contentEditable = true;
+        element.focus()
+        Jupyter.notebook.keyboard_manager.edit_mode();
+    }
+
+
+    function disableVersionNameEditing(element) {
+        /* stop editing version name and save to metadata
+
+        Args:
+            element: placeholder to get name from
+        */
+
+        element.contentEditable = false;
+        Jupyter.notebook.keyboard_manager.command_mode();
+        if(element.innerHTML == "" || element.innerHTML == "Folded Cells"){
+            element.innerHTML = "Folded Cells"
+        }
+        Jupyter.sidebar.saveMarkerMetadata()
+
+    }
+
+
+// MINIMAP
+    function showMinimap(event, el) {
+        /* render rich tooltip with miniturized view of hidden cells
+
+        Args:
+            event: mouseout event that triggers hidding minimap
+            el: placeholder element triggering event
+        */
+
+        // change placeholder background color onhover
+        el.style.backgroundColor = "#f5f5f5"
+
         var el_top = $(el).parent().position().top;
         var el_right = $(el).parent().position().left + $(el).parent().width();
         var cell_ids = $(el).data('ids');
 
-        // if this already shown in sidebar, don't show again
+        // if this collection of cells is already in sidebar, don't show minimap
         if(!Jupyter.sidebar.collapsed){
-            sidebar_cells = Jupyter.sidebar.cells
-            sidebar_cell_ids = []
-
-            for(i=0; i<sidebar_cells.length; i++){
+            var sidebar_cell_ids = []
+            var sidebar_cells = Jupyter.sidebar.cells
+            for (i = 0; i < sidebar_cells.length; i++) {
                 sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.cell_id)
             }
-
             if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
                 return
             }
         }
 
-        el.style.backgroundColor = "#f5f5f5"
-
-        cells = Jupyter.notebook.get_cells()
-        cells_to_copy = []
+        // get cells ready to copy to minimap
+        var cells = Jupyter.notebook.get_cells()
+        var cells_to_copy = []
         for(i=0; i<cells.length; i++){
             if ( $.inArray( cells[i].metadata.janus.cell_id, cell_ids ) > -1 ){
                 cells_to_copy.push(cells[i])
             }
         }
 
+        // create minimap
         var minimap = $('<div id=minimap>');
         minimap.css({
             'top': el_top,
@@ -537,50 +593,18 @@ define([
         for (i = 0; i < cells_to_copy.length; i++){
 
             // add new cell to the sidebar
-            cell = cells_to_copy[i]
-            newCell = null
-            nb = Jupyter.notebook
+            var cell = cells_to_copy[i]
+            var nb = Jupyter.notebook
 
-            // markdown cells
-            if(cell.cell_type == 'markdown'){
-                newCell = new TextCell.MarkdownCell({
-                    events: nb.events,
-                    config: nb.config,
-                    keyboard_manager: nb.keyboard_manager,
-                    notebook: nb,
-                    tooltip: nb.tooltip,
-                });
-            }
-            // code cells
-            else if(cell.cell_type == 'code'){
-                newCell = new CodeCell.CodeCell(nb.kernel, {
-                    events: nb.events,
-                    config: nb.config,
-                    keyboard_manager: nb.keyboard_manager,
-                    notebook: nb,
-                    tooltip: nb.tooltip,
-                });
-            }
-            else if (cell.cell_type = 'raw'){
-                newCell = new TextCell.RawCell({
-                    events: nb.events,
-                    config: nb.config,
-                    keyboard_manager: nb.keyboard_manager,
-                    notebook: nb,
-                    tooltip: nb.tooltip,
-                });
-            }
-
-            // populate sidebar cell with content of notebook cell
-            cell_data = cell.toJSON();
-            newCell.fromJSON(cell_data);
-
-            // newCell = Jupyter.sidebar.createSidebarCell(cells[i]);
+            // append cells to minimap
+            cellData = cell.toJSON();
+            newCell = JanusUtils.getDuplicateCell(cellData, nb)
+            newCell.code_mirror.setOption('readOnly', "nocursor");
             $('.mini-wrap').append(newCell.element);
 
             // make sure all code cells are rendered
             // TODO find another way to do this without it focusing the cell
-            if(newCell.cell_type == 'code'){
+            if (newCell.cell_type == 'code') {
                 newCell.render();
                 newCell.refresh();
             }
@@ -594,59 +618,33 @@ define([
             }
         }
 
-        // reset div height
-        cells_height = $(mini_wrap).height()
+        // reset div height to account for scaling
+        var cells_height = $(mini_wrap).height()
         minimap.height(cells_height * 0.33)
     }
 
-    function hideMinimap(event, el){
-        // remove any mini-map divs
+
+    function hideMinimap(event, el) {
+        /* remove any mini-map divs
+
+        Args:
+            event: mouseout event that triggers hidding minimap
+            el: placeholder element triggering event
+        */
         $('#minimap').remove()
         el.style.backgroundColor = ""
     }
 
-    function enableVersionNameEditing(element){
-        /* let version marker div be edited to name version */
-        element.contentEditable = true;
-        element.focus()
-        Jupyter.notebook.keyboard_manager.edit_mode();
-    }
-
-    function disableVersionNameEditing(element){
-        /* stop editing version name and save to metadata */
-        element.contentEditable = false;
-        Jupyter.notebook.keyboard_manager.command_mode();
-
-        if(element.innerHTML == "" || element.innerHTML == "Folded Cells"){
-            element.innerHTML = "Folded Cells"
-        }
-
-        Jupyter.sidebar.saveMarkerMetadata()
-
-    }
-
-    Sidebar.prototype.saveMarkerMetadata = function() {
-        /* Store marker names to notebook metadata for later use */
-
-        indentMarkers = $('.indent-marker').toArray()
-        indentMetadata = []
-        for(i=0; i < indentMarkers.length; i++){
-            markerIDs = $(indentMarkers[i]).data('ids')
-            markerName = $(indentMarkers[i]).find('.indent-label')[0].innerHTML
-            indentMetadata.push({
-                'ids': markerIDs,
-                'markerName': markerName
-            })
-        }
-        Jupyter.notebook.metadata.janus_markers = indentMetadata
-    }
 
     function createSidebar() {
         /* create a new sidebar element */
+
         return new Sidebar(Jupyter.notebook);
     }
+
 
     return{
         createSidebar: createSidebar,
     };
+
 });

@@ -35,7 +35,7 @@ define([
             // unselect all cells in the sidebar
             if (! Jupyter.sidebar.collapsed) {
                 sb_cells = Jupyter.sidebar.cells
-                for(var i=0; i < sb_cells.length; i++){
+                for(var i = 0; i < sb_cells.length; i++){
                     sb_cells[i].selected = false
                     sb_cells[i].element.removeClass('selected')
                     sb_cells[i].element.addClass('unselected')
@@ -505,7 +505,7 @@ define([
                     && ! Jupyter.sidebar.collapsed && cell.sb_cell){
                 hidden_cell = true;
                 cell = cell.sb_cell
-                janusMeta = cell.sb_cell.metadata.janus
+                janusMeta = cell.metadata.janus
             }
 
             var expanded = janusMeta.versions_showing

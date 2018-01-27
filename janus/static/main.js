@@ -9,7 +9,7 @@ define([
     'base/js/namespace',
     'base/js/events',
     '../janus/patch',
-    '../janus/janus_sidebar',
+    '../janus/sidebar',
     '../janus/versions',
     '../janus/fold',
     '../janus/history',

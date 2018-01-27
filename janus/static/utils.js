@@ -43,7 +43,6 @@ define([
         */
 
         var markers = $(element).find(markerClass);
-        console.log(markers)
         for (var i = 0; i < markers.length; i++) {
             $(markers[i]).remove()
         }
