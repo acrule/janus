@@ -77,7 +77,7 @@ define([
             }
 
             if (newCell.metadata.janus.output_hidden) {
-                newCell.element.find("div.input_wrapper").hide();
+                newCell.element.find("div.input").hide();
             }
 
             // intercept sidebar click events and apply them to original cell

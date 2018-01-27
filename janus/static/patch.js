@@ -171,8 +171,8 @@ define([
 
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function() {
+
             that = this;
-            console.log(this)
 
             // function to run once cell is executed
             function updateCellOnExecution(evt) {
@@ -183,9 +183,13 @@ define([
 
             // run hidden cells with text from the sidebar, then update sidebar
             var janusMeta = this.metadata.janus;
-            if (janusMeta.cell_hidden || janusMeta.source_hidden || janusMeta.output_hidden) {
+            if ( (janusMeta.cell_hidden || janusMeta.source_hidden) && this.sb_cell != undefined) {
                 this.set_text( this.sb_cell.get_text() )
                 oldCodeCellExecute.apply(this, arguments);
+                events.on('kernel_idle.Kernel', updateCellOnExecution);
+            } else if (janusMeta.output_hidden && this.sb_cell != undefined) {
+                oldCodeCellExecute.apply(this, arguments);
+                that.sb_cell.clear_output();
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
             } else {
                 oldCodeCellExecute.apply(this, arguments);
