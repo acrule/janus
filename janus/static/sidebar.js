@@ -454,6 +454,10 @@ define([
                 function(event){
                     hideMinimap(event, this)
                 })
+                .mousemove( function(event){
+                    moveMinimap(event, this);
+                }
+                )
                 // .hover(showMinimap, hideMinimap)
                 .append($('<div>')
                     .addClass('indent-label')
@@ -624,7 +628,7 @@ define([
 
         // reset div height to account for scaling
         var cells_height = $(mini_wrap).height()
-        minimap.height(cells_height * 0.33)
+        minimap.height(cells_height * 0.5)
     }
 
 
@@ -637,6 +641,19 @@ define([
         */
         $('#minimap').remove()
         el.style.backgroundColor = ""
+    }
+
+
+    function moveMinimap(event, el) {
+        var mouseTop = event.clientY
+        var mouseRight = event.clientX
+        var topOffset = $('#site').position().top
+
+        var minimap = $('#minimap');
+        minimap.css({
+            'top': mouseTop - topOffset + 12,
+            'left': mouseRight + 12
+        })
     }
 
 
