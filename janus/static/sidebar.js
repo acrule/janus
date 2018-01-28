@@ -222,7 +222,7 @@ define([
         this.collapsed = false;
         var site_height = $("#site").height();
         var site_width = $("#site").width();
-        var sidebar_width = (site_width - 70) / 2; // 40 pixel gutter + 15 pixel padding on each side of page
+        var sidebar_width = (site_width - 45) / 2; // 40 pixel gutter + 15 pixel padding on each side of page
 
         $('#sidebar-cell-wrapper').show()
 
@@ -504,6 +504,7 @@ define([
 
         $('.indent-marker').removeClass('active')
         $('.hidden-code').removeClass('active')
+        $('.hidden-output').removeClass('active')
         if(marker != null){
             $(marker).addClass('active')
         }
