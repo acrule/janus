@@ -60,13 +60,18 @@ folding cells and keeping track of all changes
     overflow: visible;
 }
 
+.indent-arrow{
+    padding: 0px 4px 0px 8px;
+    font-size: 1.1em;
+}
+
 .indent-spacer{
-    height: 20px;
+    height: 30px;
+    margin-top: 10px;
     min-width: 14.3ex;
-    padding: 0.4em;
-    margin: 0px;
-    font-family: monospace;
+    padding: 0 0.4em;
     text-align: right;
+    color: #303F9F;
     line-height: 1.21429em;
     -webkit-touch-callout: none;
     -webkit-user-select: none;

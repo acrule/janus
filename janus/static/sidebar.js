@@ -475,8 +475,11 @@ define([
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
-                        .addClass('indent-text')
-                        .text(serial_lines +  " lines")))
+                    .addClass('indent-text')
+                    .text(serial_lines +  " lines")
+                    .append($('<div>')
+                        .addClass('fa fa-angle-right indent-arrow')))
+                )
             )
     }
 
