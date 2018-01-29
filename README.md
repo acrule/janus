@@ -19,5 +19,5 @@ able to navigate to the top level "Janus" folder (with `setup.py` in it) and run
 pip install -e ./ --user
 jupyter nbextension install --py janus
 jupyter nbextension enable --py janus
-jupyter server extension enable --py janus
+jupyter serverextension enable --py janus
 ```
