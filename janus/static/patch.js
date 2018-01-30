@@ -186,6 +186,7 @@ define([
             if ( (janusMeta.cell_hidden || janusMeta.source_hidden) && this.sb_cell != undefined) {
                 this.set_text( this.sb_cell.get_text() )
                 oldCodeCellExecute.apply(this, arguments);
+                that.sb_cell.clear_output();
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
             } else if (janusMeta.output_hidden && this.sb_cell != undefined) {
                 oldCodeCellExecute.apply(this, arguments);
@@ -556,7 +557,7 @@ define([
             'id': Math.random().toString(16).substring(2),
             'cell_hidden': false,
             'source_hidden': false,
-            'ouput_hidden': false,
+            'output_hidden': false,
             'show_versions': false,
             'versions_showing': false,
             'versions': [],
@@ -573,6 +574,12 @@ define([
                 }
             }
         }
+
+        if (cell.metadata.janus.cell_hidden) {
+            cell.metadata.janus.source_hidden = true;
+            cell.metadata.janus.output_hidden = true;
+        }
+
     }
 
 

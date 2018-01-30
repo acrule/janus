@@ -72,11 +72,11 @@ define([
             }
 
             // hide output if needed
-            if (newCell.metadata.janus.source_hidden) {
+            if (newCell.metadata.janus.source_hidden && ! newCell.metadata.janus.output_hidden) {
                 newCell.element.find("div.output_wrapper").hide();
             }
 
-            if (newCell.metadata.janus.output_hidden) {
+            if (newCell.metadata.janus.output_hidden && !newCell.metadata.janus.source_hidden) {
                 newCell.element.find("div.input").hide();
             }
 
@@ -618,10 +618,10 @@ define([
             }
 
             // hide output if needed
-            if(newCell.metadata.janus.source_hidden){
+            if(newCell.metadata.janus.source_hidden && ! newCell.metadata.janus.output_hidden){
                 newCell.element.find("div.output_wrapper").hide();
             }
-            if(newCell.metadata.janus.output_hidden){
+            if(newCell.metadata.janus.output_hidden && ! newCell.metadata.janus.source_hidden){
                 newCell.element.find("div.input_wrapper").hide();
             }
         }

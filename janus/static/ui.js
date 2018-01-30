@@ -67,12 +67,12 @@ define([
 
         addItemToMenu(janusMenu,
                         'indent_cell',
-                        'Indent Cell',
-                        JanusFold.indentSelectedCells);
-        addItemToMenu(janusMenu,
-                        'unindent_cell',
-                        'Unindent Cell',
-                        JanusFold.unindentSelectedCells);
+                        'Toggle Cell',
+                        JanusFold.toggleSelCellsVisibility);
+        // addItemToMenu(janusMenu,
+        //                 'unindent_cell',
+        //                 'Unindent Cell',
+        //                 JanusFold.unindentSelectedCells);
         addItemToMenu(janusMenu,
                         'toggle_cell_input',
                         'Show / Hide Cell Source',
@@ -106,15 +106,15 @@ define([
             icon: 'fa-eye-slash',
             help    : 'Hide cells',
             help_index : 'zz',
-            handler : JanusFold.indentSelectedCells
+            handler : JanusFold.toggleSelCellsVisibility
         };
 
-        var unindentAction = {
-            icon: 'fa-outdent',
-            help    : 'Show cells',
-            help_index : 'zz',
-            handler : JanusFold.unindentSelectedCells
-        };
+        // var unindentAction = {
+        //     icon: 'fa-outdent',
+        //     help    : 'Show cells',
+        //     help_index : 'zz',
+        //     handler : JanusFold.unindentSelectedCells
+        // };
 
         var toggleSourceAction = {
             icon: 'fa-code',
@@ -152,9 +152,9 @@ define([
         var indentName = actionHandler.register(indentAction,
                                                         'indent-cell',
                                                         prefix);
-        var unindentName = actionHandler.register(unindentAction,
-                                                        'unindent-cell',
-                                                        prefix);
+        // var unindentName = actionHandler.register(unindentAction,
+        //                                                 'unindent-cell',
+        //                                                 prefix);
         var toggleSourceName = actionHandler.register(toggleSourceAction,
                                                         'toggle-cell-input',
                                                         prefix);
@@ -169,10 +169,9 @@ define([
                                                         prefix);
 
         // add button groups to the main toolbar
-        Jupyter.toolbar.add_buttons_group([indentName,                                        
+        Jupyter.toolbar.add_buttons_group([indentName,
                                         toggleSourceName,
-                                        toggleOutputName,
-                                        unindentName]);
+                                        toggleOutputName]);
 
         Jupyter.toolbar.add_buttons_group([toggleCellVerName]);
 
