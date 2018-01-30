@@ -168,6 +168,7 @@ folding cells and keeping track of all changes
 
 .marker.version{
     padding: 3px 4px 0px;
+    background: #DDDDDD;
 }
 
 .marker.hidden-code{
