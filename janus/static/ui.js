@@ -86,7 +86,7 @@ define([
 
         addItemToMenu(janusMenu,
                         'toggle_nb_recording',
-                        'Toggle Notebook Recording',
+                        'Stop Tracking Changes',
                         JanusHistory.toggleHistoryRecording);
         addItemToMenu(janusMenu,
                         'toggle_cell_versions',
@@ -130,15 +130,15 @@ define([
             handler : JanusFold.toggleOutputVisibility
         };
 
-        var toggleNBHistAction = {
-            icon: 'fa-history',
-            help    : 'Toggle Notebook Recording',
-            help_index : 'zz',
-            handler : JanusHistory.toggleHistoryRecording
-        };
+        // var toggleNBHistAction = {
+        //     icon: 'fa-history',
+        //     help    : 'Toggle Notebook Recording',
+        //     help_index : 'zz',
+        //     handler : JanusHistory.toggleHistoryRecording
+        // };
 
         var toggleCellVerAction = {
-            icon: 'fa-code-fork',
+            icon: 'fa-history',
             help    : 'Show Cell Versions',
             help_index : 'zz',
             handler : JanusVersions.toggleCellVersions
@@ -161,9 +161,9 @@ define([
         var toggleOutputName = actionHandler.register(toggleOutputAction,
                                                         'toggle-cell-output',
                                                         prefix);
-        var toggleNBHistName = actionHandler.register(toggleNBHistAction,
-                                                        'toggle-nb-history',
-                                                        prefix);
+        // var toggleNBHistName = actionHandler.register(toggleNBHistAction,
+        //                                                 'toggle-nb-history',
+        //                                                 prefix);
         var toggleCellVerName = actionHandler.register(toggleCellVerAction,
                                                         'toggle-cell-history',
                                                         prefix);
@@ -174,8 +174,7 @@ define([
                                         toggleSourceName,
                                         toggleOutputName]);
 
-        Jupyter.toolbar.add_buttons_group([toggleCellVerName,
-                                        toggleNBHistName]);
+        Jupyter.toolbar.add_buttons_group([toggleCellVerName]);
 
         // add text link to view notebook history
         var history_label = $('<div id="history-label"/>')

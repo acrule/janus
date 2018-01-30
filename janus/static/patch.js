@@ -594,6 +594,11 @@ define([
         if (nb_meta.unexecutedCells === undefined) {
             nb_meta.unexecutedCells = [];
         }
+
+        //update ui to reflect metadata
+        if (! nb_meta.track_history) {
+            $('#toggle_nb_recording').find('a').text('Start Tracking Changes')
+        }
     }
 
 

@@ -208,11 +208,14 @@ define([
         /* turn on/off recording of notebook history */
 
         Notebook.metadata.track_history = ! Notebook.metadata.track_history
-        var message = 'Notebook history recording off';
+        var message = 'Not tracking changes';
+        var menuText = 'Start Tracking Changes'
         if (Notebook.metadata.track_history) {
-            message = 'Notebook history recording on';
+            message = 'Tracking changes';
+            menuText = 'Stop Tracking Changes'
         }
         Jupyter.notification_area.widget('notebook').set_message(message, 2000)
+        $('#toggle_nb_recording').find('a').text(menuText)
     }
 
 
