@@ -103,15 +103,15 @@ define([
         /* add Janus buttons to toolbar for easy access */
 
         var indentAction = {
-            icon: 'fa-indent',
-            help    : 'Indent cells',
+            icon: 'fa-eye-slash',
+            help    : 'Hide cells',
             help_index : 'zz',
             handler : JanusFold.indentSelectedCells
         };
 
         var unindentAction = {
             icon: 'fa-outdent',
-            help    : 'Unindent cells',
+            help    : 'Show cells',
             help_index : 'zz',
             handler : JanusFold.unindentSelectedCells
         };
@@ -169,10 +169,10 @@ define([
                                                         prefix);
 
         // add button groups to the main toolbar
-        Jupyter.toolbar.add_buttons_group([indentName,
-                                        unindentName,
+        Jupyter.toolbar.add_buttons_group([indentName,                                        
                                         toggleSourceName,
-                                        toggleOutputName]);
+                                        toggleOutputName,
+                                        unindentName]);
 
         Jupyter.toolbar.add_buttons_group([toggleCellVerName]);
 
