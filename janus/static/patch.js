@@ -43,7 +43,12 @@ define([
             }
 
             if (this.metadata.janus.cell_hidden) {
+                // var nextSel = $(this.element).nextAll('.indent-container')
+                $('.indent-container.selected').removeClass('selected')
                 $(this.element).nextAll('.indent-container').first().addClass('selected')
+                if (this.nb_cell) {
+                    $(this.nb_cell.element).nextAll('.indent-container').first().addClass('selected')
+                }
             }
             else {
                 $('.indent-container').removeClass('selected')
