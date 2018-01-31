@@ -128,7 +128,7 @@ define([
         */
 
         var hashed_nb_path = value['hashed_nb_path']
-        var paths = notebook.metadata.janus.filepaths
+        var paths = Notebook.metadata.janus.filepaths
         var numPaths = paths.length
 
         // then save any new filenames for future queries
@@ -207,10 +207,10 @@ define([
     function toggleHistoryRecording() {
         /* turn on/off recording of notebook history */
 
-        notebook.metadata.janus.track_history = ! notebook.metadata.janus.track_history
+        Notebook.metadata.janus.track_history = ! Notebook.metadata.janus.track_history
         var message = 'Not tracking changes';
         var menuText = 'Start Tracking Changes'
-        if (notebook.metadata.janus.track_history) {
+        if (Notebook.metadata.janus.track_history) {
             message = 'Tracking changes';
             menuText = 'Stop Tracking Changes'
         }

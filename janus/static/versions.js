@@ -83,7 +83,9 @@ define([
         /* hide/show cell versions */
 
         var selCell = Jupyter.notebook.get_selected_cell();
+        // console.log(selCell.metadata.janus.show_versions)
         selCell.metadata.janus.show_versions = ! selCell.metadata.janus.show_versions;
+        // console.log(selCell.metadata.janus.show_versions)
 
         /* Set message and update menu-items when tracking turned on / off */
         var message = 'Showing Cell Versions';
@@ -108,6 +110,7 @@ define([
 
         // only show markers if the correct metadata flag is set
         if (cell.metadata.janus.show_versions) {
+            console.log("Rendering Markers")
             renderSummaryMarker(cell);
             renderVersionMarkers(cell);
         }
@@ -123,10 +126,10 @@ define([
 
         var inputArea = cell.element.find('div.input_area')[0]
         var markerContainer = JanusUtils.getMarkerContainer(cell);
-        var classes = "marker summary fa fa-code-fork"
+        var classes = "marker summary fa fa-history"
 
         // clear current summary markers, add new one
-        JanusUtils.removeMarkerType('summary', inputArea)
+        JanusUtils.removeMarkerType('.summary', inputArea)
         JanusUtils.addMarkerToElement(markerContainer, classes);
     }
 
@@ -165,6 +168,7 @@ define([
                 utils.promising_ajax(url, settings).then( function(value, i) {
                     d = JSON.parse(value)
                     cellVersions = cellVersions.concat(d['versions']);
+                    console.log(cellVersions)
                     renderVersions(cell, cellVersions)
                 });
             }
@@ -203,14 +207,18 @@ define([
 
             if (namedVersions.length > 0) {
                 for (var i = 0; i < namedVersions.length; i++) {
-                    versionsToShow.push(namedVersions[i])
+                    if (versionHasContent(namedVersions[i])) {
+                        versionsToShow.push(namedVersions[i])
+                    }
                 }
             }
 
             if( cellVersions.length > 0 ){
                 for (var j = 0; j < cellVersions.length; j++) {
                     if (namedVersionsIds.indexOf(cellVersions[j].version_id ) == -1) {
-                        versionsToShow.push(cellVersions[j])
+                        if (versionHasContent(cellVersions[j])) {
+                            versionsToShow.push(cellVersions[j])
+                        }
                     }
                 }
             }
@@ -254,6 +262,20 @@ define([
         updateMarkerVisibility(cell);
     }
 
+
+    function versionHasContent(version){
+        /* ensure this is not just an empty cell
+
+        Args:
+            version: version of cell to check
+        */
+
+        if (version['content']['source'] == "" && version['content']['outputs'].length == 0) {
+            return false
+        } else {
+            return true
+        }
+    }
 
     function initializeVersionMarkers() {
         /* create all markers based on metadata when notebook is opened */
