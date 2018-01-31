@@ -83,9 +83,7 @@ define([
         /* hide/show cell versions */
 
         var selCell = Jupyter.notebook.get_selected_cell();
-        // console.log(selCell.metadata.janus.show_versions)
         selCell.metadata.janus.show_versions = ! selCell.metadata.janus.show_versions;
-        // console.log(selCell.metadata.janus.show_versions)
 
         /* Set message and update menu-items when tracking turned on / off */
         var message = 'Showing Cell Versions';
@@ -110,7 +108,6 @@ define([
 
         // only show markers if the correct metadata flag is set
         if (cell.metadata.janus.show_versions) {
-            console.log("Rendering Markers")
             renderSummaryMarker(cell);
             renderVersionMarkers(cell);
         }
@@ -168,7 +165,6 @@ define([
                 utils.promising_ajax(url, settings).then( function(value, i) {
                     d = JSON.parse(value)
                     cellVersions = cellVersions.concat(d['versions']);
-                    console.log(cellVersions)
                     renderVersions(cell, cellVersions)
                 });
             }
@@ -277,6 +273,7 @@ define([
         }
     }
 
+
     function initializeVersionMarkers() {
         /* create all markers based on metadata when notebook is opened */
 
@@ -315,8 +312,8 @@ define([
             output_markers.show();
         }
 
-        if ( janus_meta.show_versions ) {
-            if ( cell.selected ){
+        if (janus_meta.show_versions) {
+            if (cell.selected) {
                 named_markers.show();
                 unnamed_markers.show();
             } else {

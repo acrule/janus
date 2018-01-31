@@ -39,6 +39,7 @@ define([
                     sb_cells[i].selected = false
                     sb_cells[i].element.removeClass('selected')
                     sb_cells[i].element.addClass('unselected')
+                    JanusVersions.updateMarkerVisibility(sb_cells[i])
                 }
             }
 
@@ -101,7 +102,7 @@ define([
 
             // update version markers, but don't think we need to do this will another cell being selected
             JanusVersions.updateMarkerVisibility(this);
-            janus_meta = this.metadata.janus
+            var janus_meta = this.metadata.janus
             if((janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
                     && ! Jupyter.sidebar.collapsed && this.sb_cell){
                 JanusVersions.updateMarkerVisibility(this.sb_cell)
