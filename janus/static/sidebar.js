@@ -422,7 +422,7 @@ define([
         /* Add the placeholder used to open a group of hidden cells */
 
         // get placholder name from metadata, if present
-        var markerMetadata = Jupyter.notebook.metadata.janus_markers;
+        var markerMetadata = Jupyter.notebook.metadata.janus.janus_markers;
         var first_stored = '';
         if(markerMetadata){
             for(j = 0; j < markerMetadata.length; j++){
@@ -500,7 +500,7 @@ define([
                 'markerName': markerName
             })
         }
-        Jupyter.notebook.metadata.janus_markers = hideMetadata
+        Jupyter.notebook.metadata.janus.janus_markers = hideMetadata
     }
 
 

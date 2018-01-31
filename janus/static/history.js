@@ -82,7 +82,7 @@ define([
             selIndices: indicies of selected cells in nb
         */
 
-        if (Notebook.metadata.track_history) {
+        if (Notebook.metadata.janus.track_history) {
 
             // get url to send POST request
             var baseUrl = nb.base_url;
@@ -128,7 +128,7 @@ define([
         */
 
         var hashed_nb_path = value['hashed_nb_path']
-        var paths = Notebook.metadata.filepaths
+        var paths = notebook.metadata.janus.filepaths
         var numPaths = paths.length
 
         // then save any new filenames for future queries
@@ -207,10 +207,10 @@ define([
     function toggleHistoryRecording() {
         /* turn on/off recording of notebook history */
 
-        Notebook.metadata.track_history = ! Notebook.metadata.track_history
+        notebook.metadata.janus.track_history = ! notebook.metadata.janus.track_history
         var message = 'Not tracking changes';
         var menuText = 'Start Tracking Changes'
-        if (Notebook.metadata.track_history) {
+        if (notebook.metadata.janus.track_history) {
             message = 'Tracking changes';
             menuText = 'Stop Tracking Changes'
         }

@@ -142,7 +142,7 @@ define([
         var notebookUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
 
-        var paths = Jupyter.notebook.metadata.filepaths;
+        var paths = Jupyter.notebook.metadata.janus.filepaths;
         var cell_id = cell.metadata.janus.id
         var cellVersions = []
 

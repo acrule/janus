@@ -50,7 +50,7 @@ define([
         var baseUrl = Jupyter.notebook.base_url;
         var notebookUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
-        var paths = Jupyter.notebook.metadata.filepaths;
+        var paths = Jupyter.notebook.metadata.janus.filepaths;
 
         // format request for each previous notebook name
         for ( var i = 0; i < paths.length; i++ ) {
@@ -175,7 +175,7 @@ define([
         var baseUrl = Jupyter.notebook.base_url;
         var notebookUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
-        var paths = Jupyter.notebook.metadata.filepaths;
+        var paths = Jupyter.notebook.metadata.janus.filepaths;
 
         //  GET settings
         var settings = {

@@ -88,12 +88,12 @@ define([
 
             var ts = JanusUtils.getTimeAndSelection()
             var cell_id = this.metadata.janus.id
-            var li = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
+            var li = Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id)
             var unexecutedChanges = li > -1;
 
             if(this.selected && unexecutedChanges){
                 JanusHistory.trackAction(Jupyter.notebook, ts.t, 'unselect-cell', ts.selIndex, ts.selIndices);
-                Jupyter.notebook.metadata.unexecutedCells.splice(li, 1);
+                Jupyter.notebook.metadata.janus.unexecutedCells.splice(li, 1);
             }
 
             // need to return context object so mult-cell selection works
@@ -209,9 +209,9 @@ define([
 
             // remove from unexecuted cells with edits list
             var cell_id = this.metadata.janus.id;
-            var unexecutedIndex = Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id)
+            var unexecutedIndex = Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id)
             if ( unexecutedIndex > -1 ) {
-                Jupyter.notebook.metadata.unexecutedCells.splice(unexecutedIndex, 1);
+                Jupyter.notebook.metadata.janus.unexecutedCells.splice(unexecutedIndex, 1);
             }
 
             // update cell version markers if needed
@@ -597,24 +597,24 @@ define([
     function generateDefaultNBMetadata() {
         /* generate default Janus metadata for the notebook */
 
-        nb_meta = Jupyter.notebook.metadata
-
-        // flag whether we want to track a full history of the notebook
-        if (nb_meta.track_history === undefined) {
-            nb_meta.track_history = true;
+        var defaultNBMeta = {
+            'track_history': false,
+            'filepaths': [],
+            'unexecutedCells': []
         }
 
-        // track previous names of the notebook to maintain full history
-        if (nb_meta.filepaths === undefined) {
-            nb_meta.filepaths = [];
-        }
-
-        if (nb_meta.unexecutedCells === undefined) {
-            nb_meta.unexecutedCells = [];
+        if (Jupyter.notebook.metadata.janus === undefined) {
+            Jupyter.notebook.metadata.janus = defaultNBMeta;
+        } else {
+            for (var key in defaultNBMeta) {
+                if (! Jupyter.notebook.metadata.janus.hasOwnProperty(key)) {
+                    Jupyter.notebook.metadata.janus[key] =  defaultNBMeta[key];
+                }
+            }
         }
 
         //update ui to reflect metadata
-        if (! nb_meta.track_history) {
+        if (! Jupyter.notebook.metadata.janus.track_history) {
             $('#toggle_nb_recording').find('a').text('Start Tracking Changes')
         }
     }
@@ -638,8 +638,8 @@ define([
 
         cell.code_mirror.on('change', function() {
             var cell_id = cell.metadata.janus.id
-            if ( Jupyter.notebook.metadata.unexecutedCells.indexOf(cell_id) == -1 ) {
-                Jupyter.notebook.metadata.unexecutedCells.push(cell_id);
+            if ( Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id) == -1 ) {
+                Jupyter.notebook.metadata.janus.unexecutedCells.push(cell_id);
             }
         });
     }
