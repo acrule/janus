@@ -158,6 +158,17 @@ define([
         if (cell.metadata.janus.source_hidden) {
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             var marker = JanusUtils.addMarkerToElement(outputArea, classes);
+            $(marker).data('ids', [cell.metadata.janus.id])
+                .hover(function(event){
+                    JanusUtils.showMinimap(event, this)
+                },
+                function(event){
+                    JanusUtils.hideMinimap(event, this)
+                })
+                .mousemove( function(event){
+                    JanusUtils.moveMinimap(event, this);
+                }
+                )
             marker.onclick = function() { showCellInSidebar(cell, marker); };
         }
         else if (cell.cell_type == 'code') {
@@ -228,6 +239,17 @@ define([
         if (cell.metadata.janus.output_hidden) {
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
+            $(marker).data('ids', [cell.metadata.janus.id])
+                .hover(function(event){
+                    JanusUtils.showMinimap(event, this)
+                },
+                function(event){
+                    JanusUtils.hideMinimap(event, this)
+                })
+                .mousemove( function(event){
+                    JanusUtils.moveMinimap(event, this);
+                }
+                )
             marker.onclick = function() { showCellInSidebar(cell, marker); };
         }
         else if (cell.cell_type == 'code') {
