@@ -42,6 +42,13 @@ define([
                 }
             }
 
+            if (this.metadata.janus.cell_hidden) {
+                $(this.element).nextAll('.indent-container').first().addClass('selected')
+            }
+            else {
+                $('.indent-container').removeClass('selected')
+            }
+
             // if this cell is hidden, select the proper cell in the sidebar
             if (this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden || this.metadata.janus.output_hidden) {
 

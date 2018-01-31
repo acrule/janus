@@ -51,6 +51,11 @@ folding cells and keeping track of all changes
     background: #ffffff;
 }
 
+.indent-container.selected {
+    border: 1px solid #BBBBBB;
+    border-left: 5px solid #59A5EF;
+}
+
 .indent-container{
     width: 100%;
     display: flex;
