@@ -1,6 +1,6 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 */
 
 #history-label{
@@ -51,12 +51,12 @@ folding cells and keeping track of all changes
     background: #ffffff;
 }
 
-.indent-container.selected {
+.hide-container.selected {
     border: 1px solid #BBBBBB;
     border-left: 5px solid #59A5EF;
 }
 
-.indent-container{
+.hide-container{
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
@@ -70,12 +70,12 @@ folding cells and keeping track of all changes
     overflow: visible;
 }
 
-.indent-arrow{
+.hide-arrow{
     padding: 0px 4px 0px 8px;
     font-size: 1.3em;
 }
 
-.indent-spacer{
+.hide-spacer{
     height: 30px;
     margin-top: 10px;
     min-width: 12.3ex;
@@ -92,7 +92,7 @@ folding cells and keeping track of all changes
     cursor: default;
 }
 
-.indent-label{
+.hide-label{
     height: 26px;
     padding: 3px;
     min-width: 120px;
@@ -101,7 +101,7 @@ folding cells and keeping track of all changes
     font-size: 1.2em;
 }
 
-.indent-text{
+.hide-text{
     padding: 3px;
     height: 26px;
     /* color: #AAAAAA; */
@@ -110,7 +110,7 @@ folding cells and keeping track of all changes
     border-radius: 1px;
 }
 
-.indent-marker{
+.hide-marker{
     height: 30px;
     padding: 1px 1px 0px;
     margin: 6px;

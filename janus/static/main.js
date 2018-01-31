@@ -1,6 +1,6 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 */
 
 define([
@@ -11,7 +11,7 @@ define([
     '../janus/patch',
     '../janus/sidebar',
     '../janus/versions',
-    '../janus/fold',
+    '../janus/hide',
     '../janus/history',
     '../janus/ui'
 ], function(
@@ -22,7 +22,7 @@ define([
     JanusPatch,
     JanusSidebar,
     JanusVersions,
-    JanusFold,
+    JanusHide,
     JanusHistory,
     JanusUI
 ){
@@ -42,9 +42,9 @@ define([
         /* run steps that require cells to already be loaded */
 
         JanusPatch.initializeJanusMetadata();
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         JanusVersions.initializeVersionMarkers();
-        JanusFold.initializeVisibility();
+        JanusHide.initializeVisibility();
         JanusHistory.prepHistoryTracking();
     }
 

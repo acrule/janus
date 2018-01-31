@@ -1,20 +1,20 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 */
 
 define([
     'jquery',
     'base/js/namespace',
     '../janus/versions',
-    '../janus/fold',
+    '../janus/hide',
     '../janus/history',
     '../janus/history_viewer'
 ], function(
     $,
     Jupyter,
     JanusVersions,
-    JanusFold,
+    JanusHide,
     JanusHistory,
     JanusViewer
 ){
@@ -66,21 +66,17 @@ define([
         var janusMenu = $('#janus-menu');
 
         addItemToMenu(janusMenu,
-                        'indent_cell',
-                        'Toggle Cell',
-                        JanusFold.toggleSelCellsVisibility);
-        // addItemToMenu(janusMenu,
-        //                 'unindent_cell',
-        //                 'Unindent Cell',
-        //                 JanusFold.unindentSelectedCells);
+                        'toggle_cell',
+                        'Hide Cell',
+                        JanusHide.toggleSelCellsVisibility);
         addItemToMenu(janusMenu,
                         'toggle_cell_input',
-                        'Show / Hide Cell Source',
-                        JanusFold.toggleSourceVisibility);
+                        'Hide Cell Input',
+                        JanusHide.toggleSourceVisibility);
         addItemToMenu(janusMenu,
                         'toggle_cell_output',
-                        'Show / Hide Cell Output',
-                        JanusFold.toggleOutputVisibility);
+                        'Hide Cell Output',
+                        JanusHide.toggleOutputVisibility);
 
         janusMenu.append( $('<li>').addClass('divider') );
 
@@ -90,7 +86,7 @@ define([
                         JanusHistory.toggleHistoryRecording);
         addItemToMenu(janusMenu,
                         'toggle_cell_versions',
-                        'Show / Cell Version',
+                        'Show Cell Versions',
                         JanusVersions.toggleCellVersions);
         addItemToMenu(janusMenu,
                         'show_nb_history',
@@ -102,40 +98,26 @@ define([
     function renderJanusButtons() {
         /* add Janus buttons to toolbar for easy access */
 
-        var indentAction = {
+        var toggleCellAction = {
             icon: 'fa-eye-slash',
-            help    : 'Hide cells',
+            help    : 'Hide Cell',
             help_index : 'zz',
-            handler : JanusFold.toggleSelCellsVisibility
+            handler : JanusHide.toggleSelCellsVisibility
         };
-
-        // var unindentAction = {
-        //     icon: 'fa-outdent',
-        //     help    : 'Show cells',
-        //     help_index : 'zz',
-        //     handler : JanusFold.unindentSelectedCells
-        // };
 
         var toggleSourceAction = {
             icon: 'fa-code',
-            help    : 'Toggle Input',
+            help    : 'Hide Input',
             help_index : 'zz',
-            handler : JanusFold.toggleSourceVisibility
+            handler : JanusHide.toggleSourceVisibility
         };
 
         var toggleOutputAction = {
             icon: 'fa-area-chart',
-            help    : 'Toggle Output',
+            help    : 'Hide Output',
             help_index : 'zz',
-            handler : JanusFold.toggleOutputVisibility
+            handler : JanusHide.toggleOutputVisibility
         };
-
-        // var toggleNBHistAction = {
-        //     icon: 'fa-history',
-        //     help    : 'Toggle Notebook Recording',
-        //     help_index : 'zz',
-        //     handler : JanusHistory.toggleHistoryRecording
-        // };
 
         var toggleCellVerAction = {
             icon: 'fa-history',
@@ -149,27 +131,21 @@ define([
         var prefix = 'janus';
         var actionHandler = Jupyter.actions
 
-        var indentName = actionHandler.register(indentAction,
-                                                        'indent-cell',
+        var toggleCellName = actionHandler.register(toggleCellAction,
+                                                        'toggle-cell',
                                                         prefix);
-        // var unindentName = actionHandler.register(unindentAction,
-        //                                                 'unindent-cell',
-        //                                                 prefix);
         var toggleSourceName = actionHandler.register(toggleSourceAction,
                                                         'toggle-cell-input',
                                                         prefix);
         var toggleOutputName = actionHandler.register(toggleOutputAction,
                                                         'toggle-cell-output',
                                                         prefix);
-        // var toggleNBHistName = actionHandler.register(toggleNBHistAction,
-        //                                                 'toggle-nb-history',
-        //                                                 prefix);
         var toggleCellVerName = actionHandler.register(toggleCellVerAction,
                                                         'toggle-cell-history',
                                                         prefix);
 
         // add button groups to the main toolbar
-        Jupyter.toolbar.add_buttons_group([indentName,
+        Jupyter.toolbar.add_buttons_group([toggleCellName,
                                         toggleSourceName,
                                         toggleOutputName]);
 

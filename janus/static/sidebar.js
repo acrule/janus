@@ -1,6 +1,6 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 */
 
 define([
@@ -25,7 +25,7 @@ define([
 
 
     var Sidebar = function(nb) {
-        /* A sidebar panel for showing indented cells */
+        /* A sidebar panel for showing hidden cells */
         var sidebar = this;
         Jupyter.sidebar = sidebar;
 
@@ -338,7 +338,7 @@ define([
             // else update the sidebar
             else{
                 // get placeholder with the top previous hidden cell in it
-                placeholders = $('.indent-marker').toArray()
+                placeholders = $('.hide-marker').toArray()
                 for (i = 0; i < placeholders.length; i++) {
                     if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0) {
                         Jupyter.sidebar.marker = placeholders[i];
@@ -352,11 +352,11 @@ define([
     }
 
 
-    Sidebar.prototype.hideIndentedCells = function() {
-        /* hide all indented cells and render placeholders in their place */
+    Sidebar.prototype.hideHiddenCells = function() {
+        /* hide all hidden cells and render placeholders in their place */
 
         // save data from and remove current markers for hidden cells
-        $(".indent-container").remove()
+        $(".hide-container").remove()
 
         var cells = Jupyter.notebook.get_cells();
         var serial_hidden_cells = []
@@ -419,7 +419,7 @@ define([
 
 // PLACEHOLDERS FOR HIDDEN CELLS
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines) {
-        /* Add the placeholder used to open a group of indented cells */
+        /* Add the placeholder used to open a group of hidden cells */
 
         // get placholder name from metadata, if present
         var markerMetadata = Jupyter.notebook.metadata.janus_markers;
@@ -435,11 +435,11 @@ define([
         }
 
         var place = elem.after($('<div>')
-            .addClass('indent-container')
+            .addClass('hide-container')
             .append($('<div>')
-                .addClass('indent-spacer'))
+                .addClass('hide-spacer'))
             .append($('<div>')
-                .addClass('indent-marker')
+                .addClass('hide-marker')
                 .data('ids', cell_ids.slice())
                 .click(function(){
                     $('#minimap').remove()
@@ -459,7 +459,7 @@ define([
                 }
                 )
                 .append($('<div>')
-                    .addClass('indent-label')
+                    .addClass('hide-label')
                     .click(function(event){
                         enableVersionNameEditing(this)
                         event.stopPropagation()
@@ -468,8 +468,8 @@ define([
                         disableVersionNameEditing(this)
                     })
                     .text(function(){
-                        if(first_stored == "" || first_stored == "Folded Cells"){
-                            return "Folded Cells"
+                        if(first_stored == "" || first_stored == "Hidden Cells"){
+                            return "Hidden Cells"
                         }
                         else{
                             return first_stored
@@ -478,10 +478,10 @@ define([
                     // TODO intercept "Enter" to unselect, rather than start new line
                 )
                 .append($('<div>')
-                    .addClass('indent-text')
+                    .addClass('hide-text')
                     .text(serial_lines +  " lines")
                     .append($('<div>')
-                        .addClass('fa fa-angle-right indent-arrow')))
+                        .addClass('fa fa-angle-right hide-arrow')))
                 )
             )
     }
@@ -490,17 +490,17 @@ define([
     Sidebar.prototype.saveMarkerMetadata = function() {
         /* Store marker names to notebook metadata for later use */
 
-        indentMarkers = $('.indent-marker').toArray()
-        indentMetadata = []
-        for (i = 0; i < indentMarkers.length; i++) {
-            markerIDs = $(indentMarkers[i]).data('ids')
-            markerName = $(indentMarkers[i]).find('.indent-label')[0].innerHTML
-            indentMetadata.push({
+        hideMarkers = $('.hide-marker').toArray()
+        hideMetadata = []
+        for (i = 0; i < hideMarkers.length; i++) {
+            markerIDs = $(hideMarkers[i]).data('ids')
+            markerName = $(hideMarkers[i]).find('.hide-label')[0].innerHTML
+            hideMetadata.push({
                 'ids': markerIDs,
                 'markerName': markerName
             })
         }
-        Jupyter.notebook.metadata.janus_markers = indentMetadata
+        Jupyter.notebook.metadata.janus_markers = hideMetadata
     }
 
 
@@ -508,7 +508,7 @@ define([
         /*  highlight the marker clicked to show the sidebar
         marker: dom element, or null */
 
-        $('.indent-marker').removeClass('active')
+        $('.hide-marker').removeClass('active')
         $('.hidden-code').removeClass('active')
         $('.hidden-output').removeClass('active')
         if(marker != null){
@@ -539,8 +539,8 @@ define([
 
         element.contentEditable = false;
         Jupyter.notebook.keyboard_manager.command_mode();
-        if(element.innerHTML == "" || element.innerHTML == "Folded Cells"){
-            element.innerHTML = "Folded Cells"
+        if(element.innerHTML == "" || element.innerHTML == "Hidden Cells"){
+            element.innerHTML = "Hidden Cells"
         }
         Jupyter.sidebar.saveMarkerMetadata()
 

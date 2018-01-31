@@ -1,8 +1,6 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
-
-Handle indenting and unindenting of cells to and from the Janus sidebar
+hiding cells and tracking changes
 */
 
 define([

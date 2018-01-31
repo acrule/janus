@@ -1,8 +1,8 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 
-Handle indenting and unindenting of cells to and from the Janus sidebar
+Handle hiding and showing cells
 */
 
 define([
@@ -15,7 +15,7 @@ define([
     JanusUtils
 ){
 
-// INDENT AND UNINDENT
+// HIDE AND SHOW CELLS
 
     function toggleSelCellsVisibility() {
         /* toggle visiblity of all selected cells
@@ -37,7 +37,7 @@ define([
 
         // update placeholder markers and the sidebar
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         Jupyter.sidebar.update();
     }
 
@@ -61,7 +61,7 @@ define([
 
         // markers and sidebar
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         Jupyter.sidebar.update();
     }
 
@@ -94,7 +94,7 @@ define([
         // update markers and sidebar
         renderSourceMarker(cell);
         renderOutputMarker(cell);
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         Jupyter.sidebar.update();
     }
 
@@ -140,7 +140,7 @@ define([
         }
 
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         Jupyter.sidebar.update();
     }
 
@@ -221,7 +221,7 @@ define([
         }
 
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideIndentedCells();
+        Jupyter.sidebar.hideHiddenCells();
         Jupyter.sidebar.update();
     }
 

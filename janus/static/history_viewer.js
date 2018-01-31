@@ -1,6 +1,6 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
-folding cells and keeping track of all changes
+hiding cells and tracking changes
 */
 
 define([
@@ -22,7 +22,7 @@ define([
     // TODO Pull cell history from database, not metadata
     // TODO debug saving of cell versions before cell fully executed
     // TODO debug history dialog window overflowing the main screen
-    // TODO enable cell folding in history viewer
+    // TODO enable cell hiding in history viewer
     // TODO show full history of all cell executions (stretch)
     // TODO enable truncated history based on program analysis (stretch)
 
