@@ -172,6 +172,12 @@ hiding cells and tracking changes
     float: right;
 }
 
+.marker.extra{
+    padding: 3px 4px 0px;
+    background: #DDDDDD;
+    font-size: 1em;
+}
+
 .marker.summary{
     padding: 4px 0px 0px;
 }

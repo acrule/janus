@@ -25,12 +25,48 @@ define([
     var CodeCell = codecell.CodeCell;
 
 // MARKER CLICK EVENTS
-    function createVersionClick(cell, v) {
+    function createExtraClick(cell) {
         /* Attach function to version marker click events
 
         Args:
             cell: cell we are working with
             v: index of cell version to show when marker is clicked
+        */
+
+        return function() {
+            var janus_meta = cell.metadata.janus
+            toggleShowAllVersions(cell);
+
+            // change version in any associated sidebar cell as well
+            if( (janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
+                    && ! Jupyter.sidebar.collapsed && cell.nb_cell) {
+                toggleShowAllVersions(cell.nb_cell)
+            }
+        }
+    }
+
+
+    function toggleShowAllVersions(cell){
+        /* create a summary marker for cell history versions
+
+        Args:
+            cell: cell to show all versions on
+        */
+
+        var inputArea = cell.element.find('div.input_area')[0]
+        var markerContainer = JanusUtils.getMarkerContainer(cell);
+        var extra_markers = $(markerContainer).find(".extra")
+
+        cell.metadata.janus.all_versions_showing = ! cell.metadata.janus.all_versions_showing
+        updateMarkerVisibility(cell);
+    }
+
+
+    function createVersionClick(cell, v) {
+        /* Attach function to extra marker click events
+
+        Args:
+            cell: cell we are working with
         */
 
         return function() {
@@ -117,6 +153,9 @@ define([
             renderSummaryMarker(cell);
             renderVersionMarkers(cell);
         }
+        else {
+            cell.metadata.janus.versions = [];
+        }
     }
 
 
@@ -134,6 +173,25 @@ define([
         // clear current summary markers, add new one
         JanusUtils.removeMarkerType('.summary', inputArea)
         JanusUtils.addMarkerToElement(markerContainer, classes);
+    }
+
+
+    function renderExtraMarker(cell) {
+        /* create a summary marker for cell history versions
+
+        Args:
+            cell: cell to show summary marker on
+        */
+
+        var inputArea = cell.element.find('div.input_area')[0]
+        var markerContainer = JanusUtils.getMarkerContainer(cell);
+        var classes = "marker extra"
+
+        // clear current summary markers, add new one
+        JanusUtils.removeMarkerType('.extra', inputArea)
+        var newMarker = JanusUtils.addMarkerToElement(markerContainer, classes);
+        newMarker.onclick = createExtraClick(cell);
+
     }
 
 
@@ -206,14 +264,8 @@ define([
             var namedVersions = cell.metadata.janus.named_versions;
             var namedVersionsIds = namedVersions.map( function(a) {return a.version_id;} );
             var versionsToShow = []
-
-            if (namedVersions.length > 0) {
-                for (var i = 0; i < namedVersions.length; i++) {
-                    if (versionHasContent(namedVersions[i])) {
-                        versionsToShow.push(namedVersions[i])
-                    }
-                }
-            }
+            var curMatch = null;
+            var curIndex = null;
 
             if( cellVersions.length > 0 ){
                 for (var j = 0; j < cellVersions.length; j++) {
@@ -221,12 +273,45 @@ define([
                         if (versionHasContent(cellVersions[j])) {
                             versionsToShow.push(cellVersions[j])
                         }
+                        if (versionMatchCur(cellVersions[j], cell)){
+                            curMatch = cellVersions[j]
+                            curIndex = versionsToShow.length - 1
+                        }
                     }
                 }
             }
 
+            if (namedVersions.length > 0) {
+                for (var i = 0; i < namedVersions.length; i++) {
+                    if (versionHasContent(namedVersions[i])) {
+                        versionsToShow.push(namedVersions[i])
+                    }
+                    if (versionMatchCur(namedVersions[i], cell)){
+                        curMatch = namedVersions[i]
+                        curIndex = versionsToShow.length - 1
+                    }
+                }
+            }
+
+            if (! curMatch){
+                var d = {
+                    name: '',
+                    cell_id: cell.metadata.janus.id,
+                    version_id: '',
+                    content: cell.toJSON()
+                }
+                versionsToShow.push(d)
+                curIndex = versionsToShow.length - 1;
+            }
+
+            versionsToShow = versionsToShow.reverse();
+            curIndex = versionsToShow.length - 1 - curIndex;
+
             // set cell metadata to include all versions
-            cell.metadata.janus.versions = versionsToShow
+            cell.metadata.janus.versions = versionsToShow;
+            if (curIndex) {
+                cell.metadata.janus.current_version = curIndex;
+            }
 
             // append version markers
             var classes = "marker version"
@@ -261,6 +346,7 @@ define([
             }
         }
 
+        renderExtraMarker(cell);
         updateMarkerVisibility(cell);
     }
 
@@ -277,6 +363,59 @@ define([
         } else {
             return true
         }
+    }
+
+
+    function versionMatchCur(ver, cell){
+        /* check if a version matches the current cell
+
+        Args:
+            ver: version of the cell to compare
+            cell: cell to compare to
+        */
+
+        // do sources not match
+        if (ver.content.source != cell.get_text()) {
+            return false;
+        }
+
+        // do outputs not match?
+        var verOut = ver.content.outputs;
+        var cellOut = cell.output_area.outputs;
+
+        if (verOut.length != cellOut.length) {
+            return false;
+        }
+
+        for (var i = 0; i < verOut.length; i++) {
+            if (verOut[i].output_type != cellOut[i].output_type) {
+                return false
+            }
+
+            var outType = verOut[i].output_type
+            if (outType == 'display_data'){
+                if (verOut.data != cellOut.data) {
+                    return false
+                }
+            }
+            if (outType == 'execute_result'){
+                if (verOut.data != cellOut.data) {
+                    return false
+                }
+            }
+            if (outType == 'stream'){
+                if (verOut.text != cellOut.text) {
+                    return false
+                }
+            }
+            if (outType == 'error'){
+                if (verOut.evaluate != cellOut.evaluate) {
+                    return false
+                }
+            }
+        }
+
+        return true;
     }
 
 
@@ -310,6 +449,7 @@ define([
         var named_markers = $(input_area).find(".named-version")
         var unnamed_markers = $(input_area).find(".unnamed-version")
         var output_markers = $(input_area).find(".hidden-output")
+        var extra_markers = $(input_area).find(".extra")
 
         // start by hiding all markers
         $(input_area).find(".marker").hide();
@@ -320,8 +460,28 @@ define([
 
         if (janus_meta.show_versions) {
             if (cell.selected) {
-                named_markers.show();
-                unnamed_markers.show();
+                if (cell.metadata.janus.all_versions_showing) {
+                    named_markers.show();
+                    unnamed_markers.show();
+                    extra_markers.show();
+                    extra_markers.text('<')
+                }
+                else if (named_markers.length > 0) {
+                    named_markers.show();
+                    extra_markers.show();
+                    var markerText = "+" + unnamed_markers.length.toString()
+                    extra_markers.text(markerText)
+                } else if (unnamed_markers.length > 3) {
+                    unnamed_markers.slice(0,3).show()
+                    extra_markers.show();
+                    var markerText = "+" + (unnamed_markers.length - 3).toString()
+                    extra_markers.text(markerText)
+                } else {
+                    unnamed_markers.show();
+                }
+
+
+
             } else {
                 if (named_markers.length > 0) {
                     named_markers.show();

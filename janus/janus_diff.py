@@ -96,7 +96,7 @@ def check_for_nb_diff(t, hashed_path, cells, db):
     if ( new_version_order != last_version_order ):
         db.record_nb_config(t, hashed_path, new_cell_order, new_version_order)
 
-def cells_different(cell_a, cell_b, compare_outputs = False):
+def cells_different(cell_a, cell_b, compare_outputs = True):
     """
     Return true/false if two cells are the same
 

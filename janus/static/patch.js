@@ -188,8 +188,11 @@ define([
 
             // function to run once cell is executed
             function updateCellOnExecution(evt) {
-                that.sb_cell.fromJSON( that.toJSON() );
-                JanusVersions.renderMarkers(that.sb_cell);
+                JanusVersions.renderMarkers(that);
+                if (that.sb_cell) {
+                    that.sb_cell.fromJSON( that.toJSON() );
+                    JanusVersions.renderMarkers(that.sb_cell);
+                }
                 events.off('kernel_idle.Kernel', updateCellOnExecution);
             }
 
@@ -206,6 +209,7 @@ define([
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
             } else {
                 oldCodeCellExecute.apply(this, arguments);
+                events.on('kernel_idle.Kernel', updateCellOnExecution);
             }
 
             // remove from unexecuted cells with edits list
@@ -571,7 +575,7 @@ define([
             'source_hidden': false,
             'output_hidden': false,
             'show_versions': false,
-            'versions_showing': false,
+            'all_versions_showing': false,
             'versions': [],
             'named_versions': [],
             'current_version': 0
@@ -599,7 +603,7 @@ define([
         /* generate default Janus metadata for the notebook */
 
         var defaultNBMeta = {
-            'track_history': false,
+            'track_history': true,
             'filepaths': [],
             'unexecutedCells': []
         }
