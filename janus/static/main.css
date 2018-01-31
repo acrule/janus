@@ -68,7 +68,7 @@ folding cells and keeping track of all changes
 .indent-spacer{
     height: 30px;
     margin-top: 10px;
-    min-width: 14.3ex;
+    min-width: 12.3ex;
     padding: 0 0.4em;
     text-align: right;
     color: #303F9F;
@@ -169,6 +169,7 @@ folding cells and keeping track of all changes
 .marker.version{
     padding: 3px 4px 0px;
     background: #DDDDDD;
+    font-size: 1em;
 }
 
 .marker.hidden-code{
