@@ -648,10 +648,19 @@ define([
         var mouseTop = event.clientY
         var mouseRight = event.clientX
         var topOffset = $('#site').position().top
+        var topScroll = $('#site').scrollTop()
+        var siteWidth = $('#site').width()
+        var miniWidth = $('#minimap').width()
+
+        // ensure tooltip does not go off the page
+        if ((mouseRight + miniWidth) > siteWidth ) {
+            mouseRight = siteWidth - miniWidth;
+        }
+
 
         var minimap = $('#minimap');
         minimap.css({
-            'top': mouseTop - topOffset + 12,
+            'top': mouseTop - topOffset + topScroll + 12,
             'left': mouseRight + 12
         })
     }
