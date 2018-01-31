@@ -94,6 +94,12 @@ define([
 
         renderMarkers(selCell);
         updateMarkerVisibility(selCell);
+
+        if (selCell.sb_cell) {
+            selCell.sb_cell.metadata.janus.show_versions = ! selCell.sb_cell.metadata.janus.show_versions;
+            renderMarkers(selCell.sb_cell);
+            updateMarkerVisibility(selCell.sb_cell);
+        }
     }
 
 
