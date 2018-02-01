@@ -98,6 +98,7 @@ hiding cells and tracking changes
     min-width: 80px;
     border-radius: 1px;
     font-size: 1.2em;
+    cursor: auto;
 }
 
 .hide-text{
@@ -117,7 +118,7 @@ hiding cells and tracking changes
     border: 1px solid #ccc;
     background: #f7f7f7;
     border-radius: 1px;
-
+    cursor: pointer;
     min-width: 0;
     display: -webkit-box;
     -webkit-box-orient: vertical;
