@@ -78,7 +78,7 @@ hiding cells and tracking changes
 .hide-spacer{
     height: 30px;
     margin-top: 10px;
-    min-width: 12.3ex;
+    min-width: 12ex;
     padding: 0 0.4em;
     text-align: right;
     color: #303F9F;
@@ -95,8 +95,7 @@ hiding cells and tracking changes
 .hide-label{
     height: 26px;
     padding: 3px;
-    min-width: 120px;
-    /* color: #aaaaaa; */
+    min-width: 80px;
     border-radius: 1px;
     font-size: 1.2em;
 }
@@ -104,7 +103,6 @@ hiding cells and tracking changes
 .hide-text{
     padding: 3px;
     height: 26px;
-    /* color: #AAAAAA; */
     float: right;
     text-align: right;
     border-radius: 1px;
@@ -114,9 +112,10 @@ hiding cells and tracking changes
     height: 30px;
     padding: 1px 1px 0px;
     margin: 6px;
-    color: #AAAAAA;
+    color: #666666;
     text-align: left;
-    /* border: 1px solid #ccc; */
+    border: 1px solid #ccc;
+    background: #f7f7f7;
     border-radius: 1px;
 
     min-width: 0;

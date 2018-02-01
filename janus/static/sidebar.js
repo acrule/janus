@@ -467,6 +467,14 @@ define([
                     .focusout(function(){
                         disableVersionNameEditing(this)
                     })
+                    .hover(function(event){
+                        this.style.color = "#333"
+                        this.style.background = "#DDD"
+                    },
+                    function(event){
+                        this.style.color = ""
+                        this.style.background = ""
+                    })
                     .text(function(){
                         if(first_stored == "" || first_stored == "Hidden Cells"){
                             return "Hidden Cells"
