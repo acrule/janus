@@ -185,7 +185,7 @@ define([
 
         var inputArea = cell.element.find('div.input_area')[0]
         var markerContainer = JanusUtils.getMarkerContainer(cell);
-        var classes = "marker extra"
+        var classes = "marker extra fa"
 
         // clear current summary markers, add new one
         JanusUtils.removeMarkerType('.extra', inputArea)
@@ -462,25 +462,31 @@ define([
             if (cell.selected) {
                 if (cell.metadata.janus.all_versions_showing) {
                     named_markers.show();
-                    unnamed_markers.show();
-                    extra_markers.show();
-                    extra_markers.text('<')
+                    if (unnamed_markers.length > 0){
+                        unnamed_markers.show();
+                        extra_markers.show();
+                        extra_markers.removeClass('fa-ellipsis-h')
+                        extra_markers.addClass('fa-angle-right')
+                        extra_markers.css('padding-top', '')
+                    }
                 }
                 else if (named_markers.length > 0) {
                     named_markers.show();
-                    extra_markers.show();
-                    var markerText = "+" + unnamed_markers.length.toString()
-                    extra_markers.text(markerText)
+                    if (unnamed_markers.length > 0){
+                        extra_markers.show();
+                        extra_markers.removeClass('fa-angle-right')
+                        extra_markers.addClass('fa-ellipsis-h')
+                        extra_markers.css('padding-top', '0.25em')
+                    }
                 } else if (unnamed_markers.length > 3) {
                     unnamed_markers.slice(0,3).show()
                     extra_markers.show();
-                    var markerText = "+" + (unnamed_markers.length - 3).toString()
-                    extra_markers.text(markerText)
+                    extra_markers.removeClass('fa-angle-right')
+                    extra_markers.addClass('fa-ellipsis-h')
+                    extra_markers.css('padding-top', '0.25em')
                 } else {
                     unnamed_markers.show();
                 }
-
-
 
             } else {
                 if (named_markers.length > 0) {
