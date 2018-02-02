@@ -79,7 +79,10 @@ class JanusHandler(IPythonHandler):
 
         # save data sent in POST
         post_data = self.get_json_body()
-        self.db_manager.record_action(post_data, hashed_path)
+        if post_data['type'] == "action":
+            self.db_manager.record_action(post_data, hashed_path)
+        elif post_data['type'] == "log":
+            self.db_manager.record_log(post_data, hashed_path)
         self.finish(json.dumps({'hashed_nb_path': hashed_path}))
 
     def get_db(self):

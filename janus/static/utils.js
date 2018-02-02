@@ -6,12 +6,14 @@ hiding cells and tracking changes
 define([
     'jquery',
     'base/js/namespace',
+    'base/js/utils',
     'notebook/js/cell',
     'notebook/js/codecell',
     'notebook/js/textcell',
 ], function(
     $,
     Jupyter,
+    utils,
     Cell,
     CodeCell,
     TextCell,
@@ -134,103 +136,103 @@ define([
     }
 
 
-    // MINIMAP
-        function showMinimap(event, el) {
-            /* render rich tooltip with miniturized view of hidden cells
+// MINIMAP
+    function showMinimap(event, el) {
+        /* render rich tooltip with miniturized view of hidden cells
 
-            Args:
-                event: mouseout event that triggers hidding minimap
-                el: placeholder element triggering event
-            */
+        Args:
+            event: mouseout event that triggers hidding minimap
+            el: placeholder element triggering event
+        */
 
-            // change placeholder background color onhover
-            el.style.backgroundColor = "#f5f5f5"
+        // change placeholder background color onhover
+        el.style.backgroundColor = "#f5f5f5"
 
-            var el_top = $(el).parent().position().top;
-            var el_right = $(el).parent().position().left + $(el).parent().width();
-            var cell_ids = $(el).data('ids');
+        var el_top = $(el).parent().position().top;
+        var el_right = $(el).parent().position().left + $(el).parent().width();
+        var cell_ids = $(el).data('ids');
 
-            // if this collection of cells is already in sidebar, don't show minimap
-            if(!Jupyter.sidebar.collapsed){
-                var sidebar_cell_ids = []
-                var sidebar_cells = Jupyter.sidebar.cells
-                for (i = 0; i < sidebar_cells.length; i++) {
-                    sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
-                }
-                if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
-                    return
-                }
+        // if this collection of cells is already in sidebar, don't show minimap
+        if(!Jupyter.sidebar.collapsed){
+            var sidebar_cell_ids = []
+            var sidebar_cells = Jupyter.sidebar.cells
+            for (i = 0; i < sidebar_cells.length; i++) {
+                sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
             }
-
-            // get cells ready to copy to minimap
-            var cells = Jupyter.notebook.get_cells()
-            var cells_to_copy = []
-            for(i=0; i<cells.length; i++){
-                if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
-                    cells_to_copy.push(cells[i])
-                }
+            if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
+                return
             }
-
-            // create minimap
-            var minimap = $('<div id=minimap>');
-            minimap.css({
-                'top': el_top,
-                'left': el_right + 25
-            })
-            $("#notebook").append(minimap);
-            var mini_wrap = $('<div>').addClass('mini-wrap')
-            minimap.append(mini_wrap)
-
-
-            // populate it with our cells
-            // for each cell, create a new cell in the Sidebar with the same content
-            for (i = 0; i < cells_to_copy.length; i++){
-
-                // add new cell to the sidebar
-                var cell = cells_to_copy[i]
-                var nb = Jupyter.notebook
-
-                // append cells to minimap
-                cellData = cell.toJSON();
-                newCell = getDuplicateCell(cellData, nb)
-                newCell.code_mirror.setOption('readOnly', "nocursor");
-                $('.mini-wrap').append(newCell.element);
-
-                // make sure all code cells are rendered
-                // TODO find another way to do this without it focusing the cell
-                if (newCell.cell_type == 'code') {
-                    newCell.render();
-                    newCell.refresh();
-                }
-
-                // hide output if needed
-                if(newCell.metadata.janus.source_hidden && ! newCell.metadata.janus.output_hidden){
-                    newCell.element.find("div.output_wrapper").hide();
-                }
-                if(newCell.metadata.janus.output_hidden && ! newCell.metadata.janus.source_hidden){
-                    newCell.element.find("div.input").hide();
-                }
-            }
-
-            // reset div height to account for scaling
-            var cells_height = $(mini_wrap).height()
-            minimap.height(cells_height * 0.5)
         }
 
-
-        function hideMinimap(event, el) {
-            /* remove any mini-map divs
-
-            Args:
-                event: mouseout event that triggers hidding minimap
-                el: placeholder element triggering event
-            */
-            $('#minimap').remove()
-            el.style.backgroundColor = ""
+        // get cells ready to copy to minimap
+        var cells = Jupyter.notebook.get_cells()
+        var cells_to_copy = []
+        for(i=0; i<cells.length; i++){
+            if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
+                cells_to_copy.push(cells[i])
+            }
         }
 
+        // create minimap
+        var minimap = $('<div id=minimap>');
+        minimap.css({
+            'top': el_top,
+            'left': el_right + 25
+        })
+        $("#notebook").append(minimap);
+        var mini_wrap = $('<div>').addClass('mini-wrap')
+        minimap.append(mini_wrap)
 
-        function moveMinimap(event, el) {
+
+        // populate it with our cells
+        // for each cell, create a new cell in the Sidebar with the same content
+        for (i = 0; i < cells_to_copy.length; i++){
+
+            // add new cell to the sidebar
+            var cell = cells_to_copy[i]
+            var nb = Jupyter.notebook
+
+            // append cells to minimap
+            cellData = cell.toJSON();
+            newCell = getDuplicateCell(cellData, nb)
+            newCell.code_mirror.setOption('readOnly', "nocursor");
+            $('.mini-wrap').append(newCell.element);
+
+            // make sure all code cells are rendered
+            // TODO find another way to do this without it focusing the cell
+            if (newCell.cell_type == 'code') {
+                newCell.render();
+                newCell.refresh();
+            }
+
+            // hide output if needed
+            if(newCell.metadata.janus.source_hidden && ! newCell.metadata.janus.output_hidden){
+                newCell.element.find("div.output_wrapper").hide();
+            }
+            if(newCell.metadata.janus.output_hidden && ! newCell.metadata.janus.source_hidden){
+                newCell.element.find("div.input").hide();
+            }
+        }
+
+        // reset div height to account for scaling
+        var cells_height = $(mini_wrap).height()
+        minimap.height(cells_height * 0.5)
+    }
+
+
+    function hideMinimap(event, el) {
+        /* remove any mini-map divs
+
+        Args:
+            event: mouseout event that triggers hidding minimap
+            el: placeholder element triggering event
+        */
+        $('#minimap').remove()
+        el.style.backgroundColor = ""
+    }
+
+
+    function moveMinimap(event, el) {
             var mouseTop = event.clientY
             var mouseRight = event.clientX
             var topOffset = $('#site').position().top
@@ -251,6 +253,44 @@ define([
             })
         }
 
+// LOG ACTIONS
+    function logJanusAction(nb, t, name, selID, selIDs) {
+        /* Send information about action to server to process and save
+
+        Args:
+            nb: the notebook
+            t: time of action
+            actionName: name of action to be tracked
+            selID: cell_id of selected of clicked cell
+            selIDs: cell_ids for all cells being shown, hidden, and so on
+        */
+
+        // get url to send POST request
+        var baseUrl = nb.base_url;
+        var nbUrl =  nb.notebook_path;
+        var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
+
+        // get data ready
+        var d = JSON.stringify({
+            time: t,
+            name: name,
+            id: selID,
+            ids: selIDs,
+            type: 'log'
+        });
+
+        // prepare POST settings
+        var settings = {
+            processData : false,
+            type : 'POST',
+            dataType: 'json',
+            data: d,
+            contentType: 'application/json',
+        };
+
+        // send the POST request,
+        utils.promising_ajax(url, settings);
+    }
 
 
     return {
@@ -261,7 +301,8 @@ define([
         getDuplicateCell: getDuplicateCell,
         showMinimap: showMinimap,
         hideMinimap: hideMinimap,
-        moveMinimap: moveMinimap
+        moveMinimap: moveMinimap,
+        logJanusAction: logJanusAction
     }
 
 

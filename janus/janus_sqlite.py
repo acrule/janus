@@ -24,6 +24,7 @@ class DbManager(object):
         self.action_queue = []
         self.cell_queue = []
         self.nb_queue = []
+        self.log_queue = []
 
         # create db tables if they don't already exist
         self.create_initial_tables()
@@ -37,13 +38,16 @@ class DbManager(object):
         self.c = self.conn.cursor()
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS actions (time integer,
-            name text, selected_cell integer, selected_cells text)''')
+            nb_name text, name text, selected_cell integer, selected_cells text)''')
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS cells (time integer,
             cell_id text, version_id text, cell_data text)''')
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS nb_configs (time integer,
-            name text, cell_order text, version_order text)''')
+            nb_name text, cell_order text, version_order text)''')
+
+        self.c.execute('''CREATE TABLE IF NOT EXISTS janus_log (time integer,
+            nb_name text, name text, id text, ids text)''')
 
         self.conn.commit()
         self.conn.close()
@@ -92,7 +96,7 @@ class DbManager(object):
         selected_index = action_data['index']
         selected_indicies = action_data['indices']
         cells = action_data['model']['cells']
-        action_data_tuple = (str(t), str(name), str(selected_index),
+        action_data_tuple = (str(t), str(hashed_path), str(name), str(selected_index),
                             str(selected_indicies))
         self.action_queue.append(action_data_tuple)
 
@@ -104,6 +108,26 @@ class DbManager(object):
             self.commit_queues()
         self.update_timer()
 
+
+    def record_log(self, log_data, nb_name):
+        """
+        save data about user interaction with Janus to database
+
+        log_data: (dict) data about action, including name and full notebook
+        hashed_path: (str) hashed path to where notebook is saved on volume
+        """
+
+        # save the data to the database queue
+        t = log_data['time']
+        name = log_data['name']
+        sel_id = log_data['id']
+        sel_ids = log_data['ids']
+        log_data_tuple = (str(t), str(nb_name), str(name), str(sel_id),
+                            str(sel_ids))
+        self.log_queue.append(log_data_tuple)
+        self.update_timer()
+
+
     def commit_queues(self):
         """
         commit any data in queues to the database We queue data until there is
@@ -114,9 +138,10 @@ class DbManager(object):
         self.c = self.conn.cursor()
 
         try:
-            self.c.executemany('INSERT INTO actions VALUES (?,?,?,?)', self.action_queue)
+            self.c.executemany('INSERT INTO actions VALUES (?,?,?,?,?)', self.action_queue)
             self.c.executemany('INSERT INTO cells VALUES (?,?,?,?)', self.cell_queue)
             self.c.executemany('INSERT INTO nb_configs VALUES (?,?,?,?)', self.nb_queue)
+            self.c.executemany('INSERT INTO janus_log VALUES (?,?,?,?,?)', self.log_queue)
 
             self.conn.commit()
             self.conn.close()
@@ -171,7 +196,7 @@ class DbManager(object):
                 matched_configs.append(q)
 
         # look for older configs in the database
-        search = "SELECT * FROM nb_configs WHERE name = \'" + path + "\' AND time BETWEEN " + str(start) + " and " + str(end)
+        search = "SELECT * FROM nb_configs WHERE nb_name = \'" + path + "\' AND time BETWEEN " + str(start) + " and " + str(end)
         rows = self.execute_search(search)
         for row in rows:
             matched_configs.append(row)
@@ -192,7 +217,7 @@ class DbManager(object):
 
         # Look for last nb_config in the database
         else:
-            search = "SELECT * FROM nb_configs WHERE name = \'" + nb_name + "\' ORDER BY time DESC LIMIT 1"
+            search = "SELECT * FROM nb_configs WHERE nb_name = \'" + nb_name + "\' ORDER BY time DESC LIMIT 1"
             rows = self.execute_search(search)
 
             if len(rows) > 0:

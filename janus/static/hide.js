@@ -27,6 +27,19 @@ define([
         var primaryHidden = selCell.metadata.janus.cell_hidden
         var selCells = Jupyter.notebook.get_selected_cells();
 
+        // log the action
+        var selID = selCell.metadata.janus.id
+        var selIDs = []
+        for (var i = 0; i < selCells.length; i++){
+            selIDs.push(selCells[i].metadata.janus.id)
+        }
+        if (primaryHidden){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-cells', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-cells', selID, selIDs);
+        }
+
+        // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
             if (primaryHidden) {
                 showCell(selCells[i]);
@@ -107,6 +120,19 @@ define([
         var showSource = selCell.metadata.janus.source_hidden
         var selCells = Jupyter.notebook.get_selected_cells();
 
+        // log the action
+        var selID = selCell.metadata.janus.id
+        var selIDs = []
+        for (var i = 0; i < selCells.length; i++){
+            selIDs.push(selCells[i].metadata.janus.id)
+        }
+        if (showSource){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-source', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-source', selID, selIDs);
+        }
+
+        // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
             var numOutputs = selCells[i].output_area.outputs.length
 
@@ -156,6 +182,7 @@ define([
         var classes = "marker hidden-code fa fa-code";
 
         if (cell.metadata.janus.source_hidden) {
+
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             var marker = JanusUtils.addMarkerToElement(outputArea, classes);
             $(marker).data('ids', [cell.metadata.janus.id])
@@ -174,6 +201,7 @@ define([
         else if (cell.cell_type == 'code') {
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             Jupyter.sidebar.collapse();
+
             // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
@@ -187,6 +215,19 @@ define([
         var showOutput = selCell.metadata.janus.output_hidden;
         var selCells = Jupyter.notebook.get_selected_cells();
 
+        // log the action
+        var selID = selCell.metadata.janus.id
+        var selIDs = []
+        for (var i = 0; i < selCells.length; i++){
+            selIDs.push(selCells[i].metadata.janus.id)
+        }
+        if (showOutput){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-output', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-output', selID, selIDs);
+        }
+
+        // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
 
             var numOutputs = selCells[i].output_area.outputs.length
@@ -235,8 +276,10 @@ define([
 
         var markerContainer = JanusUtils.getMarkerContainer(cell)
         var classes = "marker hidden-output fa fa-area-chart";
+        var selID = cell.metadata.janus.id
 
         if (cell.metadata.janus.output_hidden) {
+
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
             $(marker).data('ids', [cell.metadata.janus.id])

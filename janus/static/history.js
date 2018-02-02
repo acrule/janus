@@ -96,7 +96,8 @@ define([
                 name: actionName,
                 index: selIndex,
                 indices: selIndices,
-                model: mod
+                model: mod,
+                type: 'action'
             });
 
             // prepare POST settings
