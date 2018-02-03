@@ -197,10 +197,11 @@ hiding cells and tracking changes
 
 .marker.hidden-output{
     padding: 4px 3px 0px;
-    position: absolute;
+    float: right;
+    /* position: absolute;
     z-index: 10;
     top: 0px;
-    right: 0px;
+    right: 0px; */
 }
 
 .marker.selected-version{
