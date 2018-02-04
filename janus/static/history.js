@@ -57,7 +57,9 @@ define([
         'restart-kernel-and-clear-output',
         'toggle-cell-output-collapsed',
         'toggle-cell-output-scrolled',
-        'confirm-restart-kernel-and-clear-output'
+        'confirm-restart-kernel-and-clear-output',
+        // save notebook
+        'save-notebook'
         // not tracking cut, copy, paste due to inconsistent calling of actions
         // e.g. in Notebok v 5.0.0, paste menu items do not call paste actions
         // Also, copy-paste shortcuts (e.g., CMD-C) are handled by the browser
@@ -96,7 +98,8 @@ define([
                 name: actionName,
                 index: selIndex,
                 indices: selIndices,
-                model: mod
+                model: mod,
+                type: 'action'
             });
 
             // prepare POST settings

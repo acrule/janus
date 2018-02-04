@@ -35,6 +35,15 @@ define([
 
         return function() {
             var janus_meta = cell.metadata.janus
+            var selID = janus_meta.id
+            //log action
+            if (janus_meta.all_versions_showing) {
+                JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-extra-versions', selID, [selID]);
+            } else {
+                JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-extra-versions', selID, [selID]);
+            }
+
+
             toggleShowAllVersions(cell);
 
             // change version in any associated sidebar cell as well
@@ -90,6 +99,10 @@ define([
             v: index in cell version list of new cell
         */
 
+        //log action
+        var selID = cell.metadata.janus.id
+        JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'change-version', selID, [selID]);
+
         var input_area = cell.element.find('div.input_area')[0];
         var markers = input_area.getElementsByClassName('version')
         var versions = cell.metadata.janus.versions
@@ -119,23 +132,42 @@ define([
         /* hide/show cell versions */
 
         var selCell = Jupyter.notebook.get_selected_cell();
-        selCell.metadata.janus.show_versions = ! selCell.metadata.janus.show_versions;
+        var selCells = Jupyter.notebook.get_selected_cells();
+        var showVersions = ! selCell.metadata.janus.show_versions;
+
+        // log the action
+        var selID = selCell.metadata.janus.id
+        var selIDs = []
+        for (var i = 0; i < selCells.length; i++){
+            selIDs.push(selCells[i].metadata.janus.id)
+        }
+        if (showVersions){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-versions', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-versions', selID, selIDs);
+        }
 
         /* Set message and update menu-items when tracking turned on / off */
         var message = 'Showing Cell Versions';
-        if (selCell.metadata.janus.show_versions) {
+        if (! showVersions) {
            message = 'Hiding Cell Versions';
         }
         Jupyter.notification_area.widget('notebook').set_message(message, 2000)
 
-        renderMarkers(selCell);
-        updateMarkerVisibility(selCell);
+        for (var i = 0; i < selCells.length; i++){
+            selCells[i].metadata.janus.show_versions = showVersions
+            renderMarkers(selCells[i]);
+            updateMarkerVisibility(selCells[i]);
 
-        if (selCell.sb_cell) {
-            selCell.sb_cell.metadata.janus.show_versions = ! selCell.sb_cell.metadata.janus.show_versions;
-            renderMarkers(selCell.sb_cell);
-            updateMarkerVisibility(selCell.sb_cell);
+            // check for hidden cells
+            if (selCells[i].sb_cell) {
+                selCells[i].sb_cell.metadata.janus.show_versions = showVersions;
+                renderMarkers(selCells[i].sb_cell);
+                updateMarkerVisibility(selCells[i].sb_cell);
+            }
         }
+
+
     }
 
 
@@ -185,7 +217,7 @@ define([
 
         var inputArea = cell.element.find('div.input_area')[0]
         var markerContainer = JanusUtils.getMarkerContainer(cell);
-        var classes = "marker extra"
+        var classes = "marker extra fa"
 
         // clear current summary markers, add new one
         JanusUtils.removeMarkerType('.extra', inputArea)
@@ -462,25 +494,31 @@ define([
             if (cell.selected) {
                 if (cell.metadata.janus.all_versions_showing) {
                     named_markers.show();
-                    unnamed_markers.show();
-                    extra_markers.show();
-                    extra_markers.text('<')
+                    if (unnamed_markers.length > 0){
+                        unnamed_markers.show();
+                        extra_markers.show();
+                        extra_markers.removeClass('fa-ellipsis-h')
+                        extra_markers.addClass('fa-angle-right')
+                        extra_markers.css('padding-top', '')
+                    }
                 }
                 else if (named_markers.length > 0) {
                     named_markers.show();
-                    extra_markers.show();
-                    var markerText = "+" + unnamed_markers.length.toString()
-                    extra_markers.text(markerText)
+                    if (unnamed_markers.length > 0){
+                        extra_markers.show();
+                        extra_markers.removeClass('fa-angle-right')
+                        extra_markers.addClass('fa-ellipsis-h')
+                        extra_markers.css('padding-top', '0.25em')
+                    }
                 } else if (unnamed_markers.length > 3) {
                     unnamed_markers.slice(0,3).show()
                     extra_markers.show();
-                    var markerText = "+" + (unnamed_markers.length - 3).toString()
-                    extra_markers.text(markerText)
+                    extra_markers.removeClass('fa-angle-right')
+                    extra_markers.addClass('fa-ellipsis-h')
+                    extra_markers.css('padding-top', '0.25em')
                 } else {
                     unnamed_markers.show();
                 }
-
-
 
             } else {
                 if (named_markers.length > 0) {
@@ -513,6 +551,10 @@ define([
             element: marker user just clicked out of
             cell: cell whose versions are being edited
         */
+
+        // log action
+        var selID = cell.metadata.janus.id
+        JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'rename-version', selID, [selID]);
 
         // get the cell
         var named_versions = cell.metadata.janus.named_versions

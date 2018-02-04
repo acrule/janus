@@ -146,18 +146,41 @@ define([
             cells: list of cell objects from the main notebook
         */
 
+        // prepare info for logging
+        var selID = ""
+        var selIDs = []
+        var markerType = ""
+
+        for (var i = 0; i < cells.length; i++) {
+            selIDs.push(cells[i].metadata.janus.id);
+        }
+        if (selIDs.length > 0){
+            selID = selIDs[0];
+        }
+        if ($(this.marker).hasClass('hidden-code')){
+            markerType = "source"
+        } else if ($(this.marker).hasClass('hidden-output')) {
+            markerType = "output"
+        } else {
+            markerType = "cells"
+        }
+
         // get ids for cells to render, and cells already in sidebar
-        new_cell_ids = []
-        old_cell_ids = []
-        for(i=0; i<cells.length; i++){
+        var new_cell_ids = []
+        var old_cell_ids = []
+        for (i=0; i<cells.length; i++) {
             new_cell_ids.push(cells[i].metadata.janus.id)
         }
-        for(j=0; j<this.cells.length; j++){
+        for (j=0; j<this.cells.length; j++) {
             old_cell_ids.push(this.cells[j].metadata.janus.id)
         }
 
         // expand sidebar if collapsed
         if(this.collapsed){
+            // log action
+            var logName = 'open-sidebar-' + markerType
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
+
             this.expand()
             nb_cells = Jupyter.notebook.get_cells()
             for(i=0; i < nb_cells.length; i++){
@@ -174,6 +197,10 @@ define([
 
         // update sidebar if new cells, or new cell order
         else if (JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)) {
+
+            // log action
+            var logName = 'update-sidebar-' + markerType
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
 
             highlightMarker(this.marker)
 
@@ -205,6 +232,10 @@ define([
 
         // otherwise collapse sidebar
         else{
+            // log action
+            var logName = 'close-sidebar-' + markerType
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
+
             this.collapse()
             highlightMarker(null)
         }

@@ -87,16 +87,6 @@ define([
         var oldCellUnselect = Cell.Cell.prototype.unselect;
         Cell.Cell.prototype.unselect = function(){
 
-            var ts = JanusUtils.getTimeAndSelection()
-            var cell_id = this.metadata.janus.id
-            var li = Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id)
-            var unexecutedChanges = li > -1;
-
-            if(this.selected && unexecutedChanges){
-                JanusHistory.trackAction(Jupyter.notebook, ts.t, 'unselect-cell', ts.selIndex, ts.selIndices);
-                Jupyter.notebook.metadata.janus.unexecutedCells.splice(li, 1);
-            }
-
             // need to return context object so mult-cell selection works
             var cont = oldCellUnselect.apply(this, arguments);
 
@@ -212,13 +202,6 @@ define([
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
             }
 
-            // remove from unexecuted cells with edits list
-            var cell_id = this.metadata.janus.id;
-            var unexecutedIndex = Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id)
-            if ( unexecutedIndex > -1 ) {
-                Jupyter.notebook.metadata.janus.unexecutedCells.splice(unexecutedIndex, 1);
-            }
-
             // update cell version markers if needed
             JanusVersions.renderMarkers(this);
         }
@@ -256,7 +239,6 @@ define([
 
             // if creating a new cell after a hidden one, make new cell hidden
             generateDefaultCellMetadata(c);
-            trackChangesToCell(c);
 
             curMetadata = Jupyter.notebook.get_selected_cell().metadata;
             if (curMetadata.janus.cell_hidden) {
@@ -605,7 +587,7 @@ define([
         var defaultNBMeta = {
             'track_history': true,
             'filepaths': [],
-            'unexecutedCells': []
+            // 'unexecutedCells': []
         }
 
         if (Jupyter.notebook.metadata.janus === undefined) {
@@ -633,20 +615,7 @@ define([
         cells = Jupyter.notebook.get_cells();
         for (i = 0; i<cells.length; i++) {
             generateDefaultCellMetadata(cells[i]);
-            trackChangesToCell(cells[i]);
         }
-    }
-
-
-    function trackChangesToCell(cell) {
-        /* Track which cells have unexecuted changes */
-
-        cell.code_mirror.on('change', function() {
-            var cell_id = cell.metadata.janus.id
-            if ( Jupyter.notebook.metadata.janus.unexecutedCells.indexOf(cell_id) == -1 ) {
-                Jupyter.notebook.metadata.janus.unexecutedCells.push(cell_id);
-            }
-        });
     }
 
 

@@ -91,6 +91,9 @@ define([
         that = this
         numConfigs = this.nb_configs.length
 
+        // log opening
+        JanusUtils.logJanusAction(this.notebook, Date.now(), 'open-history', '', []);
+
         // create HTML for the modal's content
         var modal_body = $('<div/>');
         var modal_float = $('<div class="floater">');
@@ -125,7 +128,11 @@ define([
         var mod = dialog.modal({
             title: 'Notebook History',
             body: modal_body,
-            buttons: { 'OK': {} }
+            buttons: { 'OK': {
+                click: function () {
+                    JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'close-history', '', []);
+                }
+            } }
         });
 
         // and when it shows, render the last notebook configuration
