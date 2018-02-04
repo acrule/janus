@@ -93,13 +93,15 @@ define([
 
         // create HTML for the modal's content
         var modal_body = $('<div/>');
+        var modal_float = $('<div class="floater">');
         var revision = $('<div id="revision"/>')
         revision.append($('<div id="rev_num"/>'));
         revision.append($('<div id="rev_time"/>'));
-        modal_body.append(revision);
+        // modal_body.append(revision);
+        modal_float.append(revision);
 
         // create the slider itself
-        var slide = modal_body.append($('<div id="modal-slide"/>').slider({
+        var slide = modal_float.append($('<div id="modal-slide"/>').slider({
             min: 0,
             max: numConfigs - 1,
             value: numConfigs - 1,
@@ -110,6 +112,9 @@ define([
                 that.updateModal(ui.value);
             }
         }));
+        modal_float.append('<hr>');
+        modal_float.append('<div/>');
+        modal_body.append(modal_float);
 
         // and the wrapper for holding cells
         var history_cell_wrapper  = modal_body.append($("<div/>")

@@ -251,3 +251,10 @@ hiding cells and tracking changes
     transform: scale(0.5);
     transform-origin: left top;
 }
+
+.floater {
+    position: sticky;
+    top: 20px;
+    z-index: 1000;
+    background: #ffffff;
+}
