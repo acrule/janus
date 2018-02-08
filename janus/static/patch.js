@@ -96,6 +96,7 @@ define([
             if((janus_meta.cell_hidden || janus_meta.source_hidden || janus_meta.output_hidden)
                     && ! Jupyter.sidebar.collapsed && this.sb_cell){
                 JanusVersions.updateMarkerVisibility(this.sb_cell)
+                this.set_text( this.sb_cell.get_text() )
             }
 
             return cont
