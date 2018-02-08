@@ -181,7 +181,7 @@ define([
         var outputArea = cell.element.find('div.output_wrapper')[0];
         var classes = "marker hidden-code fa fa-code";
 
-        if (cell.metadata.janus.source_hidden) {
+        if (cell.metadata.janus.source_hidden && ! cell.metadata.janus.cell_hidden) {
 
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             var marker = JanusUtils.addMarkerToElement(outputArea, classes);
