@@ -69,6 +69,7 @@ define([
             if (newCell.cell_type == 'code') {
                 newCell.render();
                 newCell.focus_editor();
+                newCell.expand_output();
             }
 
             // hide output if needed
@@ -288,6 +289,7 @@ define([
                     if (sb_cells[i].cell_type == 'code') {
                         sb_cells[i].render();
                         sb_cells[i].focus_editor();
+                        sb_cells[i].expand_output();
                     }
                 }
 
