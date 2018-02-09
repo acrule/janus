@@ -104,7 +104,9 @@ define([
 
             // propigate edits in sidebar cell to main notebook cell
             newCell.code_mirror.on('change', function(){
-                newCell.nb_cell.set_text( newCell.get_text() )
+                if(newCell.nb_cell){
+                    newCell.nb_cell.set_text( newCell.get_text() )
+                }
             });
 
             // render any history markers

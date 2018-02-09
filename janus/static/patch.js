@@ -184,7 +184,7 @@ define([
                     that.sb_cell.fromJSON( that.toJSON() );
                     JanusVersions.renderMarkers(that.sb_cell);
                 }
-                events.off('kernel_idle.Kernel', updateCellOnExecution);
+                events.off('finished_iopub.Kernel', updateCellOnExecution);
             }
 
             // run hidden cells with text from the sidebar, then update sidebar
@@ -205,6 +205,18 @@ define([
 
             // update cell version markers if needed
             JanusVersions.renderMarkers(this);
+        }
+    }
+
+    function patchHandleExecuteReply() {
+
+        var oldHandleExecuteReply = CodeCell.CodeCell.prototype._handle_execute_reply;
+        CodeCell.CodeCell.prototype._handle_execute_reply = function() {
+
+            oldHandleExecuteReply.apply(this, arguments);
+            if (this.sb_cell) {
+                this.sb_cell.set_input_prompt(this.input_prompt_number);
+            }
         }
     }
 
@@ -637,6 +649,7 @@ define([
         patchToCode();
         patchCodeExecute();
         patchTextRender();
+        patchHandleExecuteReply();
 
         //patch notebook functions
         patchInsertCellAtIndex();
