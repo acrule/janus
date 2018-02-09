@@ -184,7 +184,7 @@ define([
                     that.sb_cell.fromJSON( that.toJSON() );
                     JanusVersions.renderMarkers(that.sb_cell);
                 }
-                events.off('finished_iopub.Kernel', updateCellOnExecution);
+                events.off('kernel_idle.Kernel', updateCellOnExecution);
             }
 
             // run hidden cells with text from the sidebar, then update sidebar
