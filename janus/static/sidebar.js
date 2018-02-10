@@ -83,18 +83,6 @@ define([
 
             // intercept sidebar click events and apply them to original cell
             newCell._on_click = function(event) {
-                // unselect all cells in sidebar
-                var sb_cells = Jupyter.sidebar.cells
-                for (var j = 0; j < sb_cells.length; j++) {
-                    sb_cells[j].selected = false;
-                    sb_cells[j].element.removeClass('selected');
-                    sb_cells[j].element.addClass('unselected');
-                }
-
-                // select this cell in the sidebar
-                this.selected = true;
-                this.element.removeClass('unselected');
-                this.element.addClass('selected');
 
                 // select the appropriate cell in the original notebook
                 this.events.trigger('select.Cell', {

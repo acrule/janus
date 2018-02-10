@@ -36,14 +36,16 @@ define([
             if (! Jupyter.sidebar.collapsed) {
                 sb_cells = Jupyter.sidebar.cells
                 for (var i = 0; i < sb_cells.length; i++) {
-                    sb_cells[i].selected = false
-                    sb_cells[i].element.removeClass('selected')
-                    sb_cells[i].element.addClass('unselected')
+                    sb_cells[i].selected = false;
+                    sb_cells[i].element.removeClass('selected');
+                    sb_cells[i].element.addClass('unselected');
                     JanusVersions.updateMarkerVisibility(sb_cells[i])
                 }
             }
 
             if (this.metadata.janus.cell_hidden) {
+
+                // highlight the correct placeholder
                 $('.hide-container.selected').removeClass('selected')
                 $(this.element).nextAll('.hide-container').first().addClass('selected')
                 if (this.nb_cell) {
@@ -207,6 +209,7 @@ define([
             JanusVersions.renderMarkers(this);
         }
     }
+
 
     function patchHandleExecuteReply() {
 
@@ -560,6 +563,38 @@ define([
         }
     }
 
+
+    function patchUpdateSoftSelection() {
+        var oldUpdateSoftSelection = Jupyter.notebook.__proto__.update_soft_selection;
+        Jupyter.notebook.__proto__.update_soft_selection = function() {
+            oldUpdateSoftSelection.apply(this, arguments);
+
+            // update soft selection in sidebar
+            sb_cells = Jupyter.sidebar.cells
+            for (var i = 0; i < sb_cells.length; i++) {
+                if (sb_cells[i].nb_cell) {
+                    if ($(sb_cells[i].nb_cell.element).hasClass('jupyter-soft-selected')) {
+                        sb_cells[i].element.addClass('jupyter-soft-selected');
+                    } else {
+                        sb_cells[i].element.removeClass('jupyter-soft-selected');
+                    }
+                }
+            }
+
+            // update selection to include hidden markers
+            $('.hide-container.soft').removeClass('soft')
+
+            selCells = Jupyter.notebook.get_selected_cells();
+            for (var j = 0; j < selCells.length; j++) {
+                if (selCells[j].metadata.janus.cell_hidden && $(selCells[j].element).hasClass('jupyter-soft-selected')) {
+                    $(selCells[j].element).nextAll('.hide-container').first().addClass('soft')
+                }
+            }
+
+        }
+    }
+
+
 // JANUS METADATA
     function generateDefaultCellMetadata(cell) {
         /* generate default Janus metadata for a cell */
@@ -664,6 +699,7 @@ define([
         patchPasteCellReplace();
         patchEditMode();
         patchCommandMode();
+        patchUpdateSoftSelection();
 
         //new patches
         patchCutCopyPaste();

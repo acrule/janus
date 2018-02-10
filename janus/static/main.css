@@ -56,6 +56,10 @@ hiding cells and tracking changes
     border-left: 5px solid #59A5EF;
 }
 
+.hide-container.soft {
+    background-color: #DFF0FD;
+}
+
 .hide-container{
     box-sizing: border-box;
     -moz-box-sizing: border-box;
