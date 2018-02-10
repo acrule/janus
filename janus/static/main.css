@@ -82,7 +82,8 @@ hiding cells and tracking changes
 .hide-spacer{
     height: 30px;
     margin-top: 10px;
-    min-width: 12ex;
+    min-width: 13.2ex;
+    font-family: monospace;
     padding: 0 0.4em;
     text-align: right;
     color: #303F9F;

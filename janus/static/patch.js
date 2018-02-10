@@ -195,6 +195,7 @@ define([
                 this.set_text( this.sb_cell.get_text() )
                 oldCodeCellExecute.apply(this, arguments);
                 that.sb_cell.clear_output();
+                this.sb_cell.set_input_prompt('*')
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
             } else if (janusMeta.output_hidden && this.sb_cell != undefined) {
                 oldCodeCellExecute.apply(this, arguments);
@@ -203,6 +204,10 @@ define([
             } else {
                 oldCodeCellExecute.apply(this, arguments);
                 events.on('kernel_idle.Kernel', updateCellOnExecution);
+            }
+
+            if ((janusMeta.cell_hidden || janusMeta.source_hidden) && Jupyter.sidebar.collapsed) {
+                $(this.element).nextAll(".hide-container").first().children(".hide-spacer").first().html("[*]:")
             }
 
             // update cell version markers if needed
@@ -217,9 +222,14 @@ define([
         CodeCell.CodeCell.prototype._handle_execute_reply = function() {
 
             oldHandleExecuteReply.apply(this, arguments);
+
             if (this.sb_cell) {
                 this.sb_cell.set_input_prompt(this.input_prompt_number);
             }
+            if ((this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden) && Jupyter.sidebar.collapsed) {
+                $(this.element).nextAll(".hide-container").first().children(".hide-spacer").first().html("")
+            }
+
         }
     }
 
@@ -506,8 +516,8 @@ define([
 
         var oldCommandMode = Jupyter.notebook.__proto__.command_mode;
         Jupyter.notebook.__proto__.command_mode = function() {
-            cell = Jupyter.notebook.get_selected_cell()
-            if (cell.metadata.janus.cell_hidden) {
+            var cell = Jupyter.notebook.get_selected_cell()
+            if (cell.metadata.janus.cell_hidden && cell.sb_cell != undefined) {
                 cell.sb_cell.code_mirror.getInputField().blur()
             } else {
                 oldCommandMode.apply(this, arguments);
