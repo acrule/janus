@@ -175,10 +175,13 @@ define([
 
         // create minimap
         var minimap = $('<div id=minimap>');
-        minimap.css({
-            'top': el_top,
-            'left': el_right + 25
-        })
+
+        moveMinimap(event, el);
+
+        // minimap.css({
+        //     'top': el_top,
+        //     'left': el_right + 25
+        // })
         $("#notebook").append(minimap);
         var mini_wrap = $('<div>').addClass('mini-wrap')
         minimap.append(mini_wrap)
@@ -238,16 +241,22 @@ define([
             var topOffset = $('#site').position().top
             var topScroll = $('#site').scrollTop()
             var siteWidth = $('#site').width()
+            var siteHeight = $('#site').height()
+            var nbHeight = $('#notebook-container').height()
             var miniWidth = $('#minimap').width()
 
             // ensure tooltip does not go off the page
-            if ((mouseRight + miniWidth) > siteWidth ) {
-                mouseRight = siteWidth - miniWidth;
+            if ((mouseRight + miniWidth) > siteWidth - 24 ) {
+                mouseRight = siteWidth - miniWidth - 24;
             }
 
+            // there is 100px buffer at the end, so we add 80px to leave 20px buffer
+            var maxHeight = siteHeight - (mouseTop - topOffset) - 8;
+            console.log(maxHeight)
 
             var minimap = $('#minimap');
             minimap.css({
+                'max-height': maxHeight,
                 'top': mouseTop - topOffset + topScroll + 12,
                 'left': mouseRight + 12
             })
