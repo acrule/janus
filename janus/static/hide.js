@@ -334,7 +334,6 @@ define([
         */
 
         Jupyter.sidebar.marker = marker
-        Jupyter.sidebar.markerPosition = $(cell.element).position().top
         Jupyter.sidebar.toggle([cell])
     }
 

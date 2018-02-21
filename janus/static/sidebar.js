@@ -33,7 +33,6 @@ define([
         sidebar.collapsed = true;
         sidebar.cells = [];
         sidebar.marker = null;
-        sidebar.markerPosition = 0;
 
         // create html element for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
@@ -365,7 +364,6 @@ define([
                 for (i = 0; i < placeholders.length; i++) {
                     if($(placeholders[i]).data('ids').indexOf(first_hidden) >= 0) {
                         Jupyter.sidebar.marker = placeholders[i];
-                        Jupyter.sidebar.markerPosition = $(placeholders[i]).parent().position().top
                         Jupyter.sidebar.showWithCells($(placeholders[i]).data('ids'))
                         break
                     }
@@ -468,7 +466,6 @@ define([
                     $('#minimap').remove()
                     that = this;
                     Jupyter.sidebar.marker = that;
-                    Jupyter.sidebar.markerPosition = $(that).parent().position().top;
                     Jupyter.sidebar.showWithCells($(this).data('ids'))
                 })
                 .hover(function(event){
