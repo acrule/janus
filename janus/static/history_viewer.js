@@ -231,7 +231,7 @@ define([
 
 
     function createHistoryModal() {
-        /* create a new sidebar element */
+        /* create a new history viewer element */
 
         return new HistoryModal(Jupyter.notebook);
     }

@@ -156,11 +156,13 @@ define([
         if(!Jupyter.sidebar.collapsed){
             var sidebar_cell_ids = []
             var sidebar_cells = Jupyter.sidebar.cells
-            for (i = 0; i < sidebar_cells.length; i++) {
-                sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
-            }
-            if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
-                return
+            if (sidebar_cells) {
+                for (i = 0; i < sidebar_cells.length; i++) {
+                    sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
+                }
+                if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
+                    return
+                }
             }
         }
 
@@ -252,7 +254,6 @@ define([
 
             // there is 100px buffer at the end, so we add 80px to leave 20px buffer
             var maxHeight = siteHeight - (mouseTop - topOffset) - 8;
-            console.log(maxHeight)
 
             var minimap = $('#minimap');
             minimap.css({

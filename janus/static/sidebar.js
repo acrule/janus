@@ -23,16 +23,16 @@ define([
     JanusUtils
 ){
 
-
     var Sidebar = function(nb) {
-        /* A sidebar panel for showing hidden cells */
+        /* A sidebar panel for showing groups of hidden cells */
+
         var sidebar = this;
         Jupyter.sidebar = sidebar;
 
         sidebar.notebook = nb;
         sidebar.collapsed = true;
-        sidebar.cells = [];
         sidebar.marker = null;
+        sidebar.cells = []
 
         // create html element for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
@@ -42,27 +42,127 @@ define([
     };
 
 
-    Sidebar.prototype.renderCells = function(cells) {
-        /* render notebook cells in the sidebar
+    Sidebar.prototype.toggle = function(cells=[]) {
+
+        // check that exact same section does not already exist in sidebar
+
+
+        var that = this;
+
+        // add section to sidebar and render cells in it
+        newSection = createSection()
+        $(that.element).append(newSection.element);
+        newSection.renderCells(cells)
+
+        if (this.collapsed) {
+
+            this.collapsed = false;
+
+            var site_height = $("#site").height();
+            var site_width = $("#site").width();
+            var sidebar_width = (site_width - 45) / 2; // 40 pixel gutter + 15 pixel padding on each side of page
+
+            // $('#sidebar-cell-wrapper').show()
+
+            // first move the notebook container to the side
+            $("#notebook-container").animate({
+                marginLeft: '15px',
+                width: sidebar_width
+            }, 400);
+
+
+
+            // then move it the sidebar into position
+            Jupyter.sidebar.element.animate({
+                right: '15px',
+                width: sidebar_width,
+                top: 20,
+                padding: '0px'
+            }, 400, function (){
+
+                for (i=0; i<that.cells.length; i++){
+                    if (that.cells[i].cell_type == 'code') {
+                        that.cells[i].render();
+                        that.cells[i].focus_editor();
+                        that.cells[i].expand_output();
+                    }
+                }
+            })
+
+        // or collapse it
+        }
+        else {
+
+            this.collapsed = true;
+
+            var menubar_width = $("#menubar-container").width();
+            var site_width = $("#site").width();
+            var margin = (site_width - menubar_width) / 2
+
+            // need to use exact values for animation, then return to defaults
+            $("#notebook-container").animate({
+                marginLeft: margin,
+                width: menubar_width
+                }, 400, function(){
+                    $("#notebook-container").css( 'margin-left', 'auto' )
+                    $("#notebook-container").css( 'width', '' )
+            })
+
+            this.element.animate({
+                right: '15px',
+                width: 0,
+                padding: '0px'
+            }, 400, function() {
+
+                // hide the sidebar element
+                $('.section').hide();
+
+            });
+        }
+    }
+
+
+    var Section = function() {
+        /* A group of contiguous cells to be shown in the sidebar */
+
+        var section = this;
+
+        section.cells = []
+        section.marker = null;
+
+        section.element = $('<div class=section>');
+        $("#notebook").append(section.element);
+
+        return this;
+    }
+
+
+    Section.prototype.renderCells = function(cells) {
+        /* render notebook cells in the section
 
         Args:
             cells: list of cell objects from the main notebook
         */
 
-        // remove any cells currently in sidebar
+        // remove any cells currently in section
         this.cells = []
-        $('#sidebar-cell-wrapper').remove();
-        this.element.append( $("<div/>")
-            .attr('id', 'sidebar-cell-wrapper')
+
+        $('.section-cell-wrapper').remove();
+        cellWrapper = this.element.append( $("<div/>")
+            .addClass('section-cell-wrapper')
             .addClass('cell-wrapper'));
 
         // for each cell, create a new cell in the Sidebar with the same content
         for (var i = 0; i < cells.length; i++) {
 
             // add new cell to the sidebar
-            newCell = this.createSidebarCell(cells[i]);
-            $('#sidebar-cell-wrapper').append(newCell.element);
+            newCell = this.createSectionCell(cells[i]);
+            cellWrapper.append(newCell.element);
             this.cells.push(newCell);
+
+            // for now, add sell to sidebar list too
+            Jupyter.sidebar.cells.push(newCell);
+
 
             // make sure all code cells are rendered
             if (newCell.cell_type == 'code') {
@@ -111,7 +211,7 @@ define([
     }
 
 
-    Sidebar.prototype.createSidebarCell = function(cell) {
+    Section.prototype.createSectionCell = function(cell) {
         /* Create sidebar cell duplicating a cell in the main notebook
 
         Args:
@@ -119,7 +219,7 @@ define([
         */
 
         var cellJSON = cell.toJSON();
-        var newCell = JanusUtils.getDuplicateCell(cellJSON, this.notebook)
+        var newCell = JanusUtils.getDuplicateCell(cellJSON, Jupyter.notebook)
 
         // link the notebook and sidebar cells
         newCell.nb_cell = cell;
@@ -129,172 +229,176 @@ define([
     }
 
 
-    Sidebar.prototype.toggle = function(cells = []) {
-        /* expand or collapse sidebar
-
-        Args:
-            cells: list of cell objects from the main notebook
-        */
-
-        // prepare info for logging
-        var selID = ""
-        var selIDs = []
-        var markerType = ""
-
-        for (var i = 0; i < cells.length; i++) {
-            selIDs.push(cells[i].metadata.janus.id);
-        }
-        if (selIDs.length > 0){
-            selID = selIDs[0];
-        }
-        if ($(this.marker).hasClass('hidden-code')){
-            markerType = "source"
-        } else if ($(this.marker).hasClass('hidden-output')) {
-            markerType = "output"
-        } else {
-            markerType = "cells"
-        }
-
-        // get ids for cells to render, and cells already in sidebar
-        var new_cell_ids = []
-        var old_cell_ids = []
-        for (i=0; i<cells.length; i++) {
-            new_cell_ids.push(cells[i].metadata.janus.id)
-        }
-        for (j=0; j<this.cells.length; j++) {
-            old_cell_ids.push(this.cells[j].metadata.janus.id)
-        }
-
-        // expand sidebar if collapsed
-        if(this.collapsed){
-            // log action
-            var logName = 'open-sidebar-' + markerType
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
-
-            this.expand()
-            nb_cells = Jupyter.notebook.get_cells()
-            for(i=0; i < nb_cells.length; i++){
-                if(cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id){
-                    Jupyter.notebook.select(i);
-                    Jupyter.notebook.scroll_to_cell(i, 500)
-                }
-            }
-            if(cells.length > 0){
-                this.renderCells(cells)
-            }
-            highlightMarker(this.marker);
-        }
-
-        // update sidebar if new cells, or new cell order
-        else if (JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)) {
-
-            // log action
-            var logName = 'update-sidebar-' + markerType
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
-
-            highlightMarker(this.marker)
-
-            // select the corect cell
-            nb_cells = Jupyter.notebook.get_cells()
-            for (i=0; i < nb_cells.length; i++) {
-                if (cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id) {
-                    Jupyter.notebook.select(i);
-                }
-            }
-
-            // move the sidebar to a new position, this has been buggy
-            var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
-            if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
-                markerPosition = $(cells[0].element).position().top;
-            }
-            if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
-                markerPosition = $(cells[0].element).position().top;
-            }
-            this.element.animate({
-                top: markerPosition,
-            }, 0)
-
-            if(cells.length > 0){
-                Jupyter.sidebar.renderCells(cells);
-                Jupyter.sidebar.cells[0].focus_editor();
-            }
-        }
-
-        // otherwise collapse sidebar
-        else{
-            // log action
-            var logName = 'close-sidebar-' + markerType
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
-
-            this.collapse()
-            highlightMarker(null)
-        }
-    }
-
-
-    Sidebar.prototype.expand = function() {
-        /* Show sidebar expanding from left of page */
-
-        // only proceed if sidebar is collapsed
-        if(! this.collapsed){
-            return;
-        }
-
-        this.collapsed = false;
-        var site_height = $("#site").height();
-        var site_width = $("#site").width();
-        var sidebar_width = (site_width - 45) / 2; // 40 pixel gutter + 15 pixel padding on each side of page
-
-        $('#sidebar-cell-wrapper').show()
-
-        // first move the notebook container to the side
-        $("#notebook-container").animate({
-            marginLeft: '15px',
-            width: sidebar_width
-        }, 400, function() {
-
-            // get position based on the type of marker we are using
-            var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
-            if ($(Jupyter.sidebar.marker).hasClass('hidden-code')) {
-                markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
-            }
-            if ($(Jupyter.sidebar.marker).hasClass('hidden-output')) {
-                markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
-            }
-
-            // then move it the sidebar into position
-            Jupyter.sidebar.element.animate({
-                right: '15px',
-                width: sidebar_width,
-                top: markerPosition,
-                padding: '0px'
-            }, 400, function() {
-
-                // ensure code cells are fully rendered
-                sb_cells = Jupyter.sidebar.cells
-                for (var i = 0; i < sb_cells.length; i++) {
-                    if (sb_cells[i].cell_type == 'code') {
-                        sb_cells[i].render();
-                        sb_cells[i].focus_editor();
-                        sb_cells[i].expand_output();
-                    }
-                }
-
-                sb_cells[0].focus_editor();
-
-                // then scroll the page to the correct spot, in case it jumped
-                nb_cells = Jupyter.notebook.get_cells()
-                for (var i=0; i < nb_cells.length; i++) {
-                    if (sb_cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id ) {
-                        Jupyter.notebook.scroll_to_cell(i, 500)
-                    }
-                }
-            })
-        });
-    };
+    // Sidebar.prototype.toggle = function(cells = []) {
+    //     /* expand or collapse sidebar
+    //
+    //     Args:
+    //         cells: list of cell objects from the main notebook
+    //     */
+    //
+    //     // prepare info for logging
+    //     var selID = ""
+    //     var selIDs = []
+    //     var markerType = ""
+    //
+    //     // get the selected cell ids
+    //     for (var i = 0; i < cells.length; i++) {
+    //         selIDs.push(cells[i].metadata.janus.id);
+    //     }
+    //     if (selIDs.length > 0){
+    //         selID = selIDs[0];
+    //     }
+    //
+    //     // get marker type
+    //     if ($(this.marker).hasClass('hidden-code')){
+    //         markerType = "source"
+    //     } else if ($(this.marker).hasClass('hidden-output')) {
+    //         markerType = "output"
+    //     } else {
+    //         markerType = "cells"
+    //     }
+    //
+    //     // get ids for cells to render, and cells already in sidebar
+    //     var new_cell_ids = []
+    //     var old_cell_ids = []
+    //     for (i=0; i<cells.length; i++) {
+    //         new_cell_ids.push(cells[i].metadata.janus.id)
+    //     }
+    //     for (j=0; j<this.cells.length; j++) {
+    //         old_cell_ids.push(this.cells[j].metadata.janus.id)
+    //     }
+    //
+    //     // expand sidebar if collapsed
+    //     if(this.collapsed){
+    //         // log action
+    //         var logName = 'open-sidebar-' + markerType
+    //         JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
+    //
+    //         this.expand()
+    //
+    //         nb_cells = Jupyter.notebook.get_cells()
+    //         for(i=0; i < nb_cells.length; i++){
+    //             if(cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id){
+    //                 Jupyter.notebook.select(i);
+    //                 Jupyter.notebook.scroll_to_cell(i, 500)
+    //             }
+    //         }
+    //         if(cells.length > 0){
+    //             this.renderCells(cells)
+    //         }
+    //         highlightMarker(this.marker);
+    //     }
+    //
+    //     // update sidebar if new cells, or new cell order
+    //     else if (JSON.stringify(old_cell_ids) != JSON.stringify(new_cell_ids)) {
+    //
+    //         // log action
+    //         var logName = 'update-sidebar-' + markerType
+    //         JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
+    //
+    //         highlightMarker(this.marker)
+    //
+    //         // select the corect cell
+    //         nb_cells = Jupyter.notebook.get_cells()
+    //         for (i=0; i < nb_cells.length; i++) {
+    //             if (cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id) {
+    //                 Jupyter.notebook.select(i);
+    //             }
+    //         }
+    //
+    //         // move the sidebar to a new position, this has been buggy
+    //         var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
+    //         if($(Jupyter.sidebar.marker).hasClass('hidden-code')){
+    //             markerPosition = $(cells[0].element).position().top;
+    //         }
+    //         if($(Jupyter.sidebar.marker).hasClass('hidden-output')){
+    //             markerPosition = $(cells[0].element).position().top;
+    //         }
+    //         this.element.animate({
+    //             top: markerPosition,
+    //         }, 0)
+    //
+    //         if(cells.length > 0){
+    //             Jupyter.sidebar.renderCells(cells);
+    //             Jupyter.sidebar.cells[0].focus_editor();
+    //         }
+    //     }
+    //
+    //     // otherwise collapse sidebar
+    //     else{
+    //         // log action
+    //         var logName = 'close-sidebar-' + markerType
+    //         JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), logName, selID, selIDs);
+    //
+    //         this.collapse()
+    //         highlightMarker(null)
+    //     }
+    // }
 
 
-    Sidebar.prototype.collapse = function() {
+    // Sidebar.prototype.expand = function() {
+    //     /* Show sidebar expanding from left of page */
+    //
+    //     // only proceed if sidebar is collapsed
+    //     if(! this.collapsed){
+    //         return;
+    //     }
+    //
+    //     this.collapsed = false;
+    //     var site_height = $("#site").height();
+    //     var site_width = $("#site").width();
+    //     var sidebar_width = (site_width - 45) / 2; // 40 pixel gutter + 15 pixel padding on each side of page
+    //
+    //     $('#sidebar-cell-wrapper').show()
+    //
+    //     // first move the notebook container to the side
+    //     $("#notebook-container").animate({
+    //         marginLeft: '15px',
+    //         width: sidebar_width
+    //     }, 400, function() {
+    //
+    //         // get position based on the type of marker we are using
+    //         var markerPosition = $(Jupyter.sidebar.marker).parent().position().top - 12
+    //         if ($(Jupyter.sidebar.marker).hasClass('hidden-code')) {
+    //             markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
+    //         }
+    //         if ($(Jupyter.sidebar.marker).hasClass('hidden-output')) {
+    //             markerPosition = $(Jupyter.sidebar.cells[0].nb_cell.element).position().top;
+    //         }
+    //
+    //         // then move it the sidebar into position
+    //         Jupyter.sidebar.element.animate({
+    //             right: '15px',
+    //             width: sidebar_width,
+    //             top: markerPosition,
+    //             padding: '0px'
+    //         }, 400, function() {
+    //
+    //             // ensure code cells are fully rendered
+    //             sb_cells = Jupyter.sidebar.cells
+    //             for (var i = 0; i < sb_cells.length; i++) {
+    //                 if (sb_cells[i].cell_type == 'code') {
+    //                     sb_cells[i].render();
+    //                     sb_cells[i].focus_editor();
+    //                     sb_cells[i].expand_output();
+    //                 }
+    //             }
+    //
+    //             sb_cells[0].focus_editor();
+    //
+    //             // then scroll the page to the correct spot, in case it jumped
+    //             nb_cells = Jupyter.notebook.get_cells()
+    //             for (var i=0; i < nb_cells.length; i++) {
+    //                 if (sb_cells[0].metadata.janus.id == nb_cells[i].metadata.janus.id ) {
+    //                     Jupyter.notebook.scroll_to_cell(i, 500)
+    //                 }
+    //             }
+    //         })
+    //     });
+    // };
+    //
+    //
+    // Sidebar.prototype.collapse = function() {
         /* Collapse the sidebar to the right page border */
 
         // only proceed if sidebar is expanded
@@ -579,6 +683,12 @@ define([
         /* create a new sidebar element */
 
         return new Sidebar(Jupyter.notebook);
+    }
+
+
+    function createSection() {
+
+        return new Section();
     }
 
 
