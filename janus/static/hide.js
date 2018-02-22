@@ -190,6 +190,7 @@ define([
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             var marker = JanusUtils.addMarkerToElement(outputArea, classes);
             $(marker).data('ids', [cell.metadata.janus.id])
+                .data('showing', false)
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)
                 },
@@ -289,6 +290,7 @@ define([
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
             $(marker).data('ids', [cell.metadata.janus.id])
+                .data('showing', false)
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)
                 },

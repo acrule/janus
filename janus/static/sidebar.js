@@ -177,7 +177,7 @@ define([
         var title_labels = $(marker).find('.hide-label')
         if (title_labels.length > 0){
             var title = title_labels[0].innerHTML
-        }        
+        }
 
         //TODO later we will want to append in the right spot on the list
         $(sb.element).append(newSection.element);
@@ -359,6 +359,8 @@ define([
             Jupyter.sidebar.collapse()
         }
 
+        Jupyter.sidebar.saveMarkerMetadata()
+
     }
 
 
@@ -416,6 +418,8 @@ define([
             }
         }
 
+        //TODO may not need this here
+        Jupyter.sidebar.saveMarkerMetadata()
 
     }
 
@@ -428,12 +432,17 @@ define([
         Jupyter.sidebar.sections = []
 
         var placeholders = $('.hide-marker').toArray()
+        var sourceMarkers = $('.hidden-output').toArray();
+        var outputMarkers = $('.hide-code').toArray();
+        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
 
-        for (var i = 0; i < placeholders.length; i++) {
-            if ($(placeholders[i]).data('showing')) {
-                Jupyter.sidebar.showWithCells( $(placeholders[i]).data('ids'), placeholders[i] )
+        for (var i = 0; i < markers.length; i++) {
+            if ($(markers[i]).data('showing')) {
+                Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i] )
             }
         }
+
+
     }
 
 
