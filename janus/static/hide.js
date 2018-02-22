@@ -334,7 +334,7 @@ define([
         */
 
         Jupyter.sidebar.marker = marker
-        Jupyter.sidebar.toggle([cell])
+        Jupyter.sidebar.openSection([cell])
     }
 
 

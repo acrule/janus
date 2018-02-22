@@ -269,6 +269,9 @@ hiding cells and tracking changes
     height: 30px;
     min-width: 3.2ex;
     font-size: 1.2em;
+}
+
+.section-close-button {
     cursor: pointer;
 }
 

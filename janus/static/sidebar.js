@@ -33,6 +33,7 @@ define([
         sidebar.collapsed = true;
         sidebar.marker = null;
         sidebar.cells = []
+        sidebar.sections = []
 
         // create html element for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
@@ -49,10 +50,13 @@ define([
 
         var that = this;
 
-        // add section to sidebar and render cells in it
-        newSection = createSection()
-        $(that.element).append(newSection.element);
-        newSection.renderCells(cells)
+        // // add section to sidebar and render cells in it
+        // var newSection = createSection()
+        // $(that.element).append(newSection.element);
+        // newSection.renderCells(cells)
+        //
+        // // later we will want to insert it at the correct spot
+        // that.sections.push(newSection)
 
         if (this.collapsed) {
 
@@ -69,7 +73,6 @@ define([
                 marginLeft: '15px',
                 width: sidebar_width
             }, 400);
-
 
 
             // then move it the sidebar into position
@@ -114,11 +117,52 @@ define([
                 padding: '0px'
             }, 400, function() {
 
-                // hide the sidebar element
+                // hide all sections
                 $('.section').hide();
 
             });
         }
+    }
+
+
+    Sidebar.prototype.openSection = function(cells=[]) {
+        /* open this section of cells in the sidebar */
+
+        // don't add section if it already exists
+        // we will want a less hacky way to do this in future, likely by making
+        // the placeholders into objects with a "section" item we can check
+        var new_cell_ids = []
+        for (var i=0; i<cells.length; i++) {
+            new_cell_ids.push(cells[i].metadata.janus.id)
+        }
+
+        for (var j=0; j< Jupyter.sidebar.sections.length; j++) {
+
+            var old_cell_ids = []
+            for (var k=0; k<Jupyter.sidebar.sections[j].cells.length; k++) {
+                old_cell_ids.push(Jupyter.sidebar.sections[j].cells[k].metadata.janus.id)
+            }
+
+            if (JSON.stringify(old_cell_ids) == JSON.stringify(new_cell_ids)) {
+                return
+            }
+        }
+
+
+        // add section to sidebar and render cells in it
+        var sb = Jupyter.sidebar;
+        var newSection = createSection()
+        $(sb.element).append(newSection.element);
+        newSection.renderCells(cells)
+
+        // later we will want to insert it at the correct spot
+        sb.sections.push(newSection)
+
+        // open sidebar if needed
+        if (sb.collapsed) {
+            sb.toggle()
+        }
+
     }
 
 
@@ -144,6 +188,8 @@ define([
             cells: list of cell objects from the main notebook
         */
 
+        var that = this;
+
         // remove any cells currently in section
         this.cells = []
 
@@ -153,7 +199,8 @@ define([
             .append($("<i>")
             .addClass("fa fa-times section-close-button")
             .click( function(){
-                console.log("You clicked to close the section!")
+                console.log(that.element);
+                that.close();
             })
         )
         header.append(closeContainer)
@@ -161,7 +208,7 @@ define([
         this.element.append(header)
 
         // add cell wrapper
-        $('.section-cell-wrapper').remove();
+        $(this.element).find('.section-cell-wrapper').remove();
         var cellWrapper = $("<div/>")
             .addClass('section-cell-wrapper')
             .addClass('cell-wrapper')
@@ -243,7 +290,25 @@ define([
         return newCell;
     }
 
+
     Section.prototype.close = function() {
+        /* Delete a section from the sidebar */
+
+        // remove section from sidebar list
+        for (var i=0; i<Jupyter.sidebar.sections.length; i++) {
+            if (Jupyter.sidebar.sections[i] === this) {
+                Jupyter.sidebar.sections.splice(i, 1);
+            }
+        }
+
+        // delete the section element
+        this.element.hide()
+        this.element.remove()
+
+        // collapse sidebar if this was the last visible section
+        if (Jupyter.sidebar.sections.length == 0) {
+            Jupyter.sidebar.collapse()
+        }
 
     }
 
@@ -557,7 +622,7 @@ define([
                 cells_to_copy.push(cells[i])
             }
         }
-        Jupyter.sidebar.toggle(cells_to_copy)
+        Jupyter.sidebar.openSection(cells_to_copy)
     }
 
 
@@ -587,7 +652,7 @@ define([
                 .data('ids', cell_ids.slice())
                 .click(function(){
                     $('#minimap').remove()
-                    that = this;
+                    var that = this;
                     Jupyter.sidebar.marker = that;
                     Jupyter.sidebar.showWithCells($(this).data('ids'))
                 })
