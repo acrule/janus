@@ -42,7 +42,7 @@ define([
         /* run steps that require cells to already be loaded */
 
         JanusPatch.initializeJanusMetadata();
-        Jupyter.sidebar.hideHiddenCells();
+        Jupyter.sidebar.updateHiddenCells();
         JanusVersions.initializeVersionMarkers();
         JanusHide.initializeVisibility();
         JanusHistory.prepHistoryTracking();

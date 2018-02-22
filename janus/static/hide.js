@@ -49,9 +49,10 @@ define([
         }
 
         // update placeholder markers and the sidebar
-        Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideHiddenCells();
-        Jupyter.sidebar.update();
+        // Jupyter.sidebar.saveMarkerMetadata();
+        // Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.hideHiddenCells();
+        // Jupyter.sidebar.update();
     }
 
 
@@ -74,8 +75,9 @@ define([
 
         // markers and sidebar
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideHiddenCells();
-        Jupyter.sidebar.update();
+        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.hideHiddenCells();
+        // Jupyter.sidebar.update();
     }
 
 
@@ -107,8 +109,9 @@ define([
         // update markers and sidebar
         renderSourceMarker(cell);
         renderOutputMarker(cell);
-        Jupyter.sidebar.hideHiddenCells();
-        Jupyter.sidebar.update();
+        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.hideHiddenCells();
+        // Jupyter.sidebar.update();
     }
 
 
@@ -166,8 +169,9 @@ define([
         }
 
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideHiddenCells();
-        Jupyter.sidebar.update();
+        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.hideHiddenCells();
+        // Jupyter.sidebar.update();
     }
 
 
@@ -200,7 +204,8 @@ define([
         }
         else if (cell.cell_type == 'code') {
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
-            Jupyter.sidebar.collapse();
+            // console.log("Colapsing from render source marker")
+            // Jupyter.sidebar.collapse();
 
             // TODO may want to do Jupyter.sidebar.update() instead
         }
@@ -262,8 +267,9 @@ define([
         }
 
         Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.hideHiddenCells();
-        Jupyter.sidebar.update();
+        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.hideHiddenCells();
+        // Jupyter.sidebar.update();
     }
 
 
@@ -297,7 +303,8 @@ define([
         }
         else if (cell.cell_type == 'code') {
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
-            Jupyter.sidebar.collapse();
+            // console.log("Colapsing from render output marker")
+            // Jupyter.sidebar.collapse();
             // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
@@ -334,7 +341,7 @@ define([
         */
 
         Jupyter.sidebar.marker = marker
-        Jupyter.sidebar.openSection([cell])
+        Jupyter.sidebar.openSection([cell], marker)
     }
 
 

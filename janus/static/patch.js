@@ -124,8 +124,9 @@ define([
             }
 
             // update the sidebar
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
 
             // render and focus markdown cell
             if(!Jupyter.sidebar.collapsed){
@@ -160,8 +161,9 @@ define([
             }
 
             // update the sidebar
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
 
             // select the first cell in the sidebar
             if (selCells[0].sb_cell) {
@@ -269,8 +271,9 @@ define([
             curMetadata = Jupyter.notebook.get_selected_cell().metadata;
             if (curMetadata.janus.cell_hidden) {
                 c.metadata.janus.cell_hidden = true;
-                Jupyter.sidebar.hideHiddenCells();
-                Jupyter.sidebar.update();
+                Jupyter.sidebar.updateHiddenCells();
+                // Jupyter.sidebar.hideHiddenCells();
+                // Jupyter.sidebar.update();
             }
 
             // make sure to return the new cell as other functions us it
@@ -285,8 +288,9 @@ define([
         var oldMoveSelectionUp = Jupyter.notebook.__proto__.move_selection_up;
         Jupyter.notebook.__proto__.move_selection_up = function() {
             oldMoveSelectionUp.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -297,8 +301,9 @@ define([
         var oldMoveSelectionDown = Jupyter.notebook.__proto__.move_selection_down;
         Jupyter.notebook.__proto__.move_selection_down = function() {
             oldMoveSelectionDown.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -309,8 +314,9 @@ define([
         var oldMergeCellAbove = Jupyter.notebook.__proto__.merge_cell_above;
         Jupyter.notebook.__proto__.merge_cell_above = function() {
             oldMergeCellAbove.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -320,8 +326,9 @@ define([
         var oldMergeCellBelow = Jupyter.notebook.__proto__.merge_cell_below;
         Jupyter.notebook.__proto__.merge_cell_below = function() {
             oldMergeCellBelow.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -332,8 +339,9 @@ define([
         var oldDeleteCells = Jupyter.notebook.__proto__.delete_cells;
         Jupyter.notebook.__proto__.delete_cells = function() {
             oldDeleteCells.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -368,8 +376,9 @@ define([
                 }
 
                 // update the sidebar
-                Jupyter.sidebar.hideHiddenCells();
-                Jupyter.sidebar.update();
+                Jupyter.sidebar.updateHiddenCells();
+                // Jupyter.sidebar.hideHiddenCells();
+                // Jupyter.sidebar.update();
             } else {
                 oldSplitCell.apply(this, arguments);
             }
@@ -458,8 +467,9 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellAbove.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -473,8 +483,9 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellBelow.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
@@ -489,8 +500,9 @@ define([
                 Jupyter.notebook.clipboard[i].metadata.janus.id = Math.random().toString(16).substring(2);
             }
             oldPasteCellReplace.apply(this, arguments);
-            Jupyter.sidebar.hideHiddenCells();
-            Jupyter.sidebar.update();
+            Jupyter.sidebar.updateHiddenCells();
+            // Jupyter.sidebar.hideHiddenCells();
+            // Jupyter.sidebar.update();
         }
     }
 
