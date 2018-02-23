@@ -285,7 +285,7 @@ define([
         var classes = "marker hidden-output fa fa-area-chart";
         var selID = cell.metadata.janus.id
 
-        if (cell.metadata.janus.output_hidden) {
+        if (cell.metadata.janus.output_hidden && ! cell.metadata.janus.cell_hidden) {
 
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
@@ -309,6 +309,41 @@ define([
             // Jupyter.sidebar.collapse();
             // TODO may want to do Jupyter.sidebar.update() instead
         }
+    }
+
+
+// all
+    function showAllHidden(){
+        /* Show all cells in sidebar that have been hidden */
+
+        var placeholders = $('.hide-marker').toArray()
+        var sourceMarkers = $('.hidden-output').toArray();
+        var outputMarkers = $('.hidden-code').toArray();
+        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
+
+        for (var i = 0; i < markers.length; i++) {
+            $(markers[i]).data('showing', true)
+        }
+
+        Jupyter.sidebar.updateHiddenCellsSidebar()
+    }
+
+    function hideAllHidden() {
+        /* Hide all cells in sidebar that have been hidden */
+
+        var placeholders = $('.hide-marker').toArray()
+        var sourceMarkers = $('.hidden-output').toArray();
+        var outputMarkers = $('.hidden-code').toArray();
+        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
+
+        for (var i = 0; i < markers.length; i++) {
+            $(markers[i]).data('showing', false)
+        }
+
+        Jupyter.sidebar.updateHiddenCellsSidebar();
+
+        Jupyter.sidebar.collapse();
+
     }
 
 
@@ -351,7 +386,9 @@ define([
         toggleSelCellsVisibility: toggleSelCellsVisibility,
         toggleSourceVisibility: toggleSourceVisibility,
         toggleOutputVisibility: toggleOutputVisibility,
-        initializeVisibility, initializeVisibility
+        initializeVisibility, initializeVisibility,
+        showAllHidden: showAllHidden,
+        hideAllHidden, hideAllHidden
     };
 
 });

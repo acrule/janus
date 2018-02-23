@@ -81,6 +81,17 @@ define([
         janusMenu.append( $('<li>').addClass('divider') );
 
         addItemToMenu(janusMenu,
+                        'show_hidden_cells',
+                        'Show All Hidden Cells',
+                        JanusHide.showAllHidden);
+        addItemToMenu(janusMenu,
+                        'hide_hidden_cells',
+                        'Hide all Hidden Cells',
+                        JanusHide.hideAllHidden);
+
+        janusMenu.append( $('<li>').addClass('divider') );
+
+        addItemToMenu(janusMenu,
                         'toggle_nb_recording',
                         'Stop Tracking Changes',
                         JanusHistory.toggleHistoryRecording);
@@ -99,7 +110,7 @@ define([
         /* add Janus buttons to toolbar for easy access */
 
         var toggleCellAction = {
-            icon: 'fa-eye-slash',
+            icon: 'fa-columns',
             help    : 'Hide Cell',
             help_index : 'zz',
             handler : JanusHide.toggleSelCellsVisibility
@@ -117,6 +128,20 @@ define([
             help    : 'Hide Output',
             help_index : 'zz',
             handler : JanusHide.toggleOutputVisibility
+        };
+
+        var showAllAction = {
+            icon: 'fa-eye',
+            help    : 'Show All Hidden Cells',
+            help_index : 'zz',
+            handler : JanusHide.showAllHidden
+        };
+
+        var hideAllAction = {
+            icon: 'fa-eye-slash',
+            help    : 'Hide All Hidden Cells ',
+            help_index : 'zz',
+            handler : JanusHide.hideAllHidden
         };
 
         var toggleCellVerAction = {
@@ -140,6 +165,12 @@ define([
         var toggleOutputName = actionHandler.register(toggleOutputAction,
                                                         'toggle-cell-output',
                                                         prefix);
+        var showAllName = actionHandler.register(showAllAction,
+                                                        'show-all-hidden',
+                                                        prefix);
+        var hideAllName = actionHandler.register(hideAllAction,
+                                                        'hide-all-hidden',
+                                                        prefix);
         var toggleCellVerName = actionHandler.register(toggleCellVerAction,
                                                         'toggle-cell-history',
                                                         prefix);
@@ -148,6 +179,9 @@ define([
         Jupyter.toolbar.add_buttons_group([toggleCellName,
                                         toggleSourceName,
                                         toggleOutputName]);
+
+        Jupyter.toolbar.add_buttons_group([showAllName,
+                                        hideAllName]);
 
         Jupyter.toolbar.add_buttons_group([toggleCellVerName]);
 

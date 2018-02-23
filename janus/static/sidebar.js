@@ -433,7 +433,7 @@ define([
 
         var placeholders = $('.hide-marker').toArray()
         var sourceMarkers = $('.hidden-output').toArray();
-        var outputMarkers = $('.hide-code').toArray();
+        var outputMarkers = $('.hidden-code').toArray();
         var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
 
         for (var i = 0; i < markers.length; i++) {
@@ -441,8 +441,6 @@ define([
                 Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i] )
             }
         }
-
-
     }
 
 
