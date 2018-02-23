@@ -36,6 +36,7 @@ define([
         var historyViewer = this;
         Jupyter.historyViewer = historyViewer;
         this.notebook = nb;
+        this.cells = []
         this.getDataForModal()
     }
 
@@ -204,13 +205,13 @@ define([
         utils.promising_ajax(url, settings).then( function(value) {
             version_ids = eval(version_ids);
             var get_data = JSON.parse(value);
-            that.cells = get_data['cells'];
-            console.log(scrollY)
+            var cells = get_data['cells'];
+            that.cells = []
 
             $('#history-cell-wrapper').empty();
             for ( i=0; i < version_ids.length; i++ ){
-                if (version_ids[i] in that.cells){
-                    that.appendCell(that.cells[version_ids[i]], scrollY);
+                if (version_ids[i] in cells){
+                    that.appendCell(cells[version_ids[i]], scrollY);
                 }
             }
         });
@@ -224,6 +225,7 @@ define([
         var newCell = JanusUtils.getDuplicateCell(cellJSON, Jupyter.notebook);
         newCell.code_mirror.setOption('readOnly', "nocursor");
         $('#history-cell-wrapper').append(newCell.element);
+        this.cells.push(newCell)
 
         // make sure all code cells are rendered
         if(newCell.cell_type == 'code'){
@@ -232,9 +234,87 @@ define([
         }
 
         // set scroll position
-        console.log(scrollY)
         $('.modal').scrollTop(scrollY)
+        this.hideCells()
 
+    }
+
+
+    HistoryModal.prototype.hideCells = function() {
+        /* Hide cells in the modal and enable minimap */
+
+
+        // get the current configuration of the cells
+        // save data from and remove current markers for hidden cells
+        $(".modal").find('.hide-container').remove()
+
+        var cells = Jupyter.historyViewer.cells
+        var serial_hidden_cells = []
+        var serial_lines = 0
+
+        for (var i = 0; i < cells.length; i++) {
+
+            // keep track of groups of hidden cells
+            var cellHidden = cells[i].metadata.janus.cell_hidden
+            if (cellHidden) {
+                serial_hidden_cells.push(cells[i])
+
+                // count lines of code
+                if (cells[i].cell_type == "code") {
+                    var lines_of_code = cells[i].get_text().split('\n').length
+                    if (lines_of_code > 0) {
+                        serial_lines = serial_lines + lines_of_code
+                    }
+                }
+            }
+
+            // create placeholder if at last cell, or at visible cell after
+            // a group of hidden cells
+            var numHidden = serial_hidden_cells.length
+            if ( i == cells.length - 1 && cellHidden || (! cellHidden && numHidden > 0) ){
+
+                // get the cell ids
+                var cell_ids = []
+                for (var j = 0; j < numHidden; j++) {
+                    serial_hidden_cells[j].element.addClass('hidden');
+                    cell_ids.push(serial_hidden_cells[j].metadata.janus.id);
+                }
+
+                var place = cells[i].element.before($('<div>')
+                    .addClass('hide-container')
+                    .append($('<div>')
+                        .addClass('hide-spacer'))
+                    .append($('<div>')
+                        .addClass('hide-marker')
+                        .data('ids', cell_ids.slice())
+                        // .data('showing', first_showing)
+                        .hover(function(event){
+                            JanusUtils.showMinimap(event, this)
+                        },
+                        function(event){
+                            JanusUtils.hideMinimap(event, this)
+                        })
+                        .mousemove( function(event){
+                            JanusUtils.moveMinimap(event, this);
+                        }
+                        )
+                        .append($('<div>')
+                            .addClass('hide-label')
+                            .text("Hidden Cells")
+                        )
+                        .append($('<div>')
+                            .addClass('hide-text')
+                            .text(serial_lines +  " lines")
+                            .append($('<div>')
+                                .addClass('fa fa-angle-right hide-arrow')))
+                        )
+                    )
+
+                // clear our lists
+                serial_hidden_cells = []
+                serial_lines = 0
+            }
+        }
     }
 
 
