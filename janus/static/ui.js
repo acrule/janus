@@ -190,6 +190,11 @@ define([
         history_label.append($('<a>View Notebook History</a>')
                                 .click(JanusViewer.createHistoryModal))
         Jupyter.toolbar.element.append(history_label)
+
+        // start loop to check for history every 60 seconds
+        JanusHistory.updateHistoryUI();
+        setInterval(JanusHistory.updateHistoryUI, 60000)
+
     }
 
 

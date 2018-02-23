@@ -19,7 +19,6 @@ define([
     JanusUtils
 ){
 
-    // TODO debug run-cell not being tracked
 
 // VARIABLES
     var Notebook = Jupyter.notebook;
@@ -143,6 +142,69 @@ define([
             paths[numPaths - 1][2] = t;
         }
 
+        // updateHistoryUI();
+
+    }
+
+    function updateHistoryUI() {
+        /* find the time of the last significant edit */
+
+        // update the last edit in the history UI element
+        var historyLabel = $('#history-label').find('a')
+
+        var baseUrl = Jupyter.notebook.base_url;
+        var notebookUrl =  Jupyter.notebook.notebook_path;
+        var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
+        var paths = Jupyter.notebook.metadata.janus.filepaths
+        var numPaths = paths.length
+        var foundLast = false;
+
+        // don't proceed if no history
+        if (numPaths == 0) {
+            return
+        }
+
+        // get time of last significant change to the notebook
+        var t = null;
+        for (var i = 0; i < numPaths; i++){
+
+            var settings = {
+                type : 'GET',
+                data: {
+                    q: 'config',
+                    path: paths[i][0],
+                    start: paths[i][1],
+                    end: paths[i][2]
+                },
+            };
+
+            utils.promising_ajax(url, settings).then(function(value, i, t){
+                var d = JSON.parse(value)
+                var numConfigs = d['nb_configs'].length
+                if (numConfigs > 0){
+                    t = d['nb_configs'][numConfigs - 1][0]
+
+                    var t_now = Date.now();
+                    var t_diff = ( t_now - t ) / 1000;
+                    var date_string = "";
+
+                    // get a human readible version of the time
+                    if ( t_diff < 3600 ) {
+                        num_min = parseInt( t_diff / 60 );
+                        date_string = num_min.toString() + " min ago";
+                    } else if ( t_diff < 86400 ) {
+                        num_hours = parseInt( t_diff / 3600 );
+                        date_string = num_hours.toString() + " hours ago";
+                    } else {
+                        num_days = parseInt( t_diff / 86400 );
+                        date_string = num_days.toString() + " days ago";
+                    }
+
+                    historyLabel.html("Last edit " + date_string)
+
+                }
+            })
+        }
     }
 
 
@@ -233,7 +295,8 @@ define([
     return {
         prepHistoryTracking: prepHistoryTracking,
         toggleHistoryRecording: toggleHistoryRecording,
-        trackAction: trackAction
+        trackAction: trackAction,
+        updateHistoryUI: updateHistoryUI
     };
 
 });

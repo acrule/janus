@@ -136,6 +136,7 @@ define([
     }
 
 
+
 // MINIMAP
     function showMinimap(event, el) {
         /* render rich tooltip with miniturized view of hidden cells
