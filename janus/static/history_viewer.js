@@ -183,6 +183,8 @@ define([
 
         that = this;
 
+        var scrollY = $('.modal').scrollTop()
+
         // preapre url for GET request
         var baseUrl = Jupyter.notebook.base_url;
         var notebookUrl =  Jupyter.notebook.notebook_path;
@@ -203,18 +205,19 @@ define([
             version_ids = eval(version_ids);
             var get_data = JSON.parse(value);
             that.cells = get_data['cells'];
+            console.log(scrollY)
 
             $('#history-cell-wrapper').empty();
             for ( i=0; i < version_ids.length; i++ ){
                 if (version_ids[i] in that.cells){
-                    that.appendCell(that.cells[version_ids[i]]);
+                    that.appendCell(that.cells[version_ids[i]], scrollY);
                 }
             }
         });
     }
 
 
-    HistoryModal.prototype.appendCell = function(cellJSON) {
+    HistoryModal.prototype.appendCell = function(cellJSON, scrollY) {
         /* add cell to modal */
 
         // add redonly cell to the wraper
@@ -227,6 +230,11 @@ define([
             newCell.render();
             newCell.focus_editor();
         }
+
+        // set scroll position
+        console.log(scrollY)
+        $('.modal').scrollTop(scrollY)
+
     }
 
 
