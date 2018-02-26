@@ -94,6 +94,8 @@ define([
                     that.cells[i].expand_output();
                 }
             }
+
+            Jupyter.notebook.get_selected_cell().element.focus()
         })
     };
 
@@ -131,16 +133,14 @@ define([
 
             // hide all sections
             $('.section').hide();
-            $('.section').remove();
             for (var i=0; i< that.sections.length; i++){
                 $(that.sections[i].marker).data('showing', false);
             }
-            that.sections = []
         });
     };
 
 
-    Sidebar.prototype.openSection = function(cells=[], marker = null) {
+    Sidebar.prototype.openSection = function(cells=[], marker = null, index = 0) {
         /* open this section of cells in the sidebar
 
         Args:
@@ -150,25 +150,32 @@ define([
         // don't add section if it already exists
         // TODO we will want a less hacky way to do this in future, likely by making
         // the placeholders into objects with a "section" item we can check
+
         var new_cell_ids = []
         for (var i=0; i<cells.length; i++) {
             new_cell_ids.push(cells[i].metadata.janus.id)
         }
 
-        for (var j=0; j< Jupyter.sidebar.sections.length; j++) {
+        // for (var j=0; j< Jupyter.sidebar.sections.length; j++) {
+        //
+        //     var old_cell_ids = []
+        //
+        //     for (var k=0; k<Jupyter.sidebar.sections[j].cells.length; k++) {
+        //         old_cell_ids.push(Jupyter.sidebar.sections[j].cells[k].metadata.janus.id)
+        //     }
+        //
+        //     if (JSON.stringify(old_cell_ids) == JSON.stringify(new_cell_ids)) {
+        //         Jupyter.sidebar.sections[k].element.show();
+        //         Jupyter.sidebar.sections[k].marker = marker
+        //         if ($(Jupyter.sidebar.sections[k].marker).data('showing')){
+        //             Jupyter.sidebar.expand();
+        //         }
+        //         return
+        //     }
+        // }
 
-            var old_cell_ids = []
 
-            for (var k=0; k<Jupyter.sidebar.sections[j].cells.length; k++) {
-                old_cell_ids.push(Jupyter.sidebar.sections[j].cells[k].metadata.janus.id)
-            }
-
-            if (JSON.stringify(old_cell_ids) == JSON.stringify(new_cell_ids)) {
-                return
-            }
-        }
-
-        $(marker).data('showing', true);
+        // $(marker).data('showing', true);
 
         // add section to sidebar and render cells in it
         var sb = Jupyter.sidebar;
@@ -179,6 +186,8 @@ define([
             var title = title_labels[0].innerHTML
         }
 
+        $(marker).data('sectionIndex', index)
+
         //TODO later we will want to append in the right spot on the list
         $(sb.element).append(newSection.element);
         newSection.renderCells(cells, title)
@@ -187,16 +196,20 @@ define([
         sb.sections.push(newSection)
 
         // open sidebar if needed
-        if (sb.collapsed) {
+        if ( $(marker).data('showing') ) {
+            newSection.element.show()
             sb.expand()
+        } else {
+            newSection.element.hide()
         }
 
         Jupyter.sidebar.saveMarkerMetadata()
 
+
     }
 
 
-    Sidebar.prototype.showWithCells = function (cell_ids, marker = null) {
+    Sidebar.prototype.showWithCells = function (cell_ids, marker = null, index = 0) {
         /* get cells to show in sidebar if given their Janus ids
 
         Args:
@@ -211,7 +224,7 @@ define([
                 cells_to_copy.push(cells[i])
             }
         }
-        Jupyter.sidebar.openSection(cells_to_copy, marker)
+        Jupyter.sidebar.openSection(cells_to_copy, marker, index)
     }
 
 
@@ -319,6 +332,14 @@ define([
                 cells[0].sb_cell.focus_editor();
             }
         }
+
+        var selCell = Jupyter.notebook.get_selected_cell()
+        selCell.element.focus()
+        selCell.focus_cell()
+        if(selCell.cell_type == 'code'){
+            selCell.focus_editor();
+        }
+
     }
 
 
@@ -343,25 +364,23 @@ define([
     Section.prototype.close = function() {
         /* Delete a section from the sidebar */
 
-        // remove section from sidebar list
-        for (var i=0; i<Jupyter.sidebar.sections.length; i++) {
-            if (Jupyter.sidebar.sections[i] === this) {
-                Jupyter.sidebar.sections.splice(i, 1);
-            }
-        }
-
-        // delete the section element
+        // hide this element
         this.element.hide()
-        this.element.remove()
-
         $(this.marker).data('showing', false);
 
+        Jupyter.sidebar.saveMarkerMetadata()
+
         // collapse sidebar if this was the last visible section
-        if (Jupyter.sidebar.sections.length == 0) {
+        var allClosed = true;
+
+        for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+            if ($(Jupyter.sidebar.sections[i].marker).data('showing') == true) {
+                allClosed = false;
+            }
+        }
+        if (allClosed) {
             Jupyter.sidebar.collapse()
         }
-
-        Jupyter.sidebar.saveMarkerMetadata()
 
     }
 
@@ -371,6 +390,7 @@ define([
 
         this.updateHiddenCellsNotebook()
         this.updateHiddenCellsSidebar()
+        // position cells correctly
     }
 
 
@@ -429,24 +449,16 @@ define([
     Sidebar.prototype.updateHiddenCellsSidebar = function() {
 
         // remove all items from the sidebar
-        $('.section').hide();
         $('.section').remove();
         Jupyter.sidebar.sections = []
 
-        var placeholders = $('.hide-marker').toArray()
-        var sourceMarkers = $('.hidden-output').toArray();
-        var outputMarkers = $('.hidden-code').toArray();
-        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
+        var markers = $('.hide-marker, .hidden-output, .hidden-code').toArray()
 
         for (var i = 0; i < markers.length; i++) {
-            if ($(markers[i]).data('showing')) {
-                Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i] )
-            }
+            Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i], i )
         }
+        Jupyter.notebook.get_selected_cell().focus_cell()
     }
-
-
-
 
 
 // PLACEHOLDERS FOR HIDDEN CELLS
@@ -480,7 +492,11 @@ define([
                     $('#minimap').remove()
                     var that = this;
                     Jupyter.sidebar.marker = that;
-                    Jupyter.sidebar.showWithCells($(this).data('ids'), this)
+                    $(this).data('showing', true);
+                    var secIndex = $(this).data('sectionIndex');
+                    Jupyter.sidebar.sections[secIndex].element.show();
+                    Jupyter.sidebar.expand()
+                    Jupyter.sidebar.saveMarkerMetadata()
                 })
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)

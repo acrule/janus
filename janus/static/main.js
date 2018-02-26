@@ -41,10 +41,10 @@ define([
     function loadJanusPostNotebook() {
         /* run steps that require cells to already be loaded */
 
-        JanusPatch.initializeJanusMetadata();
-        Jupyter.sidebar.updateHiddenCells();
+        JanusPatch.initializeJanusMetadata();        
         JanusVersions.initializeVersionMarkers();
         JanusHide.initializeVisibility();
+        Jupyter.sidebar.updateHiddenCells();
         JanusHistory.prepHistoryTracking();
     }
 

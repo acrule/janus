@@ -316,32 +316,16 @@ define([
     function showAllHidden(){
         /* Show all cells in sidebar that have been hidden */
 
-        var placeholders = $('.hide-marker').toArray()
-        var sourceMarkers = $('.hidden-output').toArray();
-        var outputMarkers = $('.hidden-code').toArray();
-        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
-
-        for (var i = 0; i < markers.length; i++) {
-            $(markers[i]).data('showing', true)
-        }
-
+        var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
         Jupyter.sidebar.updateHiddenCellsSidebar()
     }
+
 
     function hideAllHidden() {
         /* Hide all cells in sidebar that have been hidden */
 
-        var placeholders = $('.hide-marker').toArray()
-        var sourceMarkers = $('.hidden-output').toArray();
-        var outputMarkers = $('.hidden-code').toArray();
-        var markers = placeholders.concat(sourceMarkers).concat(outputMarkers)
-
-        for (var i = 0; i < markers.length; i++) {
-            $(markers[i]).data('showing', false)
-        }
-
+        var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', false)
         Jupyter.sidebar.updateHiddenCellsSidebar();
-
         Jupyter.sidebar.collapse();
 
     }
@@ -378,7 +362,12 @@ define([
         */
 
         Jupyter.sidebar.marker = marker
-        Jupyter.sidebar.openSection([cell], marker)
+        // Jupyter.sidebar.openSection([cell], marker)
+        var secIndex = $(marker).data('sectionIndex');
+        console.log(secIndex)
+        Jupyter.sidebar.sections[secIndex].element.show();
+        Jupyter.sidebar.expand()
+
     }
 
 
