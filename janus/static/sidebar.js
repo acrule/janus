@@ -191,6 +191,8 @@ define([
             sb.expand()
         }
 
+        Jupyter.sidebar.saveMarkerMetadata()
+
     }
 
 
