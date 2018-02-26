@@ -244,9 +244,10 @@ define([
         /* Hide cells in the modal and enable minimap */
 
 
-        // get the current configuration of the cells
-        // save data from and remove current markers for hidden cells
+        // remove current markers for hidden cells, outputs, and code
         $(".modal").find('.hide-container').remove()
+        // $(".modal").find('.hidden-code').remove()
+        // $(".modal").find('.hidden-output').remove()
 
         var cells = Jupyter.historyViewer.cells
         var serial_hidden_cells = []
@@ -314,6 +315,52 @@ define([
                 serial_hidden_cells = []
                 serial_lines = 0
             }
+
+            // render hidden code markers
+            var outputArea = cells[i].element.find('div.output_wrapper')[0];
+            var classes = "marker hidden-code fa fa-code";
+            if (cells[i].metadata.janus.source_hidden && ! cells[i].metadata.janus.cell_hidden) {
+
+                cells[i].element.find("div.input").hide('slow');
+
+                JanusUtils.removeMarkerType('.hidden-code', outputArea);
+                var marker = JanusUtils.addMarkerToElement(outputArea, classes);
+                $(marker).data('ids', [cells[i].metadata.janus.id])
+                    .data('showing', false)
+                    .hover(function(event){
+                        JanusUtils.showMinimap(event, this)
+                    },
+                    function(event){
+                        JanusUtils.hideMinimap(event, this)
+                    })
+                    .mousemove( function(event){
+                        JanusUtils.moveMinimap(event, this);
+                    })
+            }
+
+            // render hidden output markers
+            var markerContainer = JanusUtils.getMarkerContainer(cells[i])
+            var classes = "marker hidden-output fa fa-area-chart";
+            var selID = cells[i].metadata.janus.id
+            if (cells[i].metadata.janus.output_hidden && ! cells[i].metadata.janus.cell_hidden) {
+
+                cells[i].element.find("div.output").hide('slow');
+
+                JanusUtils.removeMarkerType('.hidden-output', markerContainer);
+                var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
+                $(marker).data('ids', [cells[i].metadata.janus.id])
+                    .data('showing', false)
+                    .hover(function(event){
+                        JanusUtils.showMinimap(event, this)
+                    },
+                    function(event){
+                        JanusUtils.hideMinimap(event, this)
+                    })
+                    .mousemove( function(event){
+                        JanusUtils.moveMinimap(event, this);
+                    })
+            }
+
         }
     }
 
