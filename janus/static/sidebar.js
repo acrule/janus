@@ -245,7 +245,7 @@ define([
         var header = $("<div/>").addClass('section-header')
         var closeContainer = $("<div/>").addClass('section-close')
             .append($("<i>")
-            .addClass("fa fa-times section-close-button")
+            .addClass("fa fa-angle-left section-close-button")
             .click( function(){
                 that.close();
             })
