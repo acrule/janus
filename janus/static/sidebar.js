@@ -382,6 +382,8 @@ define([
             Jupyter.sidebar.collapse()
         }
 
+        Jupyter.sidebar.repositionSections()
+
     }
 
 
@@ -498,11 +500,20 @@ define([
         //
         // } else {
 
+        var prevEnd = null;
         for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
             var sect = Jupyter.sidebar.sections[i].element
             var marker = Jupyter.sidebar.sections[i].marker
+            var showing = $(marker).data('showing')
+            if (! showing) {
+                continue
+            }
             var yPos = getYPos(marker)
-            $(sect).css({ top: yPos});
+            if (prevEnd){
+                yPos = Math.max(prevEnd, yPos)
+            }
+            $(sect).animate({ top: yPos}, 400);
+            prevEnd = $(sect).offset().top + $(sect).outerHeight();
         }
 
         // }
@@ -558,6 +569,7 @@ define([
                     $(this).data('showing', true);
                     var secIndex = $(this).data('sectionIndex');
                     Jupyter.sidebar.sections[secIndex].element.show();
+                    Jupyter.sidebar.repositionSections()
                     Jupyter.sidebar.expand()
                     Jupyter.sidebar.saveMarkerMetadata()
                 })
