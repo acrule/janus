@@ -362,14 +362,15 @@ define([
         */
 
         Jupyter.sidebar.marker = marker
+
+        // update showing metadata
         $(marker).data('showing', true)
         $(marker).addClass('active')
-        // Jupyter.sidebar.openSection([cell], marker)
-        var secIndex = $(marker).data('sectionIndex');
-        Jupyter.sidebar.repositionSections()
-        Jupyter.sidebar.sections[secIndex].element.show();
-        Jupyter.sidebar.expand()
 
+        // show the item
+        var secIndex = $(marker).data('sectionIndex');
+        // Jupyter.sidebar.sections[secIndex].element.show();
+        Jupyter.sidebar.expand()
     }
 
 

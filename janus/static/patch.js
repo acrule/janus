@@ -32,6 +32,10 @@ define([
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function() {
 
+            // console.log("")
+            // console.log("Selecting")
+            // console.log(this)
+
             // unselect all cells in the sidebar
             if (! Jupyter.sidebar.collapsed) {
                 sb_cells = Jupyter.sidebar.cells
@@ -76,7 +80,7 @@ define([
             // then update marker visibility
             JanusVersions.updateMarkerVisibility(this);
 
-            Jupyter.sidebar.repositionSections()
+            Jupyter.sidebar.startRepositionTimer()
         }
     }
 
@@ -90,6 +94,10 @@ define([
 
         var oldCellUnselect = Cell.Cell.prototype.unselect;
         Cell.Cell.prototype.unselect = function(){
+
+            // console.log("")
+            // console.log("Unselecting")
+            // console.log(this)
 
             // need to return context object so mult-cell selection works
             var cont = oldCellUnselect.apply(this, arguments);

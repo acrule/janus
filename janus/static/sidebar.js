@@ -34,6 +34,7 @@ define([
         sidebar.marker = null;
         sidebar.cells = []
         sidebar.sections = []
+        sidebar.positionTimer = null
 
         // create html element for sidebar and add to page
         sidebar.element = $('<div id=sidebar-container>');
@@ -385,7 +386,7 @@ define([
             Jupyter.sidebar.collapse()
         }
 
-        Jupyter.sidebar.repositionSections()
+        Jupyter.sidebar.startRepositionTimer()
 
     }
 
@@ -469,7 +470,16 @@ define([
         }
         Jupyter.notebook.get_selected_cell().focus_cell()
 
-        Jupyter.sidebar.repositionSections(true)
+        Jupyter.sidebar.startRepositionTimer()
+    }
+
+
+    Sidebar.prototype.startRepositionTimer = function () {
+        /* Ensure we don't reposition many times in a row since cell.select
+            seems to get called very frequently by background processes */
+
+        clearTimeout(Jupyter.sidebar.positionTimer)
+        Jupyter.sidebar.positionTimer = setTimeout(this.repositionSections, 150);
     }
 
 
@@ -503,16 +513,17 @@ define([
 
             // get list of showing sections and the index of this section
             var selSection = null
-            for (var i = 0; i < Jupyter.sidebar.sections.length; i++){
-                var cells = Jupyter.sidebar.sections[i].cells
+            for (var k = 0; k < Jupyter.sidebar.sections.length; k++){
+                var cells = Jupyter.sidebar.sections[k].cells
                 for (var j = 0; j < cells.length; j++){
                     if (cells[j].metadata.janus.id == selCellID) {
-                        selSection = i
+                        selSection = k
+                        break
                     }
                 }
             }
 
-            if (! selSection){
+            if (selSection < 0){
                 return
             }
 
@@ -524,7 +535,9 @@ define([
             var prevEnd = null
             if (showing) {
                 var yPos = getYPos(marker)
-                $(sect).animate({ top: yPos}, 400);
+                var that = sect;
+                $(sect).animate({ top: yPos}, 250);
+                $(sect).show(0).delay(250);
                 prevTop = yPos;
                 prevEnd = yPos + $(sect).outerHeight();
             }
@@ -542,7 +555,9 @@ define([
                     if (prevTop){
                         yPos = Math.min(prevTop - $(sect).outerHeight() - 15, yPos)
                     }
-                    $(sect).animate({ top: yPos}, 400);
+                    var that = sect;
+                    $(sect).animate({ top: yPos}, 250);
+                    $(sect).show(0).delay(250);
                     prevTop = yPos;
                 }
             }
@@ -560,7 +575,9 @@ define([
                     if (prevEnd){
                         yPos = Math.max(prevEnd + 15, yPos)
                     }
-                    $(sect).animate({ top: yPos}, 400);
+                    var that = sect;
+                    $(sect).animate({ top: yPos}, 250);
+                    $(sect).show(0).delay(250);
                     prevEnd = yPos + $(sect).outerHeight();
                 }
             }
@@ -578,7 +595,9 @@ define([
                 if (prevEnd){
                     yPos = Math.max(prevEnd + 15, yPos)
                 }
-                $(sect).animate({ top: yPos}, 400);
+                var that = sect;
+                $(sect).animate({ top: yPos}, 250);
+                $(sect).show(0).delay(250);
                 prevEnd = yPos + $(sect).outerHeight();
             }
         }
@@ -663,8 +682,7 @@ define([
                     $(this).data('showing', true);
                     $(this).addClass('active')
                     var secIndex = $(this).data('sectionIndex');
-                    Jupyter.sidebar.sections[secIndex].element.show();
-                    Jupyter.sidebar.repositionSections()
+                    // Jupyter.sidebar.sections[secIndex].element.show();
                     Jupyter.sidebar.expand()
                     Jupyter.sidebar.saveMarkerMetadata()
 
