@@ -75,6 +75,8 @@ define([
 
             // then update marker visibility
             JanusVersions.updateMarkerVisibility(this);
+
+            Jupyter.sidebar.repositionSections()
         }
     }
 

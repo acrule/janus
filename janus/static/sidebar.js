@@ -476,24 +476,127 @@ define([
     Sidebar.prototype.repositionSections = function (initialPos = false){
         /* Reposition the sidebar sections based on what is currently selected */
 
+        // get cell visibility metadata
+        var selCell = Jupyter.notebook.get_selected_cell()
+        var selCellID = selCell.metadata.janus.id
+        var selCellHidden = selCell.metadata.janus.cell_hidden
+        var selOutHidden = selCell.metadata.janus.output_hidden
+        var selSourceHidden = selCell.metadata.janus.source_hidden
+
+        // get sidebar section visibility metadata
+        var marker = null;
+        if (selCellHidden) {
+            var marker = $(selCell.element).nextAll('.hide-container').find('.hide-marker').first()
+        } else if (selOutHidden) {
+            var marker = $(selCell.element).find('.hidden-output').first()
+        } else if (selSourceHidden) {
+            var marker = $(selCell.element).find('.hidden-code').first()
+        }
+        var showing = null;
+        if (marker) {
+            showing = $(marker).data('showing')
+        }
+
+        // if hidden cell is selected and associated section is showing, set
+        // position starting with selected section
+        if ((selCellHidden || selOutHidden || selSourceHidden) && showing) {
+
+            // get list of showing sections and the index of this section
+            var selSection = null
+            for (var i = 0; i < Jupyter.sidebar.sections.length; i++){
+                var cells = Jupyter.sidebar.sections[i].cells
+                for (var j = 0; j < cells.length; j++){
+                    if (cells[j].metadata.janus.id == selCellID) {
+                        selSection = i
+                    }
+                }
+            }
+
+            if (! selSection){
+                return
+            }
+
+            // set position of selected section
+            var sect = Jupyter.sidebar.sections[selSection].element
+            var marker = Jupyter.sidebar.sections[selSection].marker
+            var showing = $(marker).data('showing')
+            var prevTop = null
+            var prevEnd = null
+            if (showing) {
+                var yPos = getYPos(marker)
+                $(sect).animate({ top: yPos}, 400);
+                prevTop = yPos;
+                prevEnd = yPos + $(sect).outerHeight();
+            }
+
+            // set position of previous sections
+            if (selSection > 0){
+                for (var i = selSection - 1; i >= 0; i--){
+                    var sect = Jupyter.sidebar.sections[i].element
+                    var marker = Jupyter.sidebar.sections[i].marker
+                    var showing = $(marker).data('showing')
+                    if (! showing) {
+                        continue
+                    }
+                    var yPos = getYPos(marker)
+                    if (prevTop){
+                        yPos = Math.min(prevTop - $(sect).outerHeight() - 15, yPos)
+                    }
+                    $(sect).animate({ top: yPos}, 400);
+                    prevTop = yPos;
+                }
+            }
+
+            // set position of following sections
+            if (selSection < Jupyter.sidebar.sections.length - 1){
+                for (var i = selSection + 1; i < Jupyter.sidebar.sections.length; i++){
+                    var sect = Jupyter.sidebar.sections[i].element
+                    var marker = Jupyter.sidebar.sections[i].marker
+                    var showing = $(marker).data('showing')
+                    if (! showing) {
+                        continue
+                    }
+                    var yPos = getYPos(marker)
+                    if (prevEnd){
+                        yPos = Math.max(prevEnd + 15, yPos)
+                    }
+                    $(sect).animate({ top: yPos}, 400);
+                    prevEnd = yPos + $(sect).outerHeight();
+                }
+            }
+
+        } else {
+            var prevEnd = null;
+            for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+                var sect = Jupyter.sidebar.sections[i].element
+                var marker = Jupyter.sidebar.sections[i].marker
+                var showing = $(marker).data('showing')
+                if (! showing) {
+                    continue
+                }
+                var yPos = getYPos(marker)
+                if (prevEnd){
+                    yPos = Math.max(prevEnd + 15, yPos)
+                }
+                $(sect).animate({ top: yPos}, 400);
+                prevEnd = yPos + $(sect).outerHeight();
+            }
+        }
+
+
+        // iterate forward
+
+
+        // iterate backward
+
         // don't reposition is main notebook cell is selected
-        // var selCell = Jupyter.notebook.get_selected_cell()
-        // var selCellHidden = selCell.metadata.janus.cell_hidden
-        // var selOutHidden = selCell.metadata.janus.output_hidden
-        // var selSourceHidden = selCell.metadata.janus.source_hidden
+
         //
-        // if (! (selCellHidden || selOutHidden || selSourceHidden) && ! initialPos) {
+        //
         //     return
         // }
         //
-        // var marker = null;
-        // if (selCellHidden) {
-        //     var marker = $(selCell.element).next('.hide-marker')
-        // } else if (selOutHidden) {
-        //     var marker = $(selCell.element).find('.hidden-output').first()
-        // } else if (selSourceHidden) {
-        //     var marker = $(selCell.element).find('.hidden-code').first()
-        // }
+
 
         // if (marker) {
         //
@@ -507,23 +610,6 @@ define([
         //     $(selSect).css({ top: selSectYPos});
         //
         // } else {
-
-        var prevEnd = null;
-        for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
-            var sect = Jupyter.sidebar.sections[i].element
-            var marker = Jupyter.sidebar.sections[i].marker
-            var showing = $(marker).data('showing')
-            if (! showing) {
-                continue
-            }
-            var yPos = getYPos(marker)
-            if (prevEnd){
-                yPos = Math.max(prevEnd + 15, yPos)
-            }
-            $(sect).animate({ top: yPos}, 400);
-            prevEnd = yPos + $(sect).outerHeight();
-        }
-
         // }
     }
 
