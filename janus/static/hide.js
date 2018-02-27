@@ -363,6 +363,7 @@ define([
 
         Jupyter.sidebar.marker = marker
         $(marker).data('showing', true)
+        $(marker).addClass('active')
         // Jupyter.sidebar.openSection([cell], marker)
         var secIndex = $(marker).data('sectionIndex');
         Jupyter.sidebar.repositionSections()

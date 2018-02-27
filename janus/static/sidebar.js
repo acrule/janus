@@ -198,9 +198,11 @@ define([
         // open sidebar if needed
         if ( $(marker).data('showing') ) {
             newSection.element.show()
+            $(marker).addClass('active')
             sb.expand()
         } else {
             newSection.element.hide()
+            $(marker).removeClass('active')
         }
 
         Jupyter.sidebar.saveMarkerMetadata()
@@ -367,6 +369,7 @@ define([
         // hide this element
         this.element.hide()
         $(this.marker).data('showing', false);
+        $(this.marker).removeClass('active')
 
         Jupyter.sidebar.saveMarkerMetadata()
 
@@ -458,6 +461,11 @@ define([
 
         for (var i = 0; i < markers.length; i++) {
             Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i], i )
+            if ($(markers[i]).data('showing')) {
+                $(markers[i]).addClass('active')
+            } else {
+                $(markers[i]).removeClass('active')
+            }
         }
         Jupyter.notebook.get_selected_cell().focus_cell()
 
@@ -510,10 +518,10 @@ define([
             }
             var yPos = getYPos(marker)
             if (prevEnd){
-                yPos = Math.max(prevEnd, yPos)
+                yPos = Math.max(prevEnd + 15, yPos)
             }
             $(sect).animate({ top: yPos}, 400);
-            prevEnd = $(sect).offset().top + $(sect).outerHeight();
+            prevEnd = yPos + $(sect).outerHeight();
         }
 
         // }
@@ -562,16 +570,24 @@ define([
                 .addClass('hide-marker')
                 .data('ids', cell_ids.slice())
                 .data('showing', first_showing)
-                .click(function(){
+                .click(function(event){
                     $('#minimap').remove()
                     var that = this;
                     Jupyter.sidebar.marker = that;
                     $(this).data('showing', true);
+                    $(this).addClass('active')
                     var secIndex = $(this).data('sectionIndex');
                     Jupyter.sidebar.sections[secIndex].element.show();
                     Jupyter.sidebar.repositionSections()
                     Jupyter.sidebar.expand()
                     Jupyter.sidebar.saveMarkerMetadata()
+
+                    // select the first cell in the sidebar section
+                    var firstCell = Jupyter.sidebar.sections[secIndex].cells[0]
+                    firstCell.events.trigger('select.Cell', {
+                        'cell': firstCell.nb_cell,
+                        'extendSelection':event.shiftKey
+                    });
                 })
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)
