@@ -458,6 +458,69 @@ define([
             Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i], i )
         }
         Jupyter.notebook.get_selected_cell().focus_cell()
+
+        Jupyter.sidebar.repositionSections(true)
+    }
+
+
+    Sidebar.prototype.repositionSections = function (initialPos = false){
+        /* Reposition the sidebar sections based on what is currently selected */
+
+        // don't reposition is main notebook cell is selected
+        // var selCell = Jupyter.notebook.get_selected_cell()
+        // var selCellHidden = selCell.metadata.janus.cell_hidden
+        // var selOutHidden = selCell.metadata.janus.output_hidden
+        // var selSourceHidden = selCell.metadata.janus.source_hidden
+        //
+        // if (! (selCellHidden || selOutHidden || selSourceHidden) && ! initialPos) {
+        //     return
+        // }
+        //
+        // var marker = null;
+        // if (selCellHidden) {
+        //     var marker = $(selCell.element).next('.hide-marker')
+        // } else if (selOutHidden) {
+        //     var marker = $(selCell.element).find('.hidden-output').first()
+        // } else if (selSourceHidden) {
+        //     var marker = $(selCell.element).find('.hidden-code').first()
+        // }
+
+        // if (marker) {
+        //
+        //     // don't reposition if select item not showing
+        //     var secIndex = marker.data('sectionIndex');
+        //     var selSect = Jupyter.sidebar.sections[secIndex]
+        //     var selSectShow = $(selSect.marker).data('showing')
+        //
+        //     var selSectYPos = getYPos(selSect.marker)
+        //     console.log(selSectYPos)
+        //     $(selSect).css({ top: selSectYPos});
+        //
+        // } else {
+
+        for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+            var sect = Jupyter.sidebar.sections[i].element
+            var marker = Jupyter.sidebar.sections[i].marker
+            var yPos = getYPos(marker)
+            $(sect).css({ top: yPos});
+        }
+
+        // }
+    }
+
+
+    function getYPos(marker) {
+        /* Get the y position of a marker relative to the notebook  */
+
+        if ($(marker).hasClass('hide-marker')) {
+            return $(marker).closest('.hide-container').position().top - 24
+        } else if ($(marker).hasClass('hidden-code')) {
+            return $(marker).closest('.cell').position().top - 24
+        } else if ($(marker).hasClass('hidden-output')) {
+            return $(marker).closest('.cell').position().top - 24
+        } else {
+            return 0
+        }
     }
 
 

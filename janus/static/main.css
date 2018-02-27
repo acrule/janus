@@ -240,6 +240,8 @@ hiding cells and tracking changes
     min-height: 60px;
     margin-bottom: 15px;
     padding: 15px;
+    position: absolute;
+    top: 0px;
 }
 
 .section.cell-wrapper {

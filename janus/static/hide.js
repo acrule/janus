@@ -364,7 +364,6 @@ define([
         Jupyter.sidebar.marker = marker
         // Jupyter.sidebar.openSection([cell], marker)
         var secIndex = $(marker).data('sectionIndex');
-        console.log(secIndex)
         Jupyter.sidebar.sections[secIndex].element.show();
         Jupyter.sidebar.expand()
 
