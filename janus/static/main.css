@@ -51,6 +51,22 @@ hiding cells and tracking changes
     background: #ffffff;
 }
 
+#comment-box {
+    width: 100%;
+    font-size: 1.2em;
+    padding: 2px;
+}
+
+#past-comments {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #999;
+}
+
+#past-comments p{
+    line-height: 1.8em;
+}
+
 .hide-container.selected {
     border: 1px solid #BBBBBB;
     border-left: 5px solid #59A5EF;

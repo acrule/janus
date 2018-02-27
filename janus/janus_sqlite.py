@@ -26,6 +26,7 @@ class DbManager(object):
         self.cell_queue = []
         self.nb_queue = []
         self.log_queue = []
+        self.comment_queue = []
 
         # create db tables if they don't already exist
         self.create_initial_tables()
@@ -50,9 +51,12 @@ class DbManager(object):
         self.c.execute('''CREATE TABLE IF NOT EXISTS janus_log (time integer,
             nb_name text, name text, id text, ids text)''')
 
+        self.c.execute('''CREATE TABLE IF NOT EXISTS comments (time integer,
+            comment text, nb_name text)''')
+
         # TODO actual data blob will be removed
-        self.c.execute('''CREATE TABLE IF NOT EXISTS clean_boi (time integer, 
-            cell_id text, version_id text, cell_data text, meta_data text, 
+        self.c.execute('''CREATE TABLE IF NOT EXISTS clean_boi (time integer,
+            cell_id text, version_id text, cell_data text, meta_data text,
             line_count integer, function_count integer, cell_count integer, loc integer)''')
 
         self.conn.commit()
@@ -134,6 +138,20 @@ class DbManager(object):
         self.update_timer()
 
 
+    def record_comment(self, comment_data, nb_name):
+        """
+        save data about a comment
+        """
+
+        t = comment_data['time']
+        comment = comment_data['comment']
+        nb_name = nb_name
+
+        comment_data_tuple = (str(t), str(comment), str(nb_name))
+        self.comment_queue.append(comment_data_tuple)
+        self.update_timer()
+
+
     def commit_queues(self):
         """
         commit any data in queues to the database We queue data until there is
@@ -148,6 +166,7 @@ class DbManager(object):
             self.c.executemany('INSERT INTO cells VALUES (?,?,?,?)', self.cell_queue)
             self.c.executemany('INSERT INTO nb_configs VALUES (?,?,?,?)', self.nb_queue)
             self.c.executemany('INSERT INTO janus_log VALUES (?,?,?,?,?)', self.log_queue)
+            self.c.executemany('INSERT INTO comments VALUES (?,?,?)', self.comment_queue)
 
             self.conn.commit()
             self.conn.close()
@@ -159,6 +178,7 @@ class DbManager(object):
         except:
             self.conn.rollback()
             raise
+
 
     def update_timer(self):
         """
@@ -173,6 +193,7 @@ class DbManager(object):
         self.commitTimer = Timer(2.0, self.commit_queues)
         self.commitTimer.start()
 
+
     def execute_search(self, search):
         """
         execute a particular search against the database
@@ -185,6 +206,17 @@ class DbManager(object):
         self.c.execute(search)
         rows = self.c.fetchall()
         return rows
+
+
+    def get_comments(self):
+        """
+        Return a list of all comments
+        """
+
+        search = "SELECT * FROM comments"
+        rows = self.execute_search(search)
+        return rows
+
 
     def get_nb_configs(self, path, start, end):
         """
@@ -363,14 +395,14 @@ class DbManager(object):
                 data_dict = {"meta_data": [], "line_count": 0, "function_count":0, "cell_count":0, "loc":0}
                 for d in json.load(cucumber).values:
                     for c in d:
-                        data_dict["meta_data"].append(c["metadata"])         
+                        data_dict["meta_data"].append(c["metadata"])
                         data_dict["cell_count"] += 1
                         # TODO count lines for all cells
                         # TODO count functions and loc for all code cells
                         # TODO something for output?
                         # TODO metadata separation?
                         # TODO REMOVE DATA COLUMN
-                tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]), 
+                tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
                     data_dict["line_count"], data_dict["function_count", data_dict["cell_count"], data_dict["loc"]]))
             self.c.executemany(insert, tuplst)
             self.conn.commit()

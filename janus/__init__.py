@@ -61,6 +61,10 @@ class JanusHandler(IPythonHandler):
             versions = self.db_manager.get_cell_history(path, start, end, cell_id)
             self.finish(json.dumps({'versions': versions}))
 
+        elif (query_type == 'comment'):
+            comments = self.db_manager.get_comments()
+            self.finish(json.dumps({'comments': comments}))
+
         else:
             self.finish(json.dumps({'msg': "Did not understand the request"}))
 
@@ -83,6 +87,8 @@ class JanusHandler(IPythonHandler):
             self.db_manager.record_action(post_data, hashed_path)
         elif post_data['type'] == "log":
             self.db_manager.record_log(post_data, hashed_path)
+        elif post_data['type'] == "comment":
+            self.db_manager.record_comment(post_data, hashed_path)
         self.finish(json.dumps({'hashed_nb_path': hashed_path}))
 
     def get_db(self):

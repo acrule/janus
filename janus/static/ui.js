@@ -6,6 +6,7 @@ hiding cells and tracking changes
 define([
     'jquery',
     'base/js/namespace',
+    '../janus/comment',
     '../janus/versions',
     '../janus/hide',
     '../janus/history',
@@ -13,6 +14,7 @@ define([
 ], function(
     $,
     Jupyter,
+    JanusComment,
     JanusVersions,
     JanusHide,
     JanusHistory,
@@ -92,6 +94,13 @@ define([
         janusMenu.append( $('<li>').addClass('divider') );
 
         addItemToMenu(janusMenu,
+                        'leave_comment',
+                        'Leave a comment',
+                        JanusComment.createCommentModal);
+
+        janusMenu.append( $('<li>').addClass('divider') );
+
+        addItemToMenu(janusMenu,
                         'toggle_nb_recording',
                         'Stop Tracking Changes',
                         JanusHistory.toggleHistoryRecording);
@@ -103,6 +112,8 @@ define([
                         'show_nb_history',
                         'Show Notebook History',
                         JanusViewer.createHistoryModal);
+
+
     }
 
 
