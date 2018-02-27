@@ -7,6 +7,7 @@ Handles interactions with the database storing notebook history data
 
 import pickle
 import sqlite3
+import json
 from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
@@ -48,6 +49,11 @@ class DbManager(object):
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS janus_log (time integer,
             nb_name text, name text, id text, ids text)''')
+
+        # TODO actual data blob will be removed
+        self.c.execute('''CREATE TABLE IF NOT EXISTS clean_boi (time integer, 
+            cell_id text, version_id text, cell_data text, meta_data text, 
+            line_count integer, function_count integer, cell_count integer, loc integer)''')
 
         self.conn.commit()
         self.conn.close()
@@ -331,3 +337,45 @@ class DbManager(object):
             cell_dict[m[2]] = pickle.loads(m[3])
 
         return cell_dict
+
+
+    def export_data_and_clean(self, drop_all = False):
+        """
+        copy cells table into analysis table that will scrub private nb data but keep
+        relevant data like metadata, loc, counts, etc. for analysis
+        drop_all: if the analysis table is dropped and refreshed with cells table
+        """
+        search = '''SELECT time, cell_id, version_id, cell_data FROM cells WHERE 1'''
+        insert = '''INSERT INTO clean_boi VALUES (?,?,?,?,?,?,?,?,?)'''
+        tuplst = []
+
+        self.conn = sqlite3.connect(self.db_path)
+        self.c = self.conn.cursor()
+        try:
+            self.c.execute(search)
+            rows = self.c.fetchall()
+            for r in rows:
+                time = r[0]
+                cell_id = r[1]
+                version_id = r[2]
+                # cell_data = r[3]
+                cucumber = pickle.load(r[3])
+                data_dict = {"meta_data": [], "line_count": 0, "function_count":0, "cell_count":0, "loc":0}
+                for d in json.load(cucumber).values:
+                    for c in d:
+                        data_dict["meta_data"].append(c["metadata"])         
+                        data_dict["cell_count"] += 1
+                        # TODO count lines for all cells
+                        # TODO count functions and loc for all code cells
+                        # TODO something for output?
+                        # TODO metadata separation?
+                        # TODO REMOVE DATA COLUMN
+                tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]), 
+                    data_dict["line_count"], data_dict["function_count", data_dict["cell_count"], data_dict["loc"]]))
+            self.c.executemany(insert, tuplst)
+            self.conn.commit()
+            self.conn.close()
+        except:
+            self.conn.rollback()
+            self.conn.close()
+            raise

@@ -7,7 +7,6 @@ Get diff between current and previous notebooks
 
 import ast
 import os
-import ast
 import uuid
 import pickle
 
