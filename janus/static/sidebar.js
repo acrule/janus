@@ -141,96 +141,6 @@ define([
     };
 
 
-    Sidebar.prototype.openSection = function(cells=[], marker = null, index = 0) {
-        /* open this section of cells in the sidebar
-
-        Args:
-            cells: cells from the main notebook we want to show in this section
-        */
-
-        // don't add section if it already exists
-        // TODO we will want a less hacky way to do this in future, likely by making
-        // the placeholders into objects with a "section" item we can check
-
-        var new_cell_ids = []
-        for (var i=0; i<cells.length; i++) {
-            new_cell_ids.push(cells[i].metadata.janus.id)
-        }
-
-        // for (var j=0; j< Jupyter.sidebar.sections.length; j++) {
-        //
-        //     var old_cell_ids = []
-        //
-        //     for (var k=0; k<Jupyter.sidebar.sections[j].cells.length; k++) {
-        //         old_cell_ids.push(Jupyter.sidebar.sections[j].cells[k].metadata.janus.id)
-        //     }
-        //
-        //     if (JSON.stringify(old_cell_ids) == JSON.stringify(new_cell_ids)) {
-        //         Jupyter.sidebar.sections[k].element.show();
-        //         Jupyter.sidebar.sections[k].marker = marker
-        //         if ($(Jupyter.sidebar.sections[k].marker).data('showing')){
-        //             Jupyter.sidebar.expand();
-        //         }
-        //         return
-        //     }
-        // }
-
-
-        // $(marker).data('showing', true);
-
-        // add section to sidebar and render cells in it
-        var sb = Jupyter.sidebar;
-        var newSection = createSection(marker)
-        var title = ""
-        var title_labels = $(marker).find('.hide-label')
-        if (title_labels.length > 0){
-            var title = title_labels[0].innerHTML
-        }
-
-        $(marker).data('sectionIndex', index)
-
-        //TODO later we will want to append in the right spot on the list
-        $(sb.element).append(newSection.element);
-        newSection.renderCells(cells, title)
-
-        // TODO later we will want to insert it at the correct spot in the list
-        sb.sections.push(newSection)
-
-        // open sidebar if needed
-        if ( $(marker).data('showing') ) {
-            newSection.element.show()
-            $(marker).addClass('active')
-            sb.expand()
-        } else {
-            newSection.element.hide()
-            $(marker).removeClass('active')
-        }
-
-        Jupyter.sidebar.saveMarkerMetadata()
-
-
-    }
-
-
-    Sidebar.prototype.showWithCells = function (cell_ids, marker = null, index = 0) {
-        /* get cells to show in sidebar if given their Janus ids
-
-        Args:
-            cell_ids: ids of the cells to show
-            marker: the placeholder we are rendering in place of
-        */
-
-        var cells = Jupyter.notebook.get_cells()
-        var cells_to_copy = []
-        for (var i = 0; i < cells.length; i++) {
-            if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
-                cells_to_copy.push(cells[i])
-            }
-        }
-        Jupyter.sidebar.openSection(cells_to_copy, marker, index)
-    }
-
-
     var Section = function( marker = null ) {
         /* A group of contiguous cells to be shown in the sidebar */
 
@@ -395,8 +305,7 @@ define([
         /* Update cells in the notebook and the sidebar */
 
         this.updateHiddenCellsNotebook()
-        this.updateHiddenCellsSidebar()
-        // position cells correctly
+        this.updateSidebarSections()
     }
 
 
@@ -452,25 +361,140 @@ define([
     }
 
 
-    Sidebar.prototype.updateHiddenCellsSidebar = function() {
+    Sidebar.prototype.updateSidebarSections = function() {
+        /* update the sections shown in the sidebar */
 
-        // remove all items from the sidebar
-        $('.section').remove();
-        Jupyter.sidebar.sections = []
+        // copy old section array
+        var oldSections = []
 
-        var markers = $('.hide-marker, .hidden-output, .hidden-code').toArray()
+        if (Jupyter.sidebar.sections){
+            oldSections = Jupyter.sidebar.sections.slice();
+        }
+        var newSections = [];
+        var markers = $('.hide-marker, .hidden-output, .hidden-code').toArray();
 
+        // get a list of just the cell ids shown in each marker
+        var oldSectionIDs = []
+        for (var i=0; i < oldSections.length; i++ ){
+
+            // use to track if this section has been matched
+            oldSections[i].found = false;
+
+            // get list of cell ids for each section
+            var ids = [];
+            for (var j = 0; j < oldSections[i].cells.length; j++) {
+                ids.push(oldSections[i].cells[j].metadata.janus.id)
+            }
+            oldSectionIDs.push(ids)
+        }
+
+        // look for old sections that stayed the same (i.e. are showing the same cells)
         for (var i = 0; i < markers.length; i++) {
-            Jupyter.sidebar.showWithCells( $(markers[i]).data('ids'), markers[i], i )
-            if ($(markers[i]).data('showing')) {
-                $(markers[i]).addClass('active')
+
+            var markerIDs = $(markers[i]).data('ids');
+            var sectionIndex = $(markers[i]).data('sectionIndex');
+            var matchID = matchIDs(markerIDs, sectionIndex, oldSectionIDs);
+
+            // reuse an exisitng section
+            if (matchID >= 0) {
+
+                // track that this section has been found
+                oldSections[matchID].found = true;
+                var newSection = oldSections[matchID]
+
+                // update the marker in this section
+                newSection.marker = markers[i];
+                var newSectionIndex = newSections.length
+                $(markers[i]).data('sectionIndex', newSectionIndex)
+
+                // add the section to our list
+                newSections.push(newSection)
+
+            // or create a new section if needed
             } else {
-                $(markers[i]).removeClass('active')
+
+                // first get a list of the cells to copy
+                var cells = Jupyter.notebook.get_cells()
+                var cells_to_copy = []
+                for (var j = 0; j < cells.length; j++) {
+                    if ( $.inArray( cells[j].metadata.janus.id, markerIDs ) > -1 ){
+                        cells_to_copy.push(cells[j])
+                    }
+                }
+
+                // assign the correct title
+                var title = ""
+                var title_labels = $(markers[i]).find('.hide-label')
+                if (title_labels.length > 0){
+                    var title = title_labels[0].innerHTML
+                }
+
+                //TODO later we will want to append in the right spot on the list
+                // then create the section
+                var newSection = createSection(markers[i])
+                var sb = Jupyter.sidebar;
+                $(sb.element).append(newSection.element);
+                newSection.renderCells(cells_to_copy, title)
+
+                // add this to our list of sections
+                var newSectionIndex = newSections.length
+                $(markers[i]).data('sectionIndex', newSectionIndex)
+                newSections.push(newSection)
             }
         }
-        Jupyter.notebook.get_selected_cell().focus_cell()
+
+        // get rid of old sections that no longer have a match
+        for (var i = 0; i < oldSections.length; i ++ ){
+            if (oldSections[i].found == false) {
+                oldSections[i].element.hide()
+                oldSections[i].element.remove()
+            }
+        }
+
+        // save any metadata for future reference
+        Jupyter.sidebar.saveMarkerMetadata()
+
+        // show / hide all sections
+        Jupyter.sidebar.sections = newSections
+        var anyShowing = false
+        for (var i = 0; i < newSections.length; i ++){
+            if ($(newSections[i].marker).data('showing')){
+                anyShowing = true;
+                newSections[i].element.show()
+            } else {
+                newSections[i].element.hide()
+            }
+        }
+
+        // and open or close the sidebar if needed
+        if (anyShowing) {
+            Jupyter.sidebar.expand()
+        } else {
+            Jupyter.sidebar.collapse()
+        }
 
         Jupyter.sidebar.startRepositionTimer()
+
+    }
+
+
+    function matchIDs(markerIDs, sectionIndex, oldSectionIDs) {
+        /* Find a match for the ids */
+
+        if (oldSectionIDs.length == 0){
+            return -1
+        }
+
+        if (JSON.stringify(markerIDs) == JSON.stringify(oldSectionIDs[sectionIndex])) {
+            return sectionIndex
+        } else {
+            for (var i = 0; i < oldSectionIDs.length; i ++) {
+                if (JSON.stringify(markerIDs) == JSON.stringify(oldSectionIDs[i])) {
+                    return i;
+                }
+            }
+            return -1
+        }
     }
 
 

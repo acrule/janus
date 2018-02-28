@@ -32,10 +32,6 @@ define([
         var oldCellSelect = Cell.Cell.prototype.select;
         Cell.Cell.prototype.select = function() {
 
-            // console.log("")
-            // console.log("Selecting")
-            // console.log(this)
-
             // unselect all cells in the sidebar
             if (! Jupyter.sidebar.collapsed) {
                 sb_cells = Jupyter.sidebar.cells
@@ -95,10 +91,6 @@ define([
         var oldCellUnselect = Cell.Cell.prototype.unselect;
         Cell.Cell.prototype.unselect = function(){
 
-            // console.log("")
-            // console.log("Unselecting")
-            // console.log(this)
-
             // need to return context object so mult-cell selection works
             var cont = oldCellUnselect.apply(this, arguments);
 
@@ -135,8 +127,6 @@ define([
 
             // update the sidebar
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
 
             // render and focus markdown cell
             if(!Jupyter.sidebar.collapsed){
@@ -172,8 +162,6 @@ define([
 
             // update the sidebar
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
 
             // select the first cell in the sidebar
             if (selCells[0].sb_cell) {
@@ -282,8 +270,6 @@ define([
             if (curMetadata.janus.cell_hidden) {
                 c.metadata.janus.cell_hidden = true;
                 Jupyter.sidebar.updateHiddenCells();
-                // Jupyter.sidebar.hideHiddenCells();
-                // Jupyter.sidebar.update();
             }
 
             // make sure to return the new cell as other functions us it
@@ -299,8 +285,6 @@ define([
         Jupyter.notebook.__proto__.move_selection_up = function() {
             oldMoveSelectionUp.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -312,8 +296,6 @@ define([
         Jupyter.notebook.__proto__.move_selection_down = function() {
             oldMoveSelectionDown.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -325,8 +307,6 @@ define([
         Jupyter.notebook.__proto__.merge_cell_above = function() {
             oldMergeCellAbove.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -337,8 +317,6 @@ define([
         Jupyter.notebook.__proto__.merge_cell_below = function() {
             oldMergeCellBelow.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -350,8 +328,6 @@ define([
         Jupyter.notebook.__proto__.delete_cells = function() {
             oldDeleteCells.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -387,8 +363,6 @@ define([
 
                 // update the sidebar
                 Jupyter.sidebar.updateHiddenCells();
-                // Jupyter.sidebar.hideHiddenCells();
-                // Jupyter.sidebar.update();
             } else {
                 oldSplitCell.apply(this, arguments);
             }
@@ -478,8 +452,6 @@ define([
             }
             oldPasteCellAbove.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -494,8 +466,6 @@ define([
             }
             oldPasteCellBelow.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 
@@ -511,8 +481,6 @@ define([
             }
             oldPasteCellReplace.apply(this, arguments);
             Jupyter.sidebar.updateHiddenCells();
-            // Jupyter.sidebar.hideHiddenCells();
-            // Jupyter.sidebar.update();
         }
     }
 

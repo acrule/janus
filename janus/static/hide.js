@@ -110,8 +110,6 @@ define([
         renderSourceMarker(cell);
         renderOutputMarker(cell);
         Jupyter.sidebar.updateHiddenCells();
-        // Jupyter.sidebar.hideHiddenCells();
-        // Jupyter.sidebar.update();
     }
 
 
@@ -143,10 +141,10 @@ define([
             if (showSource) {
                 if (selCells[i].metadata.janus.output_hidden && numOutputs > 0) {
                     // only show the source
-                    selCells[i].element.removeClass('hidden');
+                    $(selCells[i].element).removeClass('hidden');
                     selCells[i].metadata.janus.source_hidden = false;
                     selCells[i].metadata.janus.cell_hidden = false;
-                    selCells[i].element.find("div.input").show('slow');
+                    $(selCells[i].element).find("div.input").show('slow');
                 } else {
                     // show the whole cell
                     showCell(selCells[i])
@@ -170,8 +168,6 @@ define([
 
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
-        // Jupyter.sidebar.hideHiddenCells();
-        // Jupyter.sidebar.update();
     }
 
 
@@ -317,7 +313,7 @@ define([
         /* Show all cells in sidebar that have been hidden */
 
         var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
-        Jupyter.sidebar.updateHiddenCellsSidebar()
+        Jupyter.sidebar.updateSidebarSections()
     }
 
 
@@ -325,8 +321,7 @@ define([
         /* Hide all cells in sidebar that have been hidden */
 
         var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', false)
-        Jupyter.sidebar.updateHiddenCellsSidebar();
-        Jupyter.sidebar.collapse();
+        Jupyter.sidebar.updateSidebarSections()
 
     }
 
