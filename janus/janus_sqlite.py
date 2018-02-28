@@ -57,7 +57,7 @@ class DbManager(object):
         # TODO actual data blob will be removed
         self.c.execute('''CREATE TABLE IF NOT EXISTS clean_boi (time integer,
             cell_id text, version_id text, cell_data text, meta_data text,
-            line_count integer, function_count integer, cell_count integer, loc integer)''')
+            line_count integer, function_count integer, cell_count integer, loc integer, types text)''')
 
         self.conn.commit()
         self.conn.close()
@@ -370,7 +370,8 @@ class DbManager(object):
 
         return cell_dict
 
-
+    
+    # TODO how/where to call?
     def export_data_and_clean(self, drop_all = False):
         """
         copy cells table into analysis table that will scrub private nb data but keep
@@ -378,7 +379,7 @@ class DbManager(object):
         drop_all: if the analysis table is dropped and refreshed with cells table
         """
         search = '''SELECT time, cell_id, version_id, cell_data FROM cells WHERE 1'''
-        insert = '''INSERT INTO clean_boi VALUES (?,?,?,?,?,?,?,?,?)'''
+        insert = '''INSERT INTO clean_boi VALUES (?,?,?,?,?,?,?,?,?,?)'''  # TODO more informative name?
         tuplst = []
 
         self.conn = sqlite3.connect(self.db_path)
@@ -392,18 +393,25 @@ class DbManager(object):
                 version_id = r[2]
                 # cell_data = r[3]
                 cucumber = pickle.load(r[3])
-                data_dict = {"meta_data": [], "line_count": 0, "function_count":0, "cell_count":0, "loc":0}
+                data_dict = {"meta_data": [], "line_count": 0, "function_count":0, 
+                    "cell_count":0, "loc":0, "types":{"markdown":0,"code":0}}
                 for d in json.load(cucumber).values:
                     for c in d:
-                        data_dict["meta_data"].append(c["metadata"])
-                        data_dict["cell_count"] += 1
-                        # TODO count lines for all cells
-                        # TODO count functions and loc for all code cells
-                        # TODO something for output?
-                        # TODO metadata separation?
-                        # TODO REMOVE DATA COLUMN
+                        data_dict["meta_data"].append(c["metadata"])  # metadata obj
+                        data_dict["cell_count"] += 1  # how many individual cells
+                        data_dict["types"][c["cell_type"]] += 1  # how many markdown and code cells
+                        if data_dict["types"][c["cell_type"]] == "code":
+                            data_dict["loc"] += len(c["source"])  # LOC for code cells
+                        data_dict["line_count"] += len(c["source"])  # count for all cells
+
+                        # TODO count functions for all code cells?
+                        # TODO something for output? How to tell the different types of output?
+                        # TODO REMOVE DATA COLUMN?? (currently purged)!!
+                        # TODO what is content tag? and what does the code strings inside represent?
+
                 tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
-                    data_dict["line_count"], data_dict["function_count", data_dict["cell_count"], data_dict["loc"]]))
+                    data_dict["line_count"], data_dict["function_count"], data_dict["cell_count"], data_dict["loc"], 
+                    data_dict["types"]))
             self.c.executemany(insert, tuplst)
             self.conn.commit()
             self.conn.close()
