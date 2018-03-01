@@ -41,7 +41,8 @@ define([
     function loadJanusPostNotebook() {
         /* run steps that require cells to already be loaded */
 
-        JanusPatch.initializeJanusMetadata();        
+        JanusPatch.initializeJanusMetadata();
+        JanusUI.renderJanusUI();
         JanusVersions.initializeVersionMarkers();
         JanusHide.initializeVisibility();
         Jupyter.sidebar.updateHiddenCells();
@@ -53,7 +54,6 @@ define([
         /* Called as extension loads and notebook opens */
 
         loadCSS();
-        JanusUI.renderJanusUI();
         JanusSidebar.createSidebar();
         JanusPatch.applyJanusPatches();
 
