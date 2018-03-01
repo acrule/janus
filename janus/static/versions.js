@@ -34,15 +34,16 @@ define([
         */
 
         return function() {
+
             var janus_meta = cell.metadata.janus
             var selID = janus_meta.id
+
             //log action
             if (janus_meta.all_versions_showing) {
                 JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-extra-versions', selID, [selID]);
             } else {
                 JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-extra-versions', selID, [selID]);
             }
-
 
             toggleShowAllVersions(cell);
 

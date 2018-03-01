@@ -24,14 +24,17 @@ define([
 ){
 
     var Sidebar = function(nb) {
-        /* A sidebar panel for showing groups of hidden cells */
+        /* A sidebar panel for showing groups of hidden cells
+
+        Args:
+            nb: the jupyter notebook instance
+        */
 
         var sidebar = this;
         Jupyter.sidebar = sidebar;
 
         sidebar.notebook = nb;
         sidebar.collapsed = true;
-        sidebar.marker = null;
         sidebar.cells = []
         sidebar.sections = []
         sidebar.positionTimer = null
@@ -68,7 +71,7 @@ define([
 
         var site_height = $("#site").height();
         var site_width = $("#site").width();
-        // 40 pixel gutter + 15 pixel padding on each side of page
+        // 15 pixel gutter + 15 pixel padding on each side of page
         var sidebar_width = (site_width - 45) / 2;
 
         // move the notebook container to the side
@@ -76,7 +79,6 @@ define([
             marginLeft: '15px',
             width: sidebar_width
         }, 400);
-
 
         //  move the sidebar into position
         Jupyter.sidebar.element.animate({
@@ -702,7 +704,7 @@ define([
                 .click(function(event){
                     $('#minimap').remove()
                     var that = this;
-                    Jupyter.sidebar.marker = that;
+                    // Jupyter.sidebar.marker = that;
                     $(this).data('showing', true);
                     $(this).addClass('active')
                     var secIndex = $(this).data('sectionIndex');

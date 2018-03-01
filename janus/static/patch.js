@@ -680,6 +680,7 @@ define([
 
         // patch cell functions
         patchCellSelect();
+        patchCellUnselect();
         patchToMarkdown();
         patchToCode();
         patchCodeExecute();
@@ -700,10 +701,7 @@ define([
         patchEditMode();
         patchCommandMode();
         patchUpdateSoftSelection();
-
-        //new patches
         patchCutCopyPaste();
-        patchCellUnselect();
         patchKeydown();
     }
 

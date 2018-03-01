@@ -15,8 +15,9 @@ define([
     JanusUtils
 ){
 
-// HIDE AND SHOW CELLS
+    //TODO substantial duplicate code that could be put into helper functions
 
+    // HIDE AND SHOW ENTIRE CELLS
     function toggleSelCellsVisibility() {
         /* toggle visiblity of all selected cells
 
@@ -27,7 +28,7 @@ define([
         var primaryHidden = selCell.metadata.janus.cell_hidden
         var selCells = Jupyter.notebook.get_selected_cells();
 
-        // log the action
+        // get ids of selected cells and log the action
         var selID = selCell.metadata.janus.id
         var selIDs = []
         for (var i = 0; i < selCells.length; i++){
@@ -47,12 +48,6 @@ define([
                 hideCell(selCells[i]);
             }
         }
-
-        // update placeholder markers and the sidebar
-        // Jupyter.sidebar.saveMarkerMetadata();
-        // Jupyter.sidebar.updateHiddenCells();
-        // Jupyter.sidebar.hideHiddenCells();
-        // Jupyter.sidebar.update();
     }
 
 
@@ -76,8 +71,6 @@ define([
         // markers and sidebar
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
-        // Jupyter.sidebar.hideHiddenCells();
-        // Jupyter.sidebar.update();
     }
 
 
@@ -88,12 +81,15 @@ define([
             cell: cell to show
         */
 
-        // TODO may need to update entire cell content, not just text
-
         // styling
         cell.element.find("div.input").show('slow');
         cell.element.find("div.output").show('slow');
         cell.element.removeClass('hidden');
+
+        // metadata
+        cell.metadata.janus.cell_hidden = false;
+        cell.metadata.janus.source_hidden = false;
+        cell.metadata.janus.output_hidden = false;
 
         // update text with content from sidebar cell
         if (cell.sb_cell){
@@ -101,27 +97,25 @@ define([
         }
         cell.render();
 
-        // metadata
-        cell.metadata.janus.cell_hidden = false;
-        cell.metadata.janus.source_hidden = false;
-        cell.metadata.janus.output_hidden = false;
-
-        // update markers and sidebar
+        // update hidden source / ouptut markers
         renderSourceMarker(cell);
         renderOutputMarker(cell);
+
+        // update sidebar
+        Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
     }
 
 
-// HIDE SOURCE
+    // HIDE SOURCE
     function toggleSourceVisibility() {
         /* Hide/Show the source of individual cells */
 
+        // get selected ids and log the action
         var selCell = Jupyter.notebook.get_selected_cell();
         var showSource = selCell.metadata.janus.source_hidden
         var selCells = Jupyter.notebook.get_selected_cells();
 
-        // log the action
         var selID = selCell.metadata.janus.id
         var selIDs = []
         for (var i = 0; i < selCells.length; i++){
@@ -135,6 +129,7 @@ define([
 
         // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
+
             var numOutputs = selCells[i].output_area.outputs.length
 
             // if we should show the source
@@ -148,13 +143,11 @@ define([
                 } else {
                     // show the whole cell
                     showCell(selCells[i])
-                    selCells[i].element.find("div.input").show('slow');
                 }
             } else {
                 if (selCells[i].metadata.janus.output_hidden || numOutputs == 0) {
                     // hide the entire cell
                     hideCell(selCells[i])
-                    selCells[i].element.find("div.input").hide('slow');
                 } else {
                     // only hide the source
                     selCells[i].metadata.janus.source_hidden = true;
@@ -166,6 +159,7 @@ define([
 
         }
 
+        // update the sidebar
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
     }
@@ -201,15 +195,11 @@ define([
         }
         else if (cell.cell_type == 'code') {
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
-            // console.log("Colapsing from render source marker")
-            // Jupyter.sidebar.collapse();
-
-            // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
 
 
-// HIDE OUTPUTS
+    // HIDE OUTPUTS
     function toggleOutputVisibility() {
         /* Hide/Show the outputs of individual cells */
 
@@ -236,8 +226,8 @@ define([
             if (numOutputs > 0){
                 if (showOutput) {
                     if (! selCells[i].metadata.janus.source_hidden) {
+                        // show whole cell
                         showCell(selCells[i])
-                        selCells[i].element.find("div.output").show('slow');
                     } else {
                         // just show the output
                         selCells[i].element.removeClass('hidden');
@@ -247,9 +237,6 @@ define([
                     }
                 } else {
                     if (selCells[i].metadata.janus.source_hidden) {
-                        selCells[i].metadata.janus.output_hidden = true;
-                        selCells[i].metadata.janus.cell_hidden = true;
-                        selCells[i].element.find("div.output").hide('slow');
                         hideCell(selCells[i])
                     } else if (numOutputs > 0) {
                         // hide just the output
@@ -263,10 +250,9 @@ define([
             }
         }
 
+        // update the sidebar
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
-        // Jupyter.sidebar.hideHiddenCells();
-        // Jupyter.sidebar.update();
     }
 
 
@@ -295,21 +281,19 @@ define([
                 })
                 .mousemove( function(event){
                     JanusUtils.moveMinimap(event, this);
-                }
-                )
+                })
             marker.onclick = function() { showCellInSidebar(cell, marker); };
         }
         else if (cell.cell_type == 'code') {
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
-            // console.log("Colapsing from render output marker")
-            // Jupyter.sidebar.collapse();
-            // TODO may want to do Jupyter.sidebar.update() instead
         }
     }
 
 
-// all
+    // all
     function toggleAllSections(){
+        /* Show or hide all hide cell sections in the sidebar */
+
         if (Jupyter.sidebar.collapsed) {
             var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
         } else {
@@ -320,7 +304,7 @@ define([
     }
 
 
-// GENERAL
+    // GENERAL
     function initializeVisibility() {
         /* hide source and outputs of all cells in nb with proper metadata */
 
@@ -350,15 +334,11 @@ define([
             marker: marker being clicked to show cell (use for sidebar position)
         */
 
-        Jupyter.sidebar.marker = marker
-
         // update showing metadata
         $(marker).data('showing', true)
         $(marker).addClass('active')
 
         // show the item
-        var secIndex = $(marker).data('sectionIndex');
-        // Jupyter.sidebar.sections[secIndex].element.show();
         Jupyter.sidebar.expand()
     }
 

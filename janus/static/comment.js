@@ -25,7 +25,10 @@ define([
         // create HTML for the modal's content
         var modal_body = $('<div/>');
         var commentArea = $('<div/ id="comment-area">');
-        commentArea.append('<input id="comment-box" type="text" placeholder="Your comment..">')
+        var commentBox = $('<input id="comment-box">')
+        commentBox.type = "text"
+        commentBox.attr("placeholder", "Your comment...");
+        commentArea.append(commentBox)
 
         var pastComments = $('<div id="past-comments"/>')
         modal_body.append(commentArea);

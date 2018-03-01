@@ -21,9 +21,6 @@ define([
 
     // TODO Pull cell history from database, not metadata
     // TODO debug saving of cell versions before cell fully executed
-    // TODO debug history dialog window overflowing the main screen
-    // TODO enable cell hiding in history viewer
-    // TODO show full history of all cell executions (stretch)
     // TODO enable truncated history based on program analysis (stretch)
 
     var HistoryModal = function(nb) {
@@ -44,7 +41,7 @@ define([
         /* get data about previous notebook cell orders
            then render the modal using that data */
 
-        that = this;
+        var that = this;
         this.nb_configs = [];
 
         // preapre url for GET request
@@ -89,7 +86,7 @@ define([
         /* show the modal, assuming we already have the nb history data */
 
         // get the number of versions from the database
-        that = this
+        var that = this
         numConfigs = this.nb_configs.length
 
         // log opening
@@ -101,7 +98,6 @@ define([
         var revision = $('<div id="revision"/>')
         revision.append($('<div id="rev_num"/>'));
         revision.append($('<div id="rev_time"/>'));
-        // modal_body.append(revision);
         modal_float.append(revision);
 
         // create the slider itself
@@ -179,11 +175,16 @@ define([
 
 
     HistoryModal.prototype.getCellVersionData = function(version_ids) {
-        /* get data on specific cell versions to show
-           then update the modal based on that data */
+        /* get data on specific cell versions to show then update the modal based on that data
 
+        Args:
+            version_ids: cells versions we want to get data for
+        */
+
+
+        // remember the scroll position so we don't jump around after rendering
+        // new cells
         that = this;
-
         var scrollY = $('.modal').scrollTop()
 
         // preapre url for GET request
@@ -240,14 +241,13 @@ define([
     }
 
 
+    //TODO break this into smaller functions that are easier to maintain
     HistoryModal.prototype.hideCells = function() {
         /* Hide cells in the modal and enable minimap */
 
 
         // remove current markers for hidden cells, outputs, and code
         $(".modal").find('.hide-container').remove()
-        // $(".modal").find('.hidden-code').remove()
-        // $(".modal").find('.hidden-output').remove()
 
         var cells = Jupyter.historyViewer.cells
         var serial_hidden_cells = []
@@ -288,7 +288,6 @@ define([
                     .append($('<div>')
                         .addClass('hide-marker')
                         .data('ids', cell_ids.slice())
-                        // .data('showing', first_showing)
                         .hover(function(event){
                             JanusUtils.showMinimap(event, this)
                         },
@@ -326,7 +325,7 @@ define([
                 JanusUtils.removeMarkerType('.hidden-code', outputArea);
                 var marker = JanusUtils.addMarkerToElement(outputArea, classes);
                 $(marker).data('ids', [cells[i].metadata.janus.id])
-                    .data('showing', false)
+                    // .data('showing', false)
                     .hover(function(event){
                         JanusUtils.showMinimap(event, this)
                     },
@@ -349,7 +348,7 @@ define([
                 JanusUtils.removeMarkerType('.hidden-output', markerContainer);
                 var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
                 $(marker).data('ids', [cells[i].metadata.janus.id])
-                    .data('showing', false)
+                    // .data('showing', false)
                     .hover(function(event){
                         JanusUtils.showMinimap(event, this)
                     },

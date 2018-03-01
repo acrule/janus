@@ -128,13 +128,11 @@ define([
         }
 
         // populate sidebar cell with content of notebook cell
-        // cell_data = cell.toJSON();
         newCell.fromJSON(cellJSON);
 
         return newCell
 
     }
-
 
 
 // MINIMAP
@@ -181,10 +179,6 @@ define([
 
         moveMinimap(event, el);
 
-        // minimap.css({
-        //     'top': el_top,
-        //     'left': el_right + 25
-        // })
         $("#notebook").append(minimap);
         var mini_wrap = $('<div>').addClass('mini-wrap')
         minimap.append(mini_wrap)
@@ -233,38 +227,40 @@ define([
             event: mouseout event that triggers hidding minimap
             el: placeholder element triggering event
         */
+
         $('#minimap').remove()
         el.style.backgroundColor = ""
     }
 
 
     function moveMinimap(event, el) {
-            var mouseTop = event.clientY
-            var mouseRight = event.clientX
-            var topOffset = $('#site').position().top
-            var topScroll = $('#site').scrollTop()
-            var siteWidth = $('#site').width()
-            var siteHeight = $('#site').height()
-            var nbHeight = $('#notebook-container').height()
-            var miniWidth = $('#minimap').width()
+        var mouseTop = event.clientY
+        var mouseRight = event.clientX
+        var topOffset = $('#site').position().top
+        var topScroll = $('#site').scrollTop()
+        var siteWidth = $('#site').width()
+        var siteHeight = $('#site').height()
+        var nbHeight = $('#notebook-container').height()
+        var miniWidth = $('#minimap').width()
 
-            // ensure tooltip does not go off the page
-            if ((mouseRight + miniWidth) > siteWidth - 24 ) {
-                mouseRight = siteWidth - miniWidth - 24;
-            }
-
-            // there is 100px buffer at the end, so we add 80px to leave 20px buffer
-            var maxHeight = siteHeight - (mouseTop - topOffset) - 8;
-
-            var minimap = $('#minimap');
-            minimap.css({
-                'max-height': maxHeight,
-                'top': mouseTop - topOffset + topScroll + 12,
-                'left': mouseRight + 12
-            })
+        // ensure tooltip does not go off the page
+        if ((mouseRight + miniWidth) > siteWidth - 24 ) {
+            mouseRight = siteWidth - miniWidth - 24;
         }
 
-// LOG ACTIONS
+        // there is 100px buffer at the end, so we add 80px to leave 20px buffer
+        var maxHeight = siteHeight - (mouseTop - topOffset) - 8;
+
+        var minimap = $('#minimap');
+        minimap.css({
+            'max-height': maxHeight,
+            'top': mouseTop - topOffset + topScroll + 12,
+            'left': mouseRight + 12
+        })
+    }
+
+
+    // LOG ACTIONS
     function logJanusAction(nb, t, name, selID, selIDs) {
         /* Send information about action to server to process and save
 
