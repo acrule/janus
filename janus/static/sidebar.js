@@ -185,7 +185,24 @@ define([
             })
         )
         header.append(closeContainer)
-        header.append($("<div/>").addClass('section-title').text(title))
+        var secTitle = $("<div/>").addClass('section-title')
+                            .text(title)
+                            .click(function(event){
+                                enableVersionNameEditing(this)
+                                event.stopPropagation()
+                            })
+                            .focusout(function(){
+                                disableVersionNameEditing(this, that)
+                            })
+                            .hover(function(event){
+                                this.style.color = "#333"
+                                this.style.background = "#DDD"
+                            },
+                            function(event){
+                                this.style.color = ""
+                                this.style.background = ""
+                            });
+        header.append(secTitle)
         this.element.append(header)
 
         // add cell wrapper
@@ -733,16 +750,23 @@ define([
     Sidebar.prototype.saveMarkerMetadata = function() {
         /* Store marker names to notebook metadata for later use */
 
-        var hideMarkers = $('.hide-marker', 'hidden-code', 'hidden-output').toArray()
+        var hideMarkers = $('.hide-marker, .hidden-code, .hidden-output').toArray()
         var hideMetadata = []
         for (i = 0; i < hideMarkers.length; i++) {
             var markerIDs = $(hideMarkers[i]).data('ids')
-            var markerName = $(hideMarkers[i]).find('.hide-label')[0].innerHTML
-            var sectionIndex = $(hideMarkers[i]).data('sectionIndex')
-            var showing = false
-            if (sectionIndex) {
-                var showing = Jupyter.sidebar.sections[sectionIndex].showing
+            var markerLabels = $(hideMarkers[i]).find('.hide-label')
+            if (markerLabels.length > 0) {
+                var markerName = markerLabels[0].innerHTML
             }
+            else {
+                var markerName = ''
+            }
+            var showing = false;
+            // TODO implement saving of showing / hidden status
+            // var sectionIndex = $(hideMarkers[i]).data('sectionIndex')
+            // if (sectionIndex && Jupyter.sidebar.sections.length > 0) {
+            //     var showing = Jupyter.sidebar.sections[sectionIndex].showing
+            // }
             hideMetadata.push({
                 'ids': markerIDs,
                 'markerName': markerName,
@@ -779,7 +803,7 @@ define([
     }
 
 
-    function disableVersionNameEditing(element) {
+    function disableVersionNameEditing(element, section = null) {
         /* stop editing version name and save to metadata
 
         Args:
@@ -791,6 +815,22 @@ define([
         if(element.innerHTML == "" || element.innerHTML == "Hidden Cells"){
             element.innerHTML = "Hidden Cells"
         }
+
+        if (section) {
+            // set title on main notebook
+            var markerTitles = $(section.marker).find('.hide-label')
+            console.log(markerTitles)
+            if (markerTitles.length > 0){
+                markerTitles[0].innerHTML = element.innerHTML
+            }
+        } else {
+            // set title on section
+            var marker = $(element).parent()
+            var sectionIndex = $(marker).data('sectionIndex')
+            var sectTitle = $(Jupyter.sidebar.sections[sectionIndex].element).find('.section-title')[0]
+            sectTitle.innerHTML = element.innerHTML
+        }
+
         Jupyter.sidebar.saveMarkerMetadata()
 
     }

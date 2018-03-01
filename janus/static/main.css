@@ -304,8 +304,8 @@ hiding cells and tracking changes
     color: #666666;
     text-align: left;
     border-radius: 1px;
-    min-width: 0;
-    display: -webkit-box;
+    min-width: 10px;
+    /* display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-box-align: stretch;
     display: -moz-box;
@@ -321,7 +321,7 @@ hiding cells and tracking changes
     -webkit-box-flex: 1;
     -moz-box-flex: 1;
     box-flex: 1;
-    flex: 1;
+    flex: 1; */
 }
 
 #minimap{
