@@ -35,7 +35,7 @@ define([
 
         sidebar.notebook = nb;
         sidebar.collapsed = true;
-        sidebar.cells = []
+        // sidebar.cells = []
         sidebar.sections = []
         sidebar.positionTimer = null
 
@@ -88,13 +88,17 @@ define([
             padding: '0px'
         }, 400, function (){
 
-            //TODO replace by iterating over sections and their cells
-            // we should not have to keep a separate list of sidebar cells
-            for (i=0; i<that.cells.length; i++){
-                if (that.cells[i].cell_type == 'code') {
-                    that.cells[i].render();
-                    that.cells[i].focus_editor();
-                    that.cells[i].expand_output();
+            // make sure all code cells are properly rendered
+            for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+                if (Jupyter.sidebar.sections[i].showing) {
+                    secCells = Jupyter.sidebar.sections[i].cells;
+                    for (var j = 0; j < secCells.length; j++) {
+                        if (secCells[j].cell_type == 'code') {
+                            secCells[j].render();
+                            secCells[j].focus_editor();
+                            secCells[j].expand_output();
+                        }
+                    }
                 }
             }
 
@@ -200,8 +204,7 @@ define([
             this.cells.push(newCell);
 
             // for now, add sell to sidebar list too
-            Jupyter.sidebar.cells.push(newCell);
-
+            // Jupyter.sidebar.cells.push(newCell);
 
             // make sure all code cells are rendered
             if (newCell.cell_type == 'code') {

@@ -150,19 +150,12 @@ define([
         var el_top = $(el).parent().position().top;
         var el_right = $(el).parent().position().left + $(el).parent().width();
         var cell_ids = $(el).data('ids');
+        var sectionIndex = $(el).data('sectionIndex');
+        var showing = Jupyter.sidebar.sections[sectionIndex].showing
 
         // if this collection of cells is already in sidebar, don't show minimap
-        if(!Jupyter.sidebar.collapsed){
-            var sidebar_cell_ids = []
-            var sidebar_cells = Jupyter.sidebar.cells
-            if (sidebar_cells) {
-                for (i = 0; i < sidebar_cells.length; i++) {
-                    sidebar_cell_ids.push(sidebar_cells[i].metadata.janus.id)
-                }
-                if(JSON.stringify(sidebar_cell_ids) == JSON.stringify(cell_ids)){
-                    return
-                }
-            }
+        if (showing) {
+            return
         }
 
         // get cells ready to copy to minimap

@@ -34,12 +34,15 @@ define([
 
             // unselect all cells in the sidebar
             if (! Jupyter.sidebar.collapsed) {
-                sb_cells = Jupyter.sidebar.cells
-                for (var i = 0; i < sb_cells.length; i++) {
-                    sb_cells[i].selected = false;
-                    sb_cells[i].element.removeClass('selected');
-                    sb_cells[i].element.addClass('unselected');
-                    JanusVersions.updateMarkerVisibility(sb_cells[i])
+                var sections = Jupyter.sidebar.sections
+                for (var i = 0; i < sections.length; i++) {
+                    var secCells = sections[i].cells
+                    for (var j = 0; j < secCells.length; j++) {
+                        secCells[j].selected = false;
+                        secCells[j].element.removeClass('selected');
+                        secCells[j].element.addClass('unselected');
+                        JanusVersions.updateMarkerVisibility(secCells[j])
+                    }
                 }
             }
 
@@ -570,13 +573,17 @@ define([
             oldUpdateSoftSelection.apply(this, arguments);
 
             // update soft selection in sidebar
-            sb_cells = Jupyter.sidebar.cells
-            for (var i = 0; i < sb_cells.length; i++) {
-                if (sb_cells[i].nb_cell) {
-                    if ($(sb_cells[i].nb_cell.element).hasClass('jupyter-soft-selected')) {
-                        sb_cells[i].element.addClass('jupyter-soft-selected');
-                    } else {
-                        sb_cells[i].element.removeClass('jupyter-soft-selected');
+            var sections = Jupyter.sidebar.sections
+            for (var i = 0; i < sections.length; i ++) {
+                var secCells = sections[i].cells
+                for (var j = 0; j < secCells.length; j++) {
+
+                    if (secCells[j].nb_cell) {
+                        if ($(secCells[j].nb_cell.element).hasClass('jupyter-soft-selected')) {
+                            secCells[j].element.addClass('jupyter-soft-selected');
+                        } else {
+                            secCells[j].element.removeClass('jupyter-soft-selected');
+                        }
                     }
                 }
             }
