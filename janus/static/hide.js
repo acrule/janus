@@ -309,20 +309,14 @@ define([
 
 
 // all
-    function showAllHidden(){
-        /* Show all cells in sidebar that have been hidden */
+    function toggleAllSections(){
+        if (Jupyter.sidebar.collapsed) {
+            var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
+        } else {
+            var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', false)
+        }
 
-        var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
         Jupyter.sidebar.updateSidebarSections()
-    }
-
-
-    function hideAllHidden() {
-        /* Hide all cells in sidebar that have been hidden */
-
-        var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', false)
-        Jupyter.sidebar.updateSidebarSections()
-
     }
 
 
@@ -374,8 +368,7 @@ define([
         toggleSourceVisibility: toggleSourceVisibility,
         toggleOutputVisibility: toggleOutputVisibility,
         initializeVisibility, initializeVisibility,
-        showAllHidden: showAllHidden,
-        hideAllHidden, hideAllHidden
+        toggleAllSections: toggleAllSections
     };
 
 });

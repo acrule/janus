@@ -1,6 +1,8 @@
 /*
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
 hiding cells and tracking changes
+
+Enable users to leave short comments in the notebook
 */
 
 define([
@@ -34,6 +36,8 @@ define([
             title: 'Leave a Comment',
             body: modal_body,
             default_button: null,
+
+            // save comment to the database on click
             buttons: { 'Save': {
                 click: function () {
 
@@ -74,11 +78,12 @@ define([
                 $("#comment-box").focus();
             }, 50)
 
-            // populate with past comments
+            // GET request url
             var baseUrl = Jupyter.notebook.base_url;
             var nbUrl =  Jupyter.notebook.notebook_path;
             var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
 
+            // GET settings
             var settings = {
                 type : 'GET',
                 data: {
@@ -99,7 +104,6 @@ define([
                     $('#past-comments').append(par)
                 }
             });
-
         })
     }
 

@@ -10,7 +10,8 @@ define([
     '../janus/versions',
     '../janus/hide',
     '../janus/history',
-    '../janus/history_viewer'
+    '../janus/history_viewer',
+    '../janus/comment'
 ], function(
     $,
     Jupyter,
@@ -18,7 +19,8 @@ define([
     JanusVersions,
     JanusHide,
     JanusHistory,
-    JanusViewer
+    JanusViewer,
+    JanusComment
 ){
 
     function addItemToMenu(menu, id, text, click) {
@@ -79,24 +81,17 @@ define([
                         'toggle_cell_output',
                         'Hide Cell Output',
                         JanusHide.toggleOutputVisibility);
+        addItemToMenu(janusMenu,
+                        'toggle_cell_versions',
+                        'Show Cell Versions',
+                        JanusVersions.toggleCellVersions);
 
         janusMenu.append( $('<li>').addClass('divider') );
 
-        addItemToMenu(janusMenu,
-                        'show_hidden_cells',
-                        'Show All Hidden Cells',
-                        JanusHide.showAllHidden);
         addItemToMenu(janusMenu,
                         'hide_hidden_cells',
-                        'Hide all Hidden Cells',
-                        JanusHide.hideAllHidden);
-
-        janusMenu.append( $('<li>').addClass('divider') );
-
-        addItemToMenu(janusMenu,
-                        'leave_comment',
-                        'Leave a comment',
-                        JanusComment.createCommentModal);
+                        'Toggle Sidebar',
+                        JanusHide.toggleAllSections);
 
         janusMenu.append( $('<li>').addClass('divider') );
 
@@ -105,14 +100,16 @@ define([
                         'Stop Tracking Changes',
                         JanusHistory.toggleHistoryRecording);
         addItemToMenu(janusMenu,
-                        'toggle_cell_versions',
-                        'Show Cell Versions',
-                        JanusVersions.toggleCellVersions);
-        addItemToMenu(janusMenu,
                         'show_nb_history',
                         'Show Notebook History',
                         JanusViewer.createHistoryModal);
 
+        janusMenu.append( $('<li>').addClass('divider') );
+
+        addItemToMenu(janusMenu,
+                        'leave_comment',
+                        'Leave A Comment',
+                        JanusComment.createCommentModal);
 
     }
 
@@ -121,7 +118,7 @@ define([
         /* add Janus buttons to toolbar for easy access */
 
         var toggleCellAction = {
-            icon: 'fa-columns',
+            icon: 'fa-eye-slash',
             help    : 'Hide Cell',
             help_index : 'zz',
             handler : JanusHide.toggleSelCellsVisibility
@@ -141,26 +138,26 @@ define([
             handler : JanusHide.toggleOutputVisibility
         };
 
-        var showAllAction = {
-            icon: 'fa-eye',
-            help    : 'Show All Hidden Cells',
-            help_index : 'zz',
-            handler : JanusHide.showAllHidden
-        };
-
-        var hideAllAction = {
-            icon: 'fa-eye-slash',
-            help    : 'Hide All Hidden Cells ',
-            help_index : 'zz',
-            handler : JanusHide.hideAllHidden
-        };
-
         var toggleCellVerAction = {
             icon: 'fa-history',
             help    : 'Show Cell Versions',
             help_index : 'zz',
             handler : JanusVersions.toggleCellVersions
         };
+
+        var toggleSidebarAction = {
+            icon: 'fa-columns',
+            help    : 'Toggle Sidebar',
+            help_index : 'zz',
+            handler : JanusHide.toggleAllSections
+        };
+
+        var commentAction = {
+            icon: 'fa-comment',
+            help    : 'Leave Comment',
+            help_index : 'zz',
+            handler : JanusComment.createCommentModal
+        }
 
 
         // generate full action names and link to action
@@ -176,25 +173,25 @@ define([
         var toggleOutputName = actionHandler.register(toggleOutputAction,
                                                         'toggle-cell-output',
                                                         prefix);
-        var showAllName = actionHandler.register(showAllAction,
-                                                        'show-all-hidden',
-                                                        prefix);
-        var hideAllName = actionHandler.register(hideAllAction,
-                                                        'hide-all-hidden',
-                                                        prefix);
         var toggleCellVerName = actionHandler.register(toggleCellVerAction,
                                                         'toggle-cell-history',
+                                                        prefix);
+        var toggleSidebarName = actionHandler.register(toggleSidebarAction,
+                                                        'show-all-hidden',
+                                                        prefix);
+        var commentName = actionHandler.register(commentAction,
+                                                        'leave-comment',
                                                         prefix);
 
         // add button groups to the main toolbar
         Jupyter.toolbar.add_buttons_group([toggleCellName,
                                         toggleSourceName,
-                                        toggleOutputName]);
+                                        toggleOutputName,
+                                        toggleCellVerName]);
 
-        Jupyter.toolbar.add_buttons_group([showAllName,
-                                        hideAllName]);
+        Jupyter.toolbar.add_buttons_group([toggleSidebarName]);
 
-        Jupyter.toolbar.add_buttons_group([toggleCellVerName]);
+        Jupyter.toolbar.add_buttons_group([commentName]);
 
         // add text link to view notebook history
         var history_label = $('<div id="history-label"/>')

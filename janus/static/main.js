@@ -28,7 +28,7 @@ define([
 ){
 
     function loadCSS() {
-        /* Load Janus css */
+        /* Load css for the extension */
 
         var link = document.createElement("link");
         link.type = "text/css";
@@ -65,8 +65,8 @@ define([
     }
 
 
+    // Tell Jupyter what to run when the extension loads
     return {
-        /* Tell Jupyter what to run when the extension loads */
         load_jupyter_extension: loadExtension,
         load_ipython_extension: loadExtension
     };
