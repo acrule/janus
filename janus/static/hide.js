@@ -180,7 +180,6 @@ define([
             JanusUtils.removeMarkerType('.hidden-code', outputArea);
             var marker = JanusUtils.addMarkerToElement(outputArea, classes);
             $(marker).data('ids', [cell.metadata.janus.id])
-                .data('showing', false)
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)
                 },
@@ -272,7 +271,6 @@ define([
             JanusUtils.removeMarkerType('.hidden-output', markerContainer);
             var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
             $(marker).data('ids', [cell.metadata.janus.id])
-                .data('showing', false)
                 .hover(function(event){
                     JanusUtils.showMinimap(event, this)
                 },
@@ -295,9 +293,13 @@ define([
         /* Show or hide all hide cell sections in the sidebar */
 
         if (Jupyter.sidebar.collapsed) {
-            var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', true)
+            for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+                Jupyter.sidebar.sections[i].showing = true;
+            }
         } else {
-            var markers = $('.hide-marker, .hidden-output, .hidden-code').data('showing', false)
+            for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
+                Jupyter.sidebar.sections[i].showing = false;
+            }
         }
 
         Jupyter.sidebar.updateSidebarSections()
@@ -335,7 +337,9 @@ define([
         */
 
         // update showing metadata
-        $(marker).data('showing', true)
+        var index = $(marker).data('sectionIndex')
+        Jupyter.sidebar.sections[index].showing = true;
+        Jupyter.sidebar.sections[index].element.show()
         $(marker).addClass('active')
 
         // show the item

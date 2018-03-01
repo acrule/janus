@@ -137,7 +137,7 @@ define([
             // hide all sections
             $('.section').hide();
             for (var i=0; i< that.sections.length; i++){
-                $(that.sections[i].marker).data('showing', false);
+                that.sections[i].showing = false;
             }
         });
     };
@@ -281,7 +281,7 @@ define([
 
         // hide this element
         this.element.hide()
-        $(this.marker).data('showing', false);
+        this.showing = false;
         $(this.marker).removeClass('active')
 
         Jupyter.sidebar.saveMarkerMetadata()
@@ -290,7 +290,7 @@ define([
         var allClosed = true;
 
         for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
-            if ($(Jupyter.sidebar.sections[i].marker).data('showing') == true) {
+            if (Jupyter.sidebar.sections[i].showing == true) {
                 allClosed = false;
             }
         }
@@ -460,11 +460,13 @@ define([
         Jupyter.sidebar.sections = newSections
         var anyShowing = false
         for (var i = 0; i < newSections.length; i ++){
-            if ($(newSections[i].marker).data('showing')){
+            if (newSections[i].showing){
                 anyShowing = true;
                 newSections[i].element.show()
+                $(newSections[i].marker).addClass('active')
             } else {
                 newSections[i].element.hide()
+                $(newSections[i].marker).removeClass('active')
             }
         }
 
@@ -529,25 +531,15 @@ define([
             var marker = $(selCell.element).find('.hidden-code').first()
         }
         var showing = null;
+        var selSection = null;
         if (marker) {
-            showing = $(marker).data('showing')
+            var selSection = $(marker).data('sectionIndex')
+            var showing = Jupyter.sidebar.sections[selSection].showing
         }
 
         // if hidden cell is selected and associated section is showing, set
         // position starting with selected section
         if ((selCellHidden || selOutHidden || selSourceHidden) && showing) {
-
-            // get list of showing sections and the index of this section
-            var selSection = null
-            for (var k = 0; k < Jupyter.sidebar.sections.length; k++){
-                var cells = Jupyter.sidebar.sections[k].cells
-                for (var j = 0; j < cells.length; j++){
-                    if (cells[j].metadata.janus.id == selCellID) {
-                        selSection = k
-                        break
-                    }
-                }
-            }
 
             if (selSection < 0){
                 return
@@ -556,7 +548,6 @@ define([
             // set position of selected section
             var sect = Jupyter.sidebar.sections[selSection].element
             var marker = Jupyter.sidebar.sections[selSection].marker
-            var showing = $(marker).data('showing')
             var prevTop = null
             var prevEnd = null
             if (showing) {
@@ -573,7 +564,7 @@ define([
                 for (var i = selSection - 1; i >= 0; i--){
                     var sect = Jupyter.sidebar.sections[i].element
                     var marker = Jupyter.sidebar.sections[i].marker
-                    var showing = $(marker).data('showing')
+                    var showing = Jupyter.sidebar.sections[i].showing
                     if (! showing) {
                         continue
                     }
@@ -593,7 +584,7 @@ define([
                 for (var i = selSection + 1; i < Jupyter.sidebar.sections.length; i++){
                     var sect = Jupyter.sidebar.sections[i].element
                     var marker = Jupyter.sidebar.sections[i].marker
-                    var showing = $(marker).data('showing')
+                    var showing = Jupyter.sidebar.sections[i].showing
                     if (! showing) {
                         continue
                     }
@@ -613,7 +604,7 @@ define([
             for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
                 var sect = Jupyter.sidebar.sections[i].element
                 var marker = Jupyter.sidebar.sections[i].marker
-                var showing = $(marker).data('showing')
+                var showing = Jupyter.sidebar.sections[i].showing
                 if (! showing) {
                     continue
                 }
@@ -627,35 +618,6 @@ define([
                 prevEnd = yPos + $(sect).outerHeight();
             }
         }
-
-
-        // iterate forward
-
-
-        // iterate backward
-
-        // don't reposition is main notebook cell is selected
-
-        //
-        //
-        //     return
-        // }
-        //
-
-
-        // if (marker) {
-        //
-        //     // don't reposition if select item not showing
-        //     var secIndex = marker.data('sectionIndex');
-        //     var selSect = Jupyter.sidebar.sections[secIndex]
-        //     var selSectShow = $(selSect.marker).data('showing')
-        //
-        //     var selSectYPos = getYPos(selSect.marker)
-        //     console.log(selSectYPos)
-        //     $(selSect).css({ top: selSectYPos});
-        //
-        // } else {
-        // }
     }
 
 
@@ -687,7 +649,7 @@ define([
                 overlap = markerMetadata[j].ids.filter((n) => cell_ids.includes(n))
                 if(overlap.length > 0){
                     var first_stored = markerMetadata[j].markerName
-                    var first_showing = markerMetadata[j].showing
+                    // var first_showing = markerMetadata[j].showing
                     break
                 }
             }
@@ -700,15 +662,14 @@ define([
             .append($('<div>')
                 .addClass('hide-marker')
                 .data('ids', cell_ids.slice())
-                .data('showing', first_showing)
                 .click(function(event){
                     $('#minimap').remove()
                     var that = this;
-                    // Jupyter.sidebar.marker = that;
-                    $(this).data('showing', true);
+                    var sectionIndex = $(this).data('sectionIndex')
+                    Jupyter.sidebar.sections[sectionIndex].showing = true;
                     $(this).addClass('active')
                     var secIndex = $(this).data('sectionIndex');
-                    // Jupyter.sidebar.sections[secIndex].element.show();
+                    Jupyter.sidebar.sections[sectionIndex].element.show();
                     Jupyter.sidebar.expand()
                     Jupyter.sidebar.saveMarkerMetadata()
 
@@ -769,12 +730,16 @@ define([
     Sidebar.prototype.saveMarkerMetadata = function() {
         /* Store marker names to notebook metadata for later use */
 
-        var hideMarkers = $('.hide-marker').toArray()
+        var hideMarkers = $('.hide-marker', 'hidden-code', 'hidden-output').toArray()
         var hideMetadata = []
         for (i = 0; i < hideMarkers.length; i++) {
             var markerIDs = $(hideMarkers[i]).data('ids')
             var markerName = $(hideMarkers[i]).find('.hide-label')[0].innerHTML
-            var showing = $(hideMarkers[i]).data('showing')
+            var sectionIndex = $(hideMarkers[i]).data('sectionIndex')
+            var showing = false
+            if (sectionIndex) {
+                var showing = Jupyter.sidebar.sections[sectionIndex].showing
+            }
             hideMetadata.push({
                 'ids': markerIDs,
                 'markerName': markerName,
