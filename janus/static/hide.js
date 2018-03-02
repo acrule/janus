@@ -342,6 +342,15 @@ define([
         Jupyter.sidebar.sections[index].element.show()
         $(marker).addClass('active')
 
+        var secCells = Jupyter.sidebar.sections[index].cells
+        for (var i = 0; i < secCells.length; i++) {
+            if (secCells.cell_type == 'code') {
+                secCells[i].render();
+                secCells[i].focus_editor();
+                secCells[i].expand_output();
+            }
+        }
+
         // show the item
         Jupyter.sidebar.expand()
     }

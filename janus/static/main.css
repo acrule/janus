@@ -138,7 +138,7 @@ hiding cells and tracking changes
     text-align: left;
     border: 1px solid #ccc;
     background: #f7f7f7;
-    border-radius: 1px;
+    border-radius: 2px;
     cursor: pointer;
     min-width: 0;
     display: -webkit-box;
@@ -267,13 +267,13 @@ hiding cells and tracking changes
 }
 
 .section-header{
-    height: 30px;
+    height: 24px;
     margin-bottom: 5px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     border: 1px solid transparent;
-    border-left: 5px solid transparent;
+    /* border-left: 5px solid transparent; */
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -284,21 +284,27 @@ hiding cells and tracking changes
 
 .section-close {
     color: #666666;
-    height: 30px;
-    min-width: 3.2ex;
+    height: 24px;
+    padding-left: 7px;
+    min-width: 2.4ex;
     font-size: 1.2em;
+    cursor: pointer;
 }
 
-.section-close-button {
-    cursor: pointer;
+.section-close:hover {
+    background: #DDDDDD;
+}
+
+/* .section-close-button {
+
 }
 
 .section-close-button:hover {
     color: #999999;
-}
+} */
 
 .section-title {
-    height: 30px;
+    height: 24px;
     padding: 1px 1px 0px;
     font-size: 1.2em;
     color: #666666;

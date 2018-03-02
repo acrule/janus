@@ -195,10 +195,18 @@ define([
                         date_string = num_min.toString() + " min ago";
                     } else if ( t_diff < 86400 ) {
                         num_hours = parseInt( t_diff / 3600 );
-                        date_string = num_hours.toString() + " hours ago";
+                        if (num_hours == 1){
+                            date_string = "1 hour ago";
+                        } else {
+                            date_string = num_hours.toString() + " hours ago";
+                        }
                     } else {
                         num_days = parseInt( t_diff / 86400 );
-                        date_string = num_days.toString() + " days ago";
+                        if (num_days == 1) {
+                            date_string = "1 day ago";
+                        } else {
+                            date_string = num_days.toString() + " days ago";
+                        }
                     }
 
                     // update the label

@@ -99,6 +99,10 @@ define([
                             secCells[j].expand_output();
                         }
                     }
+
+                    if (secCells.length > 0) {
+                        secCells[0].focus_editor();
+                    }
                 }
             }
 
@@ -178,30 +182,43 @@ define([
         // add header
         var header = $("<div/>").addClass('section-header')
         var closeContainer = $("<div/>").addClass('section-close')
-            .append($("<i>")
-            .addClass("fa fa-angle-left section-close-button")
             .click( function(){
                 that.close();
             })
+            .append($("<i>")
+            .addClass("fa fa-angle-left section-close-button")
         )
         header.append(closeContainer)
-        var secTitle = $("<div/>").addClass('section-title')
-                            .text(title)
-                            .click(function(event){
-                                enableVersionNameEditing(this)
-                                event.stopPropagation()
-                            })
-                            .focusout(function(){
-                                disableVersionNameEditing(this, that)
-                            })
-                            .hover(function(event){
-                                this.style.color = "#333"
-                                this.style.background = "#DDD"
-                            },
-                            function(event){
-                                this.style.color = ""
-                                this.style.background = ""
-                            });
+
+        if ($(this.marker).hasClass('hidden-output')) {
+            var secTitle = $("<div/>").addClass('section-title')
+                                .addClass('fa')
+                                .addClass('fa-area-chart')
+                                .css('padding-top', '3px')
+        } else if ($(this.marker).hasClass('hidden-code')) {
+            var secTitle = $("<div/>").addClass('section-title')
+                                .addClass('fa')
+                                .addClass('fa-code')
+                                .css('padding-top', '3px')
+        } else {
+            var secTitle = $("<div/>").addClass('section-title')
+                                .text(title)
+                                .click(function(event){
+                                    enableVersionNameEditing(this)
+                                    event.stopPropagation()
+                                })
+                                .focusout(function(){
+                                    disableVersionNameEditing(this, that)
+                                })
+                                .hover(function(event){
+                                    this.style.color = "#333"
+                                    this.style.background = "#DDD"
+                                },
+                                function(event){
+                                    this.style.color = ""
+                                    this.style.background = ""
+                                });
+        }
         header.append(secTitle)
         this.element.append(header)
 
