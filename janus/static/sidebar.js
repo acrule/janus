@@ -61,6 +61,7 @@ define([
     Sidebar.prototype.expand = function() {
         /* Show sidebar expanding from left of page */
 
+
         // only proceed if sidebar is currently collapsed
         if(! this.collapsed){
             return;
@@ -91,11 +92,10 @@ define([
             // make sure all code cells are properly rendered
             for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
                 if (Jupyter.sidebar.sections[i].showing) {
-                    secCells = Jupyter.sidebar.sections[i].cells;
+                    var secCells = Jupyter.sidebar.sections[i].cells;
                     for (var j = 0; j < secCells.length; j++) {
                         if (secCells[j].cell_type == 'code') {
                             secCells[j].render();
-                            secCells[j].focus_editor();
                             secCells[j].expand_output();
                         }
                     }
@@ -105,6 +105,8 @@ define([
                     }
                 }
             }
+
+
 
             Jupyter.notebook.get_selected_cell().element.focus()
         })
@@ -427,6 +429,7 @@ define([
             oldSectionIDs.push(ids)
         }
 
+
         // look for old sections that stayed the same (i.e. are showing the same cells)
         for (var i = 0; i < markers.length; i++) {
 
@@ -636,6 +639,12 @@ define([
                 }
             }
 
+            if (selSection >= 0){
+                if (Jupyter.sidebar.sections[selSection].cells.length > 0){
+                    Jupyter.sidebar.sections[selSection].cells[0].focus_editor()
+                }
+            }
+
         } else {
             var prevEnd = null;
             for (var i = 0; i < Jupyter.sidebar.sections.length; i++) {
@@ -655,6 +664,7 @@ define([
                 prevEnd = yPos + $(sect).outerHeight();
             }
         }
+
     }
 
 
@@ -836,7 +846,6 @@ define([
         if (section) {
             // set title on main notebook
             var markerTitles = $(section.marker).find('.hide-label')
-            console.log(markerTitles)
             if (markerTitles.length > 0){
                 markerTitles[0].innerHTML = element.innerHTML
             }
