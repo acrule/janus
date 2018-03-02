@@ -59,7 +59,7 @@ class DbManager(object):
         self.c.execute('''CREATE TABLE IF NOT EXISTS cleaned_cells (time integer,
             cell_id text, version_id text, cell_data text, meta_data text,
             line_count integer, function_count integer, cell_count integer, 
-            lines_of_code integer, words_of_markdown integer, types text)''')
+            lines_of_code integer, words_of_markdown integer, output_count integer, types text)''')
 
         self.conn.commit()
         self.conn.close()
@@ -372,7 +372,7 @@ class DbManager(object):
         drop_all: if the analysis table is dropped and refreshed with cells table
         """
         search = '''SELECT time, cell_id, version_id, cell_data FROM cells WHERE 1'''
-        insert = '''INSERT INTO cleaned_cells VALUES (?,?,?,?,?,?,?,?,?,?,?)''' 
+        insert = '''INSERT INTO cleaned_cells VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''' 
         tuplst = []
         self.conn = sqlite3.connect(self.db_path)
         self.c = self.conn.cursor()
@@ -385,7 +385,7 @@ class DbManager(object):
                 version_id = r[2]
                 cucumber = pickle.load(r[3])
                 data_dict = {"meta_data": [], "line_count": 0, "function_count":0, 
-                    "cell_count":0, "lines_of_code":0, "markdown_word_count":0, "types":{"markdown":0,"code":0}}
+                    "cell_count":0, "lines_of_code":0, "markdown_word_count":0, "output_count":0, "types":{"markdown":0,"code":0}}
                 for d in json.load(cucumber).values:
                     for c in d:
                         data_dict["meta_data"].append(c["metadata"])  # metadata obj
@@ -397,15 +397,16 @@ class DbManager(object):
                             for m in c["source"]:
                                 data_dict["markdown_word_count"] += len(re.findall("(\S+)", m))
                         data_dict["line_count"] += len(c["source"])  # count for all cells
+                        data_dict["output_count"] += len(c["outputs"])  # count for **amount** of output
 
                         # TODO count functions for all code cells? (AST analysis needed)
-                        # TODO something for output? How to tell the different types of output? (current counted)
+                        # TODO How to tell the different types of output? (current counted)
                         # TODO REMOVE DATA COLUMN?? (currently purged)!!
                         # TODO what is content tag? and what does the code strings inside represent?
 
                 tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
                     data_dict["line_count"], data_dict["function_count"], data_dict["cell_count"], 
-                    data_dict["lines_of_code"], data_dict["markdown_word_count"], data_dict["types"]))
+                    data_dict["lines_of_code"], data_dict["markdown_word_count"], data_dict["output_count"], data_dict["types"]))
             self.c.executemany(insert, tuplst)
             self.conn.commit()
             self.conn.close()
