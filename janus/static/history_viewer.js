@@ -108,7 +108,11 @@ define([
             step: 1,
             orientation: "horizontal",
             range: "min",
-            slide: function( event, ui ) {
+            slide: function(event, ui) {
+                that.updateUIText(ui.value);
+
+            },
+            stop: function( event, ui ) {
                 that.updateModal(ui.value);
             }
         }));
@@ -146,6 +150,15 @@ define([
             version_num: version of the notebook to show (int)
         */
 
+        this.updateUIText(version_num);
+
+        version_ids = this.nb_configs[version_num][3];
+        this.getCellVersionData(version_ids, version_num);
+    }
+
+    HistoryModal.prototype.updateUIText = function(version_num) {
+        /* Update the UI text */
+
         // get the time since the edit being shown
         var t = parseInt( this.nb_configs[version_num][0] );
         var t_now = Date.now();
@@ -176,9 +189,6 @@ define([
         // set the time and revision number in the ui
         $('#rev_num').html(rev_string);
         $('#rev_time').html(date_string);
-
-        version_ids = this.nb_configs[version_num][3];
-        this.getCellVersionData(version_ids, version_num);
     }
 
 
@@ -311,7 +321,6 @@ define([
                     .addClass('hide-container')
                     .addClass(function() {
                         if (new_version){
-                            console.log("new version")
                             return 'new-version'
                         } else {
                             return ''
