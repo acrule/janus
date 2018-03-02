@@ -8,6 +8,7 @@ Handles interactions with the database storing notebook history data
 import pickle
 import sqlite3
 import json
+import re
 from threading import Timer
 
 from janus.janus_diff import check_for_nb_diff
@@ -54,10 +55,11 @@ class DbManager(object):
         self.c.execute('''CREATE TABLE IF NOT EXISTS comments (time integer,
             comment text, nb_name text)''')
 
-        # TODO actual data blob will be removed
-        self.c.execute('''CREATE TABLE IF NOT EXISTS clean_boi (time integer,
+        # TODO actual data blob will be removed, currently string is inserted (in case table insertion changes)
+        self.c.execute('''CREATE TABLE IF NOT EXISTS cleaned_cells (time integer,
             cell_id text, version_id text, cell_data text, meta_data text,
-            line_count integer, function_count integer, cell_count integer, loc integer, types text)''')
+            line_count integer, function_count integer, cell_count integer, 
+            lines_of_code integer, words_of_markdown integer, output_count integer, types text)''')
 
         self.conn.commit()
         self.conn.close()
@@ -118,7 +120,6 @@ class DbManager(object):
             self.commit_queues()
         self.update_timer()
 
-
     def record_log(self, log_data, nb_name):
         """
         save data about user interaction with Janus to database
@@ -137,7 +138,6 @@ class DbManager(object):
         self.log_queue.append(log_data_tuple)
         self.update_timer()
 
-
     def record_comment(self, comment_data, nb_name):
         """
         save data about a comment
@@ -150,7 +150,6 @@ class DbManager(object):
         comment_data_tuple = (str(t), str(comment), str(nb_name))
         self.comment_queue.append(comment_data_tuple)
         self.update_timer()
-
 
     def commit_queues(self):
         """
@@ -179,7 +178,6 @@ class DbManager(object):
             self.conn.rollback()
             raise
 
-
     def update_timer(self):
         """
         Delay committing data until 2 seconds of idle activity
@@ -192,7 +190,6 @@ class DbManager(object):
         # else:
         self.commitTimer = Timer(2.0, self.commit_queues)
         self.commitTimer.start()
-
 
     def execute_search(self, search):
         """
@@ -207,7 +204,6 @@ class DbManager(object):
         rows = self.c.fetchall()
         return rows
 
-
     def get_comments(self):
         """
         Return a list of all comments
@@ -216,7 +212,6 @@ class DbManager(object):
         search = "SELECT * FROM comments"
         rows = self.execute_search(search)
         return rows
-
 
     def get_nb_configs(self, path, start, end):
         """
@@ -341,7 +336,6 @@ class DbManager(object):
 
         return version_arr
 
-
     def get_versions(self, version_ids):
         """
         Return dict of particular cell versions with cell_id as keys
@@ -370,8 +364,7 @@ class DbManager(object):
 
         return cell_dict
 
-    
-    # TODO how/where to call?
+    # TODO UI front menu button to call, testing
     def export_data_and_clean(self, drop_all = False):
         """
         copy cells table into analysis table that will scrub private nb data but keep
@@ -379,9 +372,8 @@ class DbManager(object):
         drop_all: if the analysis table is dropped and refreshed with cells table
         """
         search = '''SELECT time, cell_id, version_id, cell_data FROM cells WHERE 1'''
-        insert = '''INSERT INTO clean_boi VALUES (?,?,?,?,?,?,?,?,?,?)'''  # TODO more informative name?
+        insert = '''INSERT INTO cleaned_cells VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''' 
         tuplst = []
-
         self.conn = sqlite3.connect(self.db_path)
         self.c = self.conn.cursor()
         try:
@@ -391,27 +383,30 @@ class DbManager(object):
                 time = r[0]
                 cell_id = r[1]
                 version_id = r[2]
-                # cell_data = r[3]
                 cucumber = pickle.load(r[3])
                 data_dict = {"meta_data": [], "line_count": 0, "function_count":0, 
-                    "cell_count":0, "loc":0, "types":{"markdown":0,"code":0}}
+                    "cell_count":0, "lines_of_code":0, "markdown_word_count":0, "output_count":0, "types":{"markdown":0,"code":0}}
                 for d in json.load(cucumber).values:
                     for c in d:
                         data_dict["meta_data"].append(c["metadata"])  # metadata obj
                         data_dict["cell_count"] += 1  # how many individual cells
                         data_dict["types"][c["cell_type"]] += 1  # how many markdown and code cells
                         if data_dict["types"][c["cell_type"]] == "code":
-                            data_dict["loc"] += len(c["source"])  # LOC for code cells
+                            data_dict["lines_of_code"] += len(c["source"])  # LOC for code cells
+                        elif data_dict["types"][c["cell_type"]] == "markdown":
+                            for m in c["source"]:
+                                data_dict["markdown_word_count"] += len(re.findall("(\S+)", m))
                         data_dict["line_count"] += len(c["source"])  # count for all cells
+                        data_dict["output_count"] += len(c["outputs"])  # count for **amount** of output
 
-                        # TODO count functions for all code cells?
-                        # TODO something for output? How to tell the different types of output?
+                        # TODO count functions for all code cells? (AST analysis needed)
+                        # TODO How to tell the different types of output? (current counted)
                         # TODO REMOVE DATA COLUMN?? (currently purged)!!
                         # TODO what is content tag? and what does the code strings inside represent?
 
                 tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
-                    data_dict["line_count"], data_dict["function_count"], data_dict["cell_count"], data_dict["loc"], 
-                    data_dict["types"]))
+                    data_dict["line_count"], data_dict["function_count"], data_dict["cell_count"], 
+                    data_dict["lines_of_code"], data_dict["markdown_word_count"], data_dict["output_count"], data_dict["types"]))
             self.c.executemany(insert, tuplst)
             self.conn.commit()
             self.conn.close()
