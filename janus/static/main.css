@@ -67,6 +67,10 @@ hiding cells and tracking changes
     line-height: 1.8em;
 }
 
+.new-version {
+    background-color: #E2FFEA;
+}
+
 .hide-container.selected {
     border: 1px solid #BBBBBB;
     border-left: 5px solid #59A5EF;

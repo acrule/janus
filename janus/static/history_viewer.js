@@ -178,11 +178,11 @@ define([
         $('#rev_time').html(date_string);
 
         version_ids = this.nb_configs[version_num][3];
-        this.getCellVersionData(version_ids);
+        this.getCellVersionData(version_ids, version_num);
     }
 
 
-    HistoryModal.prototype.getCellVersionData = function(version_ids) {
+    HistoryModal.prototype.getCellVersionData = function(version_ids, version_num) {
         /* get data on specific cell versions to show then update the modal based on that data
 
         Args:
@@ -220,18 +220,33 @@ define([
             $('#history-cell-wrapper').empty();
             for ( i=0; i < version_ids.length; i++ ){
                 if (version_ids[i] in cells){
-                    that.appendCell(cells[version_ids[i]], scrollY);
+
+                    // check if this is a new cell
+                    if (version_num > 0) {
+                        var lastIndex = Jupyter.historyViewer.nb_configs[version_num - 1][3].indexOf(version_ids[i])
+                        var newVersion = (lastIndex == -1)
+                    }
+                    else {
+                        var newVersion = true
+                    }
+
+                    that.appendCell(cells[version_ids[i]], scrollY, newVersion);
                 }
             }
+
+            Jupyter.historyViewer.hideCells()
         });
     }
 
 
-    HistoryModal.prototype.appendCell = function(cellJSON, scrollY) {
+    HistoryModal.prototype.appendCell = function(cellJSON, scrollY, newVersion) {
         /* add cell to modal */
 
         // add redonly cell to the wraper
         var newCell = JanusUtils.getDuplicateCell(cellJSON, Jupyter.notebook);
+        if (newVersion) {
+            $(newCell.element).addClass('new-version')
+        }
         newCell.code_mirror.setOption('readOnly', "nocursor");
         $('#history-cell-wrapper').append(newCell.element);
         this.cells.push(newCell)
@@ -244,8 +259,6 @@ define([
 
         // set scroll position
         $('.modal').scrollTop(scrollY)
-        this.hideCells()
-
     }
 
 
@@ -260,6 +273,7 @@ define([
         var cells = Jupyter.historyViewer.cells
         var serial_hidden_cells = []
         var serial_lines = 0
+        var new_version = false
 
         for (var i = 0; i < cells.length; i++) {
 
@@ -267,6 +281,10 @@ define([
             var cellHidden = cells[i].metadata.janus.cell_hidden
             if (cellHidden) {
                 serial_hidden_cells.push(cells[i])
+
+                if ($(cells[i].element).hasClass('new-version')){
+                    new_version = true
+                }
 
                 // count lines of code
                 if (cells[i].cell_type == "code") {
@@ -291,13 +309,21 @@ define([
 
                 var place = cells[i].element.before($('<div>')
                     .addClass('hide-container')
+                    .addClass(function() {
+                        if (new_version){
+                            console.log("new version")
+                            return 'new-version'
+                        } else {
+                            return ''
+                        }
+                    })
                     .append($('<div>')
                         .addClass('hide-spacer'))
                     .append($('<div>')
                         .addClass('hide-marker')
                         .data('ids', cell_ids.slice())
                         .hover(function(event){
-                            JanusUtils.showMinimap(event, this)
+                            JanusUtils.showMinimap(event, this, true)
                         },
                         function(event){
                             JanusUtils.hideMinimap(event, this)
@@ -321,6 +347,7 @@ define([
                 // clear our lists
                 serial_hidden_cells = []
                 serial_lines = 0
+                new_version = false
             }
 
             // render hidden code markers
@@ -335,7 +362,7 @@ define([
                 $(marker).data('ids', [cells[i].metadata.janus.id])
                     // .data('showing', false)
                     .hover(function(event){
-                        JanusUtils.showMinimap(event, this)
+                        JanusUtils.showMinimap(event, this, true)
                     },
                     function(event){
                         JanusUtils.hideMinimap(event, this)
@@ -358,7 +385,7 @@ define([
                 $(marker).data('ids', [cells[i].metadata.janus.id])
                     // .data('showing', false)
                     .hover(function(event){
-                        JanusUtils.showMinimap(event, this)
+                        JanusUtils.showMinimap(event, this, true)
                     },
                     function(event){
                         JanusUtils.hideMinimap(event, this)

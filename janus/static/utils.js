@@ -136,7 +136,7 @@ define([
 
 
 // MINIMAP
-    function showMinimap(event, el) {
+    function showMinimap(event, el, modal = false) {
         /* render rich tooltip with miniturized view of hidden cells
 
         Args:
@@ -151,7 +151,11 @@ define([
         var el_right = $(el).parent().position().left + $(el).parent().width();
         var cell_ids = $(el).data('ids');
         var sectionIndex = $(el).data('sectionIndex');
-        var showing = Jupyter.sidebar.sections[sectionIndex].showing
+        if (modal) {
+            var showing = false
+        } else {
+            var showing = Jupyter.sidebar.sections[sectionIndex].showing
+        }
 
         // if this collection of cells is already in sidebar, don't show minimap
         if (showing) {
@@ -159,7 +163,11 @@ define([
         }
 
         // get cells ready to copy to minimap
-        var cells = Jupyter.notebook.get_cells()
+        if (modal){
+            var cells = Jupyter.historyViewer.cells
+        } else {
+            var cells = Jupyter.notebook.get_cells()
+        }
         var cells_to_copy = []
         for(i=0; i<cells.length; i++){
             if ( $.inArray( cells[i].metadata.janus.id, cell_ids ) > -1 ){
@@ -188,6 +196,9 @@ define([
             // append cells to minimap
             cellData = cell.toJSON();
             newCell = getDuplicateCell(cellData, nb)
+            if ($(cell.element).hasClass('new-version')){
+                $(newCell.element).addClass('new-version')
+            }
             newCell.code_mirror.setOption('readOnly', "nocursor");
             $('.mini-wrap').append(newCell.element);
 
