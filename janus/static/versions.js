@@ -300,6 +300,8 @@ define([
             var curMatch = null;
             var curIndex = null;
 
+            renderExtraMarker(cell);
+
             if( cellVersions.length > 0 ){
                 for (var j = 0; j < cellVersions.length; j++) {
                     if (namedVersionsIds.indexOf(cellVersions[j].version_id ) == -1) {
@@ -379,7 +381,7 @@ define([
             }
         }
 
-        renderExtraMarker(cell);
+        // renderExtraMarker(cell);
         updateMarkerVisibility(cell);
     }
 
@@ -498,7 +500,7 @@ define([
                     if (unnamed_markers.length > 0){
                         unnamed_markers.show();
                         extra_markers.show();
-                        extra_markers.removeClass('fa-ellipsis-h')
+                        extra_markers.removeClass('fa-angle-left')
                         extra_markers.addClass('fa-angle-right')
                         extra_markers.css('padding-top', '')
                     }
@@ -508,14 +510,14 @@ define([
                     if (unnamed_markers.length > 0){
                         extra_markers.show();
                         extra_markers.removeClass('fa-angle-right')
-                        extra_markers.addClass('fa-ellipsis-h')
+                        extra_markers.addClass('fa-angle-left')
                         extra_markers.css('padding-top', '0.25em')
                     }
                 } else if (unnamed_markers.length > 3) {
                     unnamed_markers.slice(0,3).show()
                     extra_markers.show();
                     extra_markers.removeClass('fa-angle-right')
-                    extra_markers.addClass('fa-ellipsis-h')
+                    extra_markers.addClass('fa-angle-left')
                     extra_markers.css('padding-top', '0.25em')
                 } else {
                     unnamed_markers.show();

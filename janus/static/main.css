@@ -180,9 +180,7 @@ hiding cells and tracking changes
     margin-left: 2px;
     color: #666;
     font-size: 1.3em;
-    /* background: #f5f5f5; */
     text-align: center;
-    /* border: 1px solid #ccc; */
     border-radius: 3px;
     float: left;
 }
@@ -198,8 +196,15 @@ hiding cells and tracking changes
 }
 
 .marker.extra{
-    padding: 3px 4px 0px;
+    padding: 4px 4px 0px;
     background: #DDDDDD;
+    opacity: 1.0;
+    background: #f5f5f5;
+    min-width: 14px
+}
+
+.marker.extra:hover{
+    background: #CCCCCC;
 }
 
 .marker.summary{
@@ -208,7 +213,7 @@ hiding cells and tracking changes
 
 .marker.version{
     padding: 3px 4px 0px;
-    background: #DDDDDD;
+    background: #CCCCCC;
     font-size: 1em;
 }
 
@@ -293,19 +298,12 @@ hiding cells and tracking changes
     min-width: 2.4ex;
     font-size: 1.2em;
     cursor: pointer;
+    border-radius: 3px;
 }
 
 .section-close:hover {
     background: #DDDDDD;
 }
-
-/* .section-close-button {
-
-}
-
-.section-close-button:hover {
-    color: #999999;
-} */
 
 .section-title {
     height: 24px;
@@ -315,23 +313,6 @@ hiding cells and tracking changes
     text-align: left;
     border-radius: 1px;
     min-width: 10px;
-    /* display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-box-align: stretch;
-    display: -moz-box;
-    -moz-box-orient: vertical;
-    -moz-box-align: stretch;
-    display: box;
-    box-orient: vertical;
-    box-align: stretch;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: stretch;
-    -webkit-box-flex: 1;
-    -moz-box-flex: 1;
-    box-flex: 1;
-    flex: 1; */
 }
 
 #minimap{
