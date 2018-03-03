@@ -107,6 +107,11 @@ define([
         janusMenu.append( $('<li>').addClass('divider') );
 
         addItemToMenu(janusMenu,
+            'export_db',
+            'Export Cleaned DB',
+            JanusComment.createCommentModal);       
+
+        addItemToMenu(janusMenu,
                         'leave_comment',
                         'Leave A Comment',
                         JanusComment.createCommentModal);
@@ -159,7 +164,7 @@ define([
             handler : JanusComment.createCommentModal
         }
 
-
+        
         // generate full action names and link to action
         var prefix = 'janus';
         var actionHandler = Jupyter.actions
