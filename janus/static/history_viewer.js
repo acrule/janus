@@ -417,7 +417,7 @@ define([
             var classes = "marker hidden-code fa fa-code";
             if (cells[i].metadata.janus.source_hidden && ! cells[i].metadata.janus.cell_hidden) {
 
-                cells[i].element.find("div.input").hide('slow');
+                cells[i].element.find("div.input").hide();
 
                 JanusUtils.removeMarkerType('.hidden-code', outputArea);
                 var marker = JanusUtils.addMarkerToElement(outputArea, classes);
@@ -440,7 +440,7 @@ define([
             var selID = cells[i].metadata.janus.id
             if (cells[i].metadata.janus.output_hidden && ! cells[i].metadata.janus.cell_hidden) {
 
-                cells[i].element.find("div.output").hide('slow');
+                cells[i].element.find("div.output").hide();
 
                 JanusUtils.removeMarkerType('.hidden-output', markerContainer);
                 var marker = JanusUtils.addMarkerToElement(markerContainer, classes);
