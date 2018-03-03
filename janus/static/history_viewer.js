@@ -19,9 +19,8 @@ define([
     JanusUtils
 ){
 
-    // TODO Pull cell history from database, not metadata
     // TODO debug saving of cell versions before cell fully executed
-    // TODO enable truncated history based on program analysis (stretch)
+    // TODO enable truncated history just showing cells that changed
 
     var HistoryModal = function(nb) {
         /* object represeting the history viewer modal popup
@@ -33,7 +32,8 @@ define([
         var historyViewer = this;
         Jupyter.historyViewer = historyViewer;
         this.notebook = nb;
-        this.cells = []
+        this.cells = [];
+        // this.versions = [];
         this.getDataForModal()
     }
 
@@ -202,7 +202,7 @@ define([
 
         // remember the scroll position so we don't jump around after rendering
         // new cells
-        that = this;
+        var that = this;
         var scrollY = $('.modal').scrollTop()
 
         // preapre url for GET request
@@ -222,28 +222,79 @@ define([
 
         // add cell versions to the history modal once we have data
         utils.promising_ajax(url, settings).then( function(value) {
+
             version_ids = eval(version_ids);
             var get_data = JSON.parse(value);
             var cells = get_data['cells'];
-            that.cells = []
 
-            $('#history-cell-wrapper').empty();
-            for ( i=0; i < version_ids.length; i++ ){
-                if (version_ids[i] in cells){
+            // prepare list of current cells for comparison
+            var oldIDs = [];
+            var oldUsed = []
+            var oldCells = Jupyter.historyViewer.cells
+            for (var i = 0; i < oldCells.length; i++) {
+                oldIDs.push(oldCells[i].metadata.janus.version_id);
+                oldUsed.push(false);
+            }
+            var newCells = []
 
-                    // check if this is a new cell
-                    if (version_num > 0) {
-                        var lastIndex = Jupyter.historyViewer.nb_configs[version_num - 1][3].indexOf(version_ids[i])
-                        var newVersion = (lastIndex == -1)
+            // var cellWrapper= $('#history-cell-wrapper')
+            for (var i = 0; i < version_ids.length; i++) {
+
+                // check if this is a new cell from the immediately previous version
+                if (version_num > 0) {
+                    var lastIndex = Jupyter.historyViewer.nb_configs[version_num - 1][3].indexOf(version_ids[i])
+                    var newVersion = (lastIndex == -1)
+                }
+                else {
+                    var newVersion = true
+                }
+
+                // detach and reappend old cells so we don't have to recreate them
+                var oldIndex = oldIDs.indexOf(version_ids[i])
+                if (oldIndex >= 0) {
+
+                    oldUsed[oldIndex] = true;
+                    var c = $(oldCells[oldIndex].element).detach()
+                    $(c).appendTo('#history-cell-wrapper')
+                    newCells.push(oldCells[oldIndex])
+
+                    if (newVersion) {
+                        $(c).addClass('new-version')
+                    } else {
+                        $(c).removeClass('new-version')
                     }
-                    else {
-                        var newVersion = true
+
+                // or add new cells
+                } else {
+
+                    var newCell = JanusUtils.getDuplicateCell(cells[version_ids[i]], Jupyter.notebook);
+                    if (newVersion) {
+                        $(newCell.element).addClass('new-version')
+                    }
+                    newCell.metadata.janus.version_id = version_ids[i]
+                    newCell.code_mirror.setOption('readOnly', "nocursor");
+                    $('#history-cell-wrapper').append(newCell.element);
+
+                    // make sure all code cells are rendered
+                    if(newCell.cell_type == 'code'){
+                        newCell.render();
+                        newCell.focus_editor();
                     }
 
-                    that.appendCell(cells[version_ids[i]], scrollY, newVersion);
+                    // add the cell to our list
+                    newCells.push(newCell)
                 }
             }
 
+            // remove currently rendered cells not reused
+            for (var i = 0; i < oldUsed.length; i++) {
+                if (oldUsed[i] == false) {
+                    $(oldCells[i].element).remove()
+                }
+            }
+
+            // hide the hidden cells
+            Jupyter.historyViewer.cells = newCells
             Jupyter.historyViewer.hideCells()
         });
     }
@@ -266,6 +317,8 @@ define([
             newCell.render();
             newCell.focus_editor();
         }
+
+        // return newCell
 
         // set scroll position
         $('.modal').scrollTop(scrollY)
