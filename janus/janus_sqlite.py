@@ -383,30 +383,30 @@ class DbManager(object):
                 time = r[0]
                 cell_id = r[1]
                 version_id = r[2]
-                cucumber = pickle.load(r[3])
+                cucumber = pickle.loads(r[3])
                 data_dict = {"meta_data": [], "line_count": 0, "function_count":0, 
                     "cell_count":0, "lines_of_code":0, "markdown_word_count":0, "output_count":0, "types":{"markdown":0,"code":0}}
-                for d in json.load(cucumber).values:
-                    for c in d:
-                        data_dict["meta_data"].append(c["metadata"])  # metadata obj
-                        data_dict["cell_count"] += 1  # how many individual cells
-                        data_dict["types"][c["cell_type"]] += 1  # how many markdown and code cells
-                        if data_dict["types"][c["cell_type"]] == "code":
-                            data_dict["lines_of_code"] += len(c["source"])  # LOC for code cells
-                        elif data_dict["types"][c["cell_type"]] == "markdown":
-                            for m in c["source"]:
-                                data_dict["markdown_word_count"] += len(re.findall("(\S+)", m))
-                        data_dict["line_count"] += len(c["source"])  # count for all cells
-                        data_dict["output_count"] += len(c["outputs"])  # count for **amount** of output
+                # for d in cucumber:
+                #     for c in d:
+                data_dict["meta_data"].append(cucumber["metadata"])  # metadata obj
+                data_dict["cell_count"] += 1  # how many individual cells
+                data_dict["types"][cucumber["cell_type"]] += 1  # how many markdown and code cells
+                if cucumber["cell_type"] == "code":
+                    data_dict["lines_of_code"] += len(cucumber["source"].splitlines(True))  # LOC for code cells
+                    data_dict["output_count"] += len(cucumber["outputs"])  # count for **amount** of output
+                elif cucumber["cell_type"] == "markdown":
+                    data_dict["markdown_word_count"] += len(re.findall("(\S+)", cucumber["source"]))
+                data_dict["line_count"] += len(cucumber["source"].splitlines(True))  # count for all cells
 
                         # TODO count functions for all code cells? (AST analysis needed)
                         # TODO How to tell the different types of output? (current counted)
                         # TODO REMOVE DATA COLUMN?? (currently purged)!!
                         # TODO what is content tag? and what does the code strings inside represent?
-
-                tuplst.append((time, str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
-                    data_dict["line_count"], data_dict["function_count"], data_dict["cell_count"], 
-                    data_dict["lines_of_code"], data_dict["markdown_word_count"], data_dict["output_count"], data_dict["types"]))
+                row_tupe = (str(time), str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
+                    str(data_dict["line_count"]), str(data_dict["function_count"]), str(data_dict["cell_count"]), 
+                    str(data_dict["lines_of_code"]), str(data_dict["markdown_word_count"]), str(data_dict["output_count"]), 
+                    str(data_dict["types"]))
+                tuplst.append(row_tupe)
             self.c.executemany(insert, tuplst)
             self.conn.commit()
             self.conn.close()
