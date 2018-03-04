@@ -24,6 +24,7 @@ define([
     // in comment.js since it shares the same menu section + relates to analysis but not function (as comments)
     function exportClean() {
         // post url
+        console.log('in exportClean')
         var baseUrl = Jupyter.notebook.base_url;
         var nbUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
@@ -50,7 +51,7 @@ define([
     
     function createCommentModal() {
         /* show the comment modal */
-
+        console.log("in createCommentModal")
         // create HTML for the modal's content
         var modal_body = $('<div/>');
         var commentArea = $('<div/ id="comment-area">');
@@ -140,7 +141,8 @@ define([
     }
 
     return{
-        createCommentModal: createCommentModal
+        createCommentModal: createCommentModal,
+        exportClean: exportClean
     }
 
 });
