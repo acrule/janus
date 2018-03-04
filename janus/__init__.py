@@ -89,6 +89,8 @@ class JanusHandler(IPythonHandler):
             self.db_manager.record_log(post_data, hashed_path)
         elif post_data['type'] == "comment":
             self.db_manager.record_comment(post_data, hashed_path)
+        elif post_data['type'] == "export_db":
+            self.db_manager.export_data_and_clean(hashed_path, False)  # TODO: any params we need?
         self.finish(json.dumps({'hashed_nb_path': hashed_path}))
 
     def get_db(self):

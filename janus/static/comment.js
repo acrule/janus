@@ -19,6 +19,35 @@ define([
     utils
 ){
 
+
+    // export cleaned DB (no personal data, only usage/metadata)
+    // in comment.js since it shares the same menu section + relates to analysis but not function (as comments)
+    function exportClean() {
+        // post url
+        var baseUrl = Jupyter.notebook.base_url;
+        var nbUrl =  Jupyter.notebook.notebook_path;
+        var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
+
+        // Post data
+        var d = JSON.stringify({
+            time: Date.now(),
+            type: 'export_db'
+        });
+
+        // prepare POST settings
+        var settings = {
+            processData : false,
+            type : 'POST',
+            dataType: 'json',
+            data: d,
+            contentType: 'application/json',
+        };
+
+        // send the POST request,
+        utils.promising_ajax(url, settings);
+    }
+
+    
     function createCommentModal() {
         /* show the comment modal */
 

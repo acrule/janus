@@ -365,7 +365,7 @@ class DbManager(object):
         return cell_dict
 
     # TODO UI front menu button to call, testing
-    def export_data_and_clean(self, drop_all = False):
+    def export_data_and_clean(self, nb_name, drop_all = False):
         """
         copy cells table into analysis table that will scrub private nb data but keep
         relevant data like metadata, loc, counts, etc. for analysis

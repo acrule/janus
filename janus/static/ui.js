@@ -109,7 +109,7 @@ define([
         addItemToMenu(janusMenu,
             'export_db',
             'Export Cleaned DB',
-            JanusComment.createCommentModal);       
+            JanusComment.exportClean);       
 
         addItemToMenu(janusMenu,
                         'leave_comment',

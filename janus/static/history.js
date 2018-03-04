@@ -71,7 +71,7 @@ define([
     ];
 
 
-// TRACK GENERAL ACTIONS
+    // TRACK GENERAL ACTIONS
     function trackAction(nb, t, actionName, selIndex, selIndices) {
         /* Send information about action to server to process and save
 
