@@ -364,7 +364,7 @@ class DbManager(object):
 
         return cell_dict
 
-    # TODO UI front menu button to call, testing
+    
     def export_data_and_clean(self, nb_name, drop_all = False):
         """
         copy cells table into analysis table that will scrub private nb data but keep
@@ -410,7 +410,9 @@ class DbManager(object):
             self.c.executemany(insert, tuplst)
             self.conn.commit()
             self.conn.close()
+            print("exported")
         except:
+            print("exception")
             self.conn.rollback()
             self.conn.close()
             raise
