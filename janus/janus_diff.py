@@ -2,7 +2,7 @@
 Janus: Jupyter Notebook extension that helps users keep clean notebooks by
 folding cells and keeping track of all changes
 
-Get diff between current and previous notebooks
+Get diff between current and previous notebook versions
 """
 
 import ast
@@ -30,7 +30,7 @@ def check_for_nb_diff(t, hashed_path, cells, db):
 
     # if no previous record of this notebook, save each cell and the nb_config
     last_nb_config = db.get_last_nb_config(hashed_path)
-    if(not last_nb_config):
+    if (not last_nb_config):
         for c in cells:
 
             # create a new cell db entry

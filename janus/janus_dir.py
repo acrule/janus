@@ -20,6 +20,7 @@ def default_storage_dir():
     janus_db_dir = os.path.join(user_dir, '.jupyter', 'janus')
     return janus_db_dir
 
+
 def create_dir(dir_path):
     """
     try creating directory with a particular path
@@ -31,6 +32,7 @@ def create_dir(dir_path):
         os.makedirs(dir_path)
     except OSError:
         pass
+
 
 def find_storage_dir():
     """
@@ -58,6 +60,7 @@ def find_storage_dir():
         create_dir(storage_dir)
 
     return storage_dir
+
 
 def hash_path(path):
     """

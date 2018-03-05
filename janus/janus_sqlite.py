@@ -32,6 +32,7 @@ class DbManager(object):
         # create db tables if they don't already exist
         self.create_initial_tables()
 
+
     def create_initial_tables(self):
         """
         Create action, cell, and nb_config tables for later use
@@ -58,11 +59,12 @@ class DbManager(object):
         # TODO actual data blob will be removed, currently string is inserted (in case table insertion changes)
         self.c.execute('''CREATE TABLE IF NOT EXISTS cleaned_cells (time integer,
             cell_id text, version_id text, cell_data text, meta_data text,
-            line_count integer, function_count integer, cell_count integer, 
+            line_count integer, function_count integer, cell_count integer,
             lines_of_code integer, words_of_markdown integer, output_count integer, types text)''')
 
         self.conn.commit()
         self.conn.close()
+
 
     def record_nb_config(self, t, nb_name, cell_order, version_order):
         """
@@ -79,6 +81,7 @@ class DbManager(object):
         self.nb_queue.append(nb_data_tuple)
         self.update_timer()
 
+
     def record_cell(self, t, cell_id, version_id, cell_data):
         """
         Record new cell version
@@ -93,6 +96,7 @@ class DbManager(object):
         cell_data_tuple = (t, str(cell_id), str(version_id), pickle.dumps(cell_data))
         self.cell_queue.append(cell_data_tuple)
         self.update_timer()
+
 
     def record_action(self, action_data, hashed_path):
         """
@@ -120,6 +124,7 @@ class DbManager(object):
             self.commit_queues()
         self.update_timer()
 
+
     def record_log(self, log_data, nb_name):
         """
         save data about user interaction with Janus to database
@@ -138,6 +143,7 @@ class DbManager(object):
         self.log_queue.append(log_data_tuple)
         self.update_timer()
 
+
     def record_comment(self, comment_data, nb_name):
         """
         save data about a comment
@@ -150,6 +156,7 @@ class DbManager(object):
         comment_data_tuple = (str(t), str(comment), str(nb_name))
         self.comment_queue.append(comment_data_tuple)
         self.update_timer()
+
 
     def commit_queues(self):
         """
@@ -178,6 +185,7 @@ class DbManager(object):
             self.conn.rollback()
             raise
 
+
     def update_timer(self):
         """
         Delay committing data until 2 seconds of idle activity
@@ -190,6 +198,7 @@ class DbManager(object):
         # else:
         self.commitTimer = Timer(2.0, self.commit_queues)
         self.commitTimer.start()
+
 
     def execute_search(self, search):
         """
@@ -204,6 +213,7 @@ class DbManager(object):
         rows = self.c.fetchall()
         return rows
 
+
     def get_comments(self):
         """
         Return a list of all comments
@@ -212,6 +222,7 @@ class DbManager(object):
         search = "SELECT * FROM comments"
         rows = self.execute_search(search)
         return rows
+
 
     def get_nb_configs(self, path, start, end):
         """
@@ -237,6 +248,7 @@ class DbManager(object):
         matched_configs.sort(key=lambda x: x[0])
         return matched_configs
 
+
     def get_last_nb_config(self, nb_name):
         """
         Return last nb configuration (e.g. cell and cell versions)
@@ -257,6 +269,7 @@ class DbManager(object):
                 return rows[0]
             else:
                 return []
+
 
     def get_last_cell_version(self, cell_id):
         """
@@ -279,6 +292,7 @@ class DbManager(object):
             else:
                 return (0,"","","")
 
+
     def get_all_cell_versions(self, cell_id):
         """
         Return list of all prior versions of cell
@@ -298,6 +312,7 @@ class DbManager(object):
             matched_versions.append(row)
 
         return matched_versions
+
 
     def get_cell_history(self, path, start, end, cell_id):
         """
@@ -336,6 +351,7 @@ class DbManager(object):
 
         return version_arr
 
+
     def get_versions(self, version_ids):
         """
         Return dict of particular cell versions with cell_id as keys
@@ -364,7 +380,7 @@ class DbManager(object):
 
         return cell_dict
 
-    
+
     def export_data_and_clean(self, nb_name, drop_all = False):
         """
         copy cells table into analysis table that will scrub private nb data but keep
@@ -372,7 +388,7 @@ class DbManager(object):
         drop_all: if the analysis table is dropped and refreshed with cells table
         """
         search = '''SELECT time, cell_id, version_id, cell_data FROM cells WHERE 1'''
-        insert = '''INSERT INTO cleaned_cells VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''' 
+        insert = '''INSERT INTO cleaned_cells VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'''
         tuplst = []
         self.conn = sqlite3.connect(self.db_path)
         self.c = self.conn.cursor()
@@ -384,7 +400,7 @@ class DbManager(object):
                 cell_id = r[1]
                 version_id = r[2]
                 cucumber = pickle.loads(r[3])
-                data_dict = {"meta_data": [], "line_count": 0, "function_count":0, 
+                data_dict = {"meta_data": [], "line_count": 0, "function_count":0,
                     "cell_count":0, "lines_of_code":0, "markdown_word_count":0, "output_count":0, "types":{"markdown":0,"code":0}}
                 # for d in cucumber:
                 #     for c in d:
@@ -403,8 +419,8 @@ class DbManager(object):
                         # TODO REMOVE DATA COLUMN?? (currently purged)!!
                         # TODO what is content tag? and what does the code strings inside represent?
                 row_tupe = (str(time), str(cell_id), str(version_id), "CLEARED", str(data_dict["meta_data"]),
-                    str(data_dict["line_count"]), str(data_dict["function_count"]), str(data_dict["cell_count"]), 
-                    str(data_dict["lines_of_code"]), str(data_dict["markdown_word_count"]), str(data_dict["output_count"]), 
+                    str(data_dict["line_count"]), str(data_dict["function_count"]), str(data_dict["cell_count"]),
+                    str(data_dict["lines_of_code"]), str(data_dict["markdown_word_count"]), str(data_dict["output_count"]),
                     str(data_dict["types"]))
                 tuplst.append(row_tupe)
             self.c.executemany(insert, tuplst)

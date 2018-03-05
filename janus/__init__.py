@@ -61,6 +61,7 @@ class JanusHandler(IPythonHandler):
             versions = self.db_manager.get_cell_history(path, start, end, cell_id)
             self.finish(json.dumps({'versions': versions}))
 
+        # or data about a comment / bug
         elif (query_type == 'comment'):
             comments = self.db_manager.get_comments()
             self.finish(json.dumps({'comments': comments}))
@@ -89,8 +90,9 @@ class JanusHandler(IPythonHandler):
             self.db_manager.record_log(post_data, hashed_path)
         elif post_data['type'] == "comment":
             self.db_manager.record_comment(post_data, hashed_path)
+        # TODO: any params we need?
         elif post_data['type'] == "export_db":
-            self.db_manager.export_data_and_clean(hashed_path, False)  # TODO: any params we need?
+            self.db_manager.export_data_and_clean(hashed_path, False)
         self.finish(json.dumps({'hashed_nb_path': hashed_path}))
 
     def get_db(self):
@@ -118,6 +120,7 @@ def _jupyter_server_extension_paths():
         "module": "janus"
     }]
 
+
 def _jupyter_nbextension_paths():
     """nbextension configuration. Returns dict of nbextension file location."""
 
@@ -129,6 +132,7 @@ def _jupyter_nbextension_paths():
         dest="janus",
         # _also_ in the `janus/` namespace
         require="janus/main")]
+
 
 def load_jupyter_server_extension(nb_app):
     """Load the server extension and set up routing to proper handler.
