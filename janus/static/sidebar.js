@@ -96,6 +96,7 @@ define([
                     for (var j = 0; j < secCells.length; j++) {
                         if (secCells[j].cell_type == 'code') {
                             secCells[j].render();
+                            secCells[j].code_mirror.refresh()
                             secCells[j].expand_output();
                         }
                     }

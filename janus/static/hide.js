@@ -47,6 +47,9 @@ define([
                 hideCell(selCells[i]);
             }
         }
+
+        Jupyter.sidebar.saveMarkerMetadata();
+        Jupyter.sidebar.updateHiddenCells();
     }
 
 
@@ -68,8 +71,8 @@ define([
         cell.metadata.janus.output_hidden = true;
 
         // markers and sidebar
-        Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.saveMarkerMetadata();
+        // Jupyter.sidebar.updateHiddenCells();
     }
 
 
@@ -101,8 +104,8 @@ define([
         renderOutputMarker(cell);
 
         // update sidebar
-        Jupyter.sidebar.saveMarkerMetadata();
-        Jupyter.sidebar.updateHiddenCells();
+        // Jupyter.sidebar.saveMarkerMetadata();
+        // Jupyter.sidebar.updateHiddenCells();
     }
 
 
