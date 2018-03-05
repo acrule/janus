@@ -93,6 +93,8 @@ class DbManager(object):
         """
 
         # save the data to the database queue
+        cell_data['metadata']['janus']['versions'] = []
+        cell_data['metadata']['janus']['named_versions'] = []
         cell_data_tuple = (t, str(cell_id), str(version_id), pickle.dumps(cell_data))
         self.cell_queue.append(cell_data_tuple)
         self.update_timer()

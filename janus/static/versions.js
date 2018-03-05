@@ -292,6 +292,7 @@ define([
 
             // clear current markers
             JanusUtils.removeMarkerType('.version', inputArea);
+            cell.metadata.janus.versions = []
 
             // combine list of queried and already named versions
             var cellVersionIds = cellVersions.map( function(a) {return a.version_id;} );
