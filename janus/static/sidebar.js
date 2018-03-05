@@ -639,6 +639,7 @@ define([
                 }
             }
 
+            // TODO determine why adding this line broke multi-cell selection
             if (selSection >= 0){
                 if (Jupyter.sidebar.sections[selSection].cells.length > 0){
                     // Jupyter.sidebar.sections[selSection].cells[0].focus_editor()

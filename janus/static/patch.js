@@ -536,8 +536,19 @@ define([
             }
 
             var expanded = janusMeta.versions_showing
+            var allShowing = janusMeta.all_versions_showing
             var versions = janusMeta.versions
             var curIndex = janusMeta.current_version
+            var numNamed = janusMeta.named_versions.length
+            var maxIndex = versions.length - 1
+            if (! allShowing){
+                if (numNamed > 0){
+                    maxIndex = numNamed - 1
+                } else {
+                    maxIndex = 2
+                }
+            }
+
 
             if (Jupyter.notebook.keyboard_manager.mode == "command" ) { // if not editing cell and versions are showing
                 if (e.keyCode == 37) { // left
@@ -552,7 +563,7 @@ define([
                     }
                 } else if (e.keyCode == 39) { // right
 
-                    if ( curIndex < versions.length - 1 ) {
+                    if ( curIndex < versions.length - 1  && curIndex < maxIndex) {
                         var newIndex = curIndex + 1;
                         JanusVersions.changeVersion(cell, newIndex)
 
