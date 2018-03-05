@@ -291,9 +291,11 @@ define([
         var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
 
         // get data ready
+        var mod = Jupyter.notebook.toJSON();
         var d = JSON.stringify({
             time: t,
             name: name,
+            model: mod,
             id: selID,
             ids: selIDs,
             type: 'log'

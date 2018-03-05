@@ -48,7 +48,7 @@ class DbManager(object):
             cell_id text, version_id text, cell_data text)''')
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS nb_configs (time integer,
-            nb_name text, cell_order text, version_order text)''')
+            nb_name text, cell_order text, version_order text, hide_order text)''')
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS janus_log (time integer,
             nb_name text, name text, id text, ids text)''')
@@ -66,7 +66,7 @@ class DbManager(object):
         self.conn.close()
 
 
-    def record_nb_config(self, t, nb_name, cell_order, version_order):
+    def record_nb_config(self, t, nb_name, cell_order, version_order, hide_order):
         """
         Record new notebook configuration
 
@@ -77,7 +77,7 @@ class DbManager(object):
         """
 
         # save the data to the database queue
-        nb_data_tuple = (t, str(nb_name), str(cell_order), str(version_order))
+        nb_data_tuple = (t, str(nb_name), str(cell_order), str(version_order), str(hide_order))
         self.nb_queue.append(nb_data_tuple)
         self.update_timer()
 
@@ -138,9 +138,14 @@ class DbManager(object):
         name = log_data['name']
         sel_id = log_data['id']
         sel_ids = log_data['ids']
+        cells = log_data['model']['cells']
         log_data_tuple = (str(t), str(nb_name), str(name), str(sel_id),
                             str(sel_ids))
         self.log_queue.append(log_data_tuple)
+
+        # check for new cells or nb_configs as a result of this action
+        check_for_nb_diff(t, nb_name, cells, self)
+
         self.update_timer()
 
 
@@ -170,7 +175,7 @@ class DbManager(object):
         try:
             self.c.executemany('INSERT INTO actions VALUES (?,?,?,?,?)', self.action_queue)
             self.c.executemany('INSERT INTO cells VALUES (?,?,?,?)', self.cell_queue)
-            self.c.executemany('INSERT INTO nb_configs VALUES (?,?,?,?)', self.nb_queue)
+            self.c.executemany('INSERT INTO nb_configs VALUES (?,?,?,?,?)', self.nb_queue)
             self.c.executemany('INSERT INTO janus_log VALUES (?,?,?,?,?)', self.log_queue)
             self.c.executemany('INSERT INTO comments VALUES (?,?,?)', self.comment_queue)
 

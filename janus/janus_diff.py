@@ -27,6 +27,7 @@ def check_for_nb_diff(t, hashed_path, cells, db):
     # prepare to track cell and cell version ids in current notebook
     new_cell_order = []
     new_version_order = []
+    new_hide_order = []
 
     # if no previous record of this notebook, save each cell and the nb_config
     last_nb_config = db.get_last_nb_config(hashed_path)
@@ -42,14 +43,16 @@ def check_for_nb_diff(t, hashed_path, cells, db):
             # keep track of the cell order
             new_cell_order.append(cell_id)
             new_version_order.append(version_id)
+            new_hide_order.append( get_hide_state(cell_data) )
 
         # create new db entry for this notebook confiburation
-        db.record_nb_config(t, hashed_path, new_cell_order, new_version_order)
+        db.record_nb_config(t, hashed_path, new_cell_order, new_version_order, new_hide_order)
         return
 
     # get the cell order and cells of the last notebook configuration
     last_cell_order = ast.literal_eval(last_nb_config[2])
     last_version_order = ast.literal_eval(last_nb_config[3])
+    last_hide_order = ast.literal_eval(last_nb_config[4])
     last_cells = [db.get_last_cell_version(cell_id) for cell_id in last_cell_order]
 
     # for each cell in the current notebook
@@ -58,6 +61,8 @@ def check_for_nb_diff(t, hashed_path, cells, db):
         version_id = uuid.uuid4().hex[0:8]
         cell_data = c
         match_found = False
+
+        new_hide_order.append( get_hide_state(cell_data) )
 
         # check if this cell had the same content in the last notebook config
         previous_versions = []
@@ -92,8 +97,19 @@ def check_for_nb_diff(t, hashed_path, cells, db):
             new_version_order.append(version_id)
 
     # save a new nb config if different from the last one
-    if ( new_version_order != last_version_order ):
-        db.record_nb_config(t, hashed_path, new_cell_order, new_version_order)
+    if ( new_version_order != last_version_order or new_hide_order != last_hide_order):
+        db.record_nb_config(t, hashed_path, new_cell_order, new_version_order, new_hide_order)
+
+def get_hide_state(cell):
+    cell_meta = cell['metadata']['janus']
+    if cell_meta['cell_hidden']:
+        return 'c'
+    elif cell_meta['output_hidden']:
+        return 'o'
+    elif cell_meta['source_hidden']:
+        return 's'
+    else:
+        return 'n'
 
 def cells_different(cell_a, cell_b, compare_outputs = True):
     """
