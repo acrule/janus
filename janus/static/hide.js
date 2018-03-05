@@ -33,11 +33,6 @@ define([
         for (var i = 0; i < selCells.length; i++){
             selIDs.push(selCells[i].metadata.janus.id)
         }
-        if (primaryHidden){
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-cells', selID, selIDs);
-        } else {
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-cells', selID, selIDs);
-        }
 
         // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
@@ -46,6 +41,12 @@ define([
             } else {
                 hideCell(selCells[i]);
             }
+        }
+
+        if (primaryHidden){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-cells', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-cells', selID, selIDs);
         }
     }
 
@@ -119,11 +120,6 @@ define([
         for (var i = 0; i < selCells.length; i++){
             selIDs.push(selCells[i].metadata.janus.id)
         }
-        if (showSource){
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-source', selID, selIDs);
-        } else {
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-source', selID, selIDs);
-        }
 
         // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
@@ -160,6 +156,12 @@ define([
         // update the sidebar
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
+
+        if (showSource){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-source', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-source', selID, selIDs);
+        }
     }
 
 
@@ -209,11 +211,6 @@ define([
         for (var i = 0; i < selCells.length; i++){
             selIDs.push(selCells[i].metadata.janus.id)
         }
-        if (showOutput){
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-output', selID, selIDs);
-        } else {
-            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-output', selID, selIDs);
-        }
 
         // perform the hiding / showing
         for (var i = 0; i < selCells.length; i++) {
@@ -249,6 +246,12 @@ define([
         // update the sidebar
         Jupyter.sidebar.saveMarkerMetadata();
         Jupyter.sidebar.updateHiddenCells();
+
+        if (showOutput){
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'show-output', selID, selIDs);
+        } else {
+            JanusUtils.logJanusAction(Jupyter.notebook, Date.now(), 'hide-output', selID, selIDs);
+        }
     }
 
 

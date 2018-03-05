@@ -222,6 +222,8 @@ define([
         var url = utils.url_path_join(baseUrl, 'api/janus', notebookUrl);
         var paths = Jupyter.notebook.metadata.janus.filepaths;
 
+        var hide_order = this.nb_configs[version_num][4];
+
         //  GET settings, asking for data for each cell version
         var settings = {
             type : 'GET',
@@ -265,6 +267,10 @@ define([
                 if (oldIndex >= 0) {
 
                     oldUsed[oldIndex] = true;
+
+                    // update visibility
+                    updateHide(oldCells[oldIndex], hide_order[i])
+
                     var c = $(oldCells[oldIndex].element).detach()
                     $(c).appendTo('#history-cell-wrapper')
                     newCells.push(oldCells[oldIndex])
@@ -288,6 +294,8 @@ define([
                             firstNew = newCell;
                         }
                     }
+                    updateHide(newCell, hide_order[i])
+
                     newCell.metadata.janus.version_id = version_ids[i]
                     newCell.code_mirror.setOption('readOnly', "nocursor");
                     $('#history-cell-wrapper').append(newCell.element);
@@ -329,6 +337,26 @@ define([
 
 
         });
+    }
+
+    function updateHide(cell, hide_state) {
+        if (hide_state == 'c') {
+            cell.metadata.janus.cell_hidden = true
+            cell.metadata.janus.source_hidden = true
+            cell.metadata.janus.output_hidden = true
+        } else if (hide_state == 'o') {
+            cell.metadata.janus.cell_hidden = false
+            cell.metadata.janus.source_hidden = false
+            cell.metadata.janus.output_hidden = true
+        } else if (hide_state == 's') {
+            cell.metadata.janus.cell_hidden = false
+            cell.metadata.janus.source_hidden = true
+            cell.metadata.janus.output_hidden = false
+        } else if (hide_state == 'n') {
+            cell.metadata.janus.cell_hidden = false
+            cell.metadata.janus.source_hidden = false
+            cell.metadata.janus.output_hidden = false
+        }
     }
 
 
