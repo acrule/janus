@@ -184,7 +184,7 @@ define([
         var oldCodeCellExecute = CodeCell.CodeCell.prototype.execute;
         CodeCell.CodeCell.prototype.execute = function() {
 
-            that = this;
+            var that = this;
 
             // function to run once cell is executed
             function updateCellOnExecution(evt) {
@@ -233,6 +233,8 @@ define([
 
             if (this.sb_cell) {
                 this.sb_cell.set_input_prompt(this.input_prompt_number);
+                this.sb_cell.fromJSON( this.toJSON() );
+                JanusVersions.renderMarkers(this.sb_cell);
             }
             if ((this.metadata.janus.cell_hidden || this.metadata.janus.source_hidden) && Jupyter.sidebar.collapsed) {
                 $(this.element).nextAll(".hide-container").first().children(".hide-spacer").first().html("")
