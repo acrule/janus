@@ -17,7 +17,6 @@ define([
 
     //TODO substantial duplicate code that could be put into helper functions
 
-    // HIDE AND SHOW ENTIRE CELLS
     function toggleSelCellsVisibility() {
         /* toggle visiblity of all selected cells
 
@@ -107,7 +106,6 @@ define([
     }
 
 
-    // HIDE SOURCE
     function toggleSourceVisibility() {
         /* Hide/Show the source of individual cells */
 
@@ -198,7 +196,6 @@ define([
     }
 
 
-    // HIDE OUTPUTS
     function toggleOutputVisibility() {
         /* Hide/Show the outputs of individual cells */
 
@@ -288,7 +285,6 @@ define([
     }
 
 
-    // all
     function toggleAllSections(){
         /* Show or hide all hide cell sections in the sidebar */
 
@@ -306,7 +302,6 @@ define([
     }
 
 
-    // GENERAL
     function initializeVisibility() {
         /* hide source and outputs of all cells in nb with proper metadata */
 

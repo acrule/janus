@@ -93,6 +93,7 @@ define([
 
         Args:
             cellJSON: JSON of cell to duplicate
+            nb: the notebook
         */
 
         newCell = null;
@@ -142,6 +143,7 @@ define([
         Args:
             event: mouseout event that triggers hidding minimap
             el: placeholder element triggering event
+            modal: wether we are showing this minimap over a modal
         */
 
         // change placeholder background color onhover
@@ -238,6 +240,13 @@ define([
 
 
     function moveMinimap(event, el) {
+        /* move the minimap
+
+        Args:
+            event: mouseout event that triggers hidding minimap
+            el: placeholder element triggering event
+        */
+
         var mouseTop = event.clientY
         var mouseRight = event.clientX
         var topOffset = $('#site').position().top

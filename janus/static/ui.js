@@ -109,7 +109,7 @@ define([
         addItemToMenu(janusMenu,
             'export_db',
             'Export Cleaned DB',
-            JanusComment.exportClean);       
+            JanusComment.exportClean);
 
         addItemToMenu(janusMenu,
                         'leave_comment',
@@ -164,7 +164,7 @@ define([
             handler : JanusComment.createCommentModal
         }
 
-        
+
         // generate full action names and link to action
         var prefix = 'janus';
         var actionHandler = Jupyter.actions

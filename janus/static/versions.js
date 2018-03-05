@@ -24,13 +24,13 @@ define([
     // reference for later use
     var CodeCell = codecell.CodeCell;
 
+
 // MARKER CLICK EVENTS
     function createExtraClick(cell) {
         /* Attach function to version marker click events
 
         Args:
             cell: cell we are working with
-            v: index of cell version to show when marker is clicked
         */
 
         return function() {
@@ -77,6 +77,7 @@ define([
 
         Args:
             cell: cell we are working with
+            v: version of the cell to show on click
         */
 
         return function() {

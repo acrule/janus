@@ -3,6 +3,7 @@ Janus: Jupyter Notebook extension that helps users keep clean notebooks by
 hiding cells and tracking changes
 */
 
+/* HISTORY MODAL */
 #history-label{
     margin-left: 8px;
     position: relative;
@@ -51,6 +52,8 @@ hiding cells and tracking changes
     background: #ffffff;
 }
 
+
+/* COMMENT MODAL  */
 #comment-box {
     width: 100%;
     font-size: 1.2em;
@@ -71,15 +74,8 @@ hiding cells and tracking changes
     background-color: #E2FFEA;
 }
 
-.hide-container.selected {
-    border: 1px solid #BBBBBB;
-    border-left: 5px solid #59A5EF;
-}
 
-.hide-container.soft {
-    background-color: #DFF0FD;
-}
-
+/* HIDDEN CELL MARKERS */
 .hide-container{
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -92,6 +88,15 @@ hiding cells and tracking changes
     align-items: stretch;
     position: relative;
     overflow: visible;
+}
+
+.hide-container.selected {
+    border: 1px solid #BBBBBB;
+    border-left: 5px solid #59A5EF;
+}
+
+.hide-container.soft {
+    background-color: #DFF0FD;
 }
 
 .hide-arrow{
@@ -244,6 +249,8 @@ hiding cells and tracking changes
     color: #333333;
 }
 
+
+/* SIDEBAR AND SECTIONS */
 #sidebar-container {
     position: absolute;
     top: 20px;
@@ -310,6 +317,8 @@ hiding cells and tracking changes
     min-width: 10px;
 }
 
+
+/* MINIMAP */
 #minimap{
     width: 300px;
     background-color: white;

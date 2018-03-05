@@ -19,8 +19,8 @@ define([
     JanusUtils
 ){
 
-    // TODO debug saving of cell versions before cell fully executed
-    // TODO enable truncated history just showing cells that changed
+    // TODO some cell versions may be saving before cell is fully executed
+    // TODO break hidCells into smaller functions that are easier to maintain
 
     var HistoryModal = function(nb) {
         /* object represeting the history viewer modal popup
@@ -38,6 +38,7 @@ define([
         // get notebook history and starting showing it
         this.getDataForModal()
     }
+
 
     HistoryModal.prototype.getDataForModal = function() {
         /* get data about previous notebook cell orders
@@ -162,7 +163,11 @@ define([
 
 
     HistoryModal.prototype.updateUIText = function(version_num) {
-        /* Update the UI text */
+        /* Update the UI text
+
+        Args:
+            version_num: version of the notebook to show (int)
+        */
 
         // get the time since the edit being shown
         var t = parseInt( this.nb_configs[version_num][0] );
@@ -202,6 +207,7 @@ define([
 
         Args:
             version_ids: cells versions we want to get data for
+            version_num: version of the notebook to show (int)
         */
 
 
@@ -326,7 +332,6 @@ define([
     }
 
 
-    //TODO break this into smaller functions that are easier to maintain
     HistoryModal.prototype.hideCells = function() {
         /* Hide cells in the modal and enable minimap */
 
@@ -371,6 +376,7 @@ define([
                     cell_ids.push(serial_hidden_cells[j].metadata.janus.id);
                 }
 
+                // ad the placeholder element
                 var place = cells[i].element.before($('<div>')
                     .addClass('hide-container')
                     .addClass(function() {

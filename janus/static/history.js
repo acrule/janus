@@ -19,6 +19,7 @@ define([
     JanusUtils
 ){
 
+    // TODO updateHistoryUI shares code with history modal. deduplicate
 
     // Declare actions to track
     var Notebook = Jupyter.notebook;

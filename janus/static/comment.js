@@ -20,11 +20,15 @@ define([
 ){
 
 
-    // export cleaned DB (no personal data, only usage/metadata)
-    // in comment.js since it shares the same menu section + relates to analysis but not function (as comments)
+
     function exportClean() {
+        /* export cleaned DB (no personal data, only usage/metadata)
+
+        in comment.js since it shares the same menu section + relates to
+        analysis but not function (as comments)
+        */
+
         // post url
-        console.log('in exportClean')
         var baseUrl = Jupyter.notebook.base_url;
         var nbUrl =  Jupyter.notebook.notebook_path;
         var url = utils.url_path_join(baseUrl, 'api/janus', nbUrl);
@@ -48,19 +52,18 @@ define([
         utils.promising_ajax(url, settings);
     }
 
-    
+
     function createCommentModal() {
         /* show the comment modal */
-        console.log("in createCommentModal")
+
         // create HTML for the modal's content
         var modal_body = $('<div/>');
         var commentArea = $('<div/ id="comment-area">');
         var commentBox = $('<input id="comment-box">')
+        var pastComments = $('<div id="past-comments"/>')
         commentBox.type = "text"
         commentBox.attr("placeholder", "Your comment...");
         commentArea.append(commentBox)
-
-        var pastComments = $('<div id="past-comments"/>')
         modal_body.append(commentArea);
         modal_body.append(pastComments);
 
@@ -106,7 +109,7 @@ define([
         // When the modal opens, populate it with previous comments
         mod.on("shown.bs.modal", function () {
 
-            // focus the comment bar
+            // focus the comment bar after a slight delay
             setTimeout( function (){
                 $("#comment-box").focus();
             }, 50)
@@ -139,6 +142,7 @@ define([
             });
         })
     }
+
 
     return{
         createCommentModal: createCommentModal,

@@ -174,6 +174,7 @@ define([
 
         Args:
             cells: list of cell objects from the main notebook
+            title: title of the section
         */
 
         var that = this;
@@ -523,20 +524,33 @@ define([
 
 
     function matchIDs(markerIDs, sectionIndex, oldSectionIDs) {
-        /* Find a match for the ids */
+        /* Find a match for the ids we want to render in a previous section this
+            way we don't have to recreate the section, but can reposition it
 
+        Args:
+            markerIDs: the  ids we are looking for
+            sectionIndex: index of the current section
+            oldSectionIDs: a list of ids for all the old sections
+        */
+
+        // if no old sections, return
         if (oldSectionIDs.length == 0){
             return -1
         }
 
+        // if the section has not moved or changed ids, just return its index
         if (JSON.stringify(markerIDs) == JSON.stringify(oldSectionIDs[sectionIndex])) {
             return sectionIndex
+
+        // otherwise search through all old sections
         } else {
             for (var i = 0; i < oldSectionIDs.length; i ++) {
                 if (JSON.stringify(markerIDs) == JSON.stringify(oldSectionIDs[i])) {
                     return i;
                 }
             }
+
+            // in the end, return if no match
             return -1
         }
     }
@@ -552,7 +566,11 @@ define([
 
 
     Sidebar.prototype.repositionSections = function (initialPos = false){
-        /* Reposition the sidebar sections based on what is currently selected */
+        /* Reposition the sidebar sections based on what is currently selected
+
+        Args:
+            initialPos: is this the first positioning of the sections?
+        */
 
         // get cell visibility metadata
         var selCell = Jupyter.notebook.get_selected_cell()
@@ -670,7 +688,11 @@ define([
 
 
     function getYPos(marker) {
-        /* Get the y position of a marker relative to the notebook  */
+        /* Get the y position of a marker relative to the notebook
+
+        Args:
+            marker: the marker we want the position of
+        */
 
         if ($(marker).hasClass('hide-marker')) {
             return $(marker).closest('.hide-container').position().top - 24
@@ -686,7 +708,13 @@ define([
 
 // PLACEHOLDERS FOR HIDDEN CELLS
     Sidebar.prototype.addPlaceholderAfterElementWithIds = function(elem, cell_ids, serial_lines) {
-        /* Add the placeholder used to open a group of hidden cells */
+        /* Add the placeholder used to open a group of hidden cells
+
+        Args:
+            elem: the element to add the placeholder after
+            cell_ids: ids of the cells in this section
+            serial_lines: number of lines of code in this section
+        */
 
         // get placholder name and showing status from metadata, if present
         var markerMetadata = Jupyter.notebook.metadata.janus.janus_markers;
@@ -703,6 +731,7 @@ define([
             }
         }
 
+        // add the placholder to the DOM
         var place = elem.after($('<div>')
             .addClass('hide-container')
             .append($('<div>')
@@ -711,12 +740,19 @@ define([
                 .addClass('hide-marker')
                 .data('ids', cell_ids.slice())
                 .click(function(event){
-                    $('#minimap').remove()
+
                     var that = this;
                     var sectionIndex = $(this).data('sectionIndex')
+                    var secIndex = $(this).data('sectionIndex');
+
+                    // remove the minimap
+                    $('#minimap').remove()
+
+                    // set metadata
                     Jupyter.sidebar.sections[sectionIndex].showing = true;
                     $(this).addClass('active')
-                    var secIndex = $(this).data('sectionIndex');
+
+                    // show things
                     Jupyter.sidebar.sections[sectionIndex].element.show();
                     Jupyter.sidebar.expand()
                     Jupyter.sidebar.saveMarkerMetadata()
@@ -807,7 +843,10 @@ define([
 
     function highlightMarker(marker) {
         /*  highlight the marker clicked to show the sidebar
-        marker: dom element, or null */
+
+        Args:
+            marker: dom element, or null
+        */
 
         $('.hide-marker').removeClass('active')
         $('.hidden-code').removeClass('active')

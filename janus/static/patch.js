@@ -25,6 +25,10 @@ define([
     JanusUtils
 ){
 
+    // TODO patchSplitCell is a pretty involved patch, see if we can be less invasive
+    // TODO the 'cut_cell' function calls the copy function, so for now cut
+    // actions will be tracked twice, and data need to be cleaned later
+
 // PATCH CELL FUNCTIONS
     function patchCellSelect() {
         /* patch cell selection to handle sidebar highlighting */
@@ -220,6 +224,7 @@ define([
 
 
     function patchHandleExecuteReply() {
+        /* Update the prompt numbers on the sidebar when cell is executing */
 
         var oldHandleExecuteReply = CodeCell.CodeCell.prototype._handle_execute_reply;
         CodeCell.CodeCell.prototype._handle_execute_reply = function() {
@@ -258,7 +263,7 @@ define([
     }
 
 
-// PATCH NB FUNCTIONS
+// PATCH notebook FUNCTIONS
     function patchInsertCellAtIndex() {
         /* ensure new cells have a unique janus id and sidebar updates */
 
@@ -337,7 +342,6 @@ define([
 
     function patchSplitCell() {
         /* ensure split cells have a unique janus id and sidebar updates */
-        // TODO this is a pretty involved patch, see if we can be less invasive
 
         var oldSplitCell = Jupyter.notebook.__proto__.split_cell;
         Jupyter.notebook.__proto__.split_cell = function() {
@@ -378,9 +382,6 @@ define([
 
         Primarily listening to cut/copy/paste so we can save action data
         */
-
-        // TODO the 'cut_cell' function calls the copy function, so for now cut
-        // actions will be tracked twice, and data need to be cleaned later
 
         // First, patch action initiated by the notebook
         var oldCut = Jupyter.notebook.__proto__.cut_cell;
@@ -579,6 +580,8 @@ define([
 
 
     function patchUpdateSoftSelection() {
+        /* ensure sidebar cells can be multi-selected (e.g. soft selected) */
+
         var oldUpdateSoftSelection = Jupyter.notebook.__proto__.update_soft_selection;
         Jupyter.notebook.__proto__.update_soft_selection = function() {
             oldUpdateSoftSelection.apply(this, arguments);
@@ -615,7 +618,11 @@ define([
 
 // JANUS METADATA
     function generateDefaultCellMetadata(cell) {
-        /* generate default Janus metadata for a cell */
+        /* generate default Janus metadata for a cell
+
+        Args:
+            cell: cell to generate metadata for
+        */
 
         var defaultCellMetadata = {
             'id': Math.random().toString(16).substring(2),
