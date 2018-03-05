@@ -641,7 +641,7 @@ define([
 
             if (selSection >= 0){
                 if (Jupyter.sidebar.sections[selSection].cells.length > 0){
-                    Jupyter.sidebar.sections[selSection].cells[0].focus_editor()
+                    // Jupyter.sidebar.sections[selSection].cells[0].focus_editor()
                 }
             }
 
