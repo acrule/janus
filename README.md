@@ -14,9 +14,18 @@ If you have already cloned this repository onto your machine, you should be
 able to navigate to the top level "Janus" folder (with `setup.py` in it) and run
 the following commands:
 
-```
-pip install -e ./ --user
+```shell
+pip install ./ # can add --user if you only want to install for the current user
 jupyter nbextension install --py janus
 jupyter nbextension enable --py janus
 jupyter serverextension enable --py janus
+```
+
+Note that Janus is still in alpha, so you may encounter bugs. If you would 
+like to disable Janus, run the following commands:
+
+
+```
+jupyter nbextension disable --py janus
+jupyter serverextension disable --py janus
 ```
