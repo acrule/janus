@@ -179,6 +179,7 @@ define([
         */
 
         var that = this;
+        var siteTop = $('#site').scrollTop()
 
         // remove any cells currently in section
         this.cells = []
@@ -295,6 +296,9 @@ define([
         if(selCell.cell_type == 'code'){
             selCell.focus_editor();
         }
+
+        // make sure notebook does not scroll erraticly due to rendering new sections
+        $('#site').scrollTop(siteTop)
 
     }
 
